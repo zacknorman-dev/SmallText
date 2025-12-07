@@ -1,0 +1,32 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "PlatformIO Upload",
+			"type": "shell",
+			"command": "platformio run --target upload",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Upload with Font",
+			"type": "shell",
+			"command": "C:\\Users\\zackn\\.platformio\\penv\\Scripts\\platformio.exe run --target upload",
+			"problemMatcher": []
+		},
+		{
+			"label": "PlatformIO Upload",
+			"type": "shell",
+			"command": "C:\\Users\\zackn\\.platformio\\penv\\Scripts\\platformio.exe run --target upload",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "PlatformIO Upload",
+			"type": "shell",
+			"command": "& 'C:\\Users\\zackn\\.platformio\\penv\\Scripts\\platformio.exe' run --target upload",
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

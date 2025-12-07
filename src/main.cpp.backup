@@ -1,0 +1,609 @@
+#include <Arduino.h>
+#include <Wire.h>
+#include "Village.h"
+#include "Encryption.h"
+#include "LoRaMessenger.h"
+#include "Keyboard.h"
+#include "UI.h"
+
+// Pin definitions for Heltec Vision Master E290
+#define LORA_CS 8
+#define LORA_DIO1 14
+#define LORA_RST 12
+#define LORA_BUSY 13
+
+// E-paper display pins for Vision Master E290
+// Based on Heltec examples: rst=5, dc=4, cs=3, busy=6, sck=2, mosi=1
+#define EPD_RST 5
+#define EPD_DC 4
+#define EPD_CS 3
+#define EPD_BUSY 6
+#define EPD_SCK 2
+#define EPD_MOSI 1
+#define EPD_MISO -1  // Not used for this display
+
+#define I2C_SDA 39
+#define I2C_SCL 38
+
+// Global objects
+Village village;
+Encryption encryption;
+LoRaMessenger messenger;
+Keyboard keyboard;
+UI ui;
+
+// Application state
+enum AppState {
+  APP_INIT,
+  APP_MAIN_MENU,
+  APP_CREATE_VILLAGE_NAME,
+  APP_CREATE_VILLAGE_CONFIRM,
+  APP_JOIN_VILLAGE_USERNAME,
+  APP_JOIN_VILLAGE_PASSWORD,
+  APP_JOIN_VILLAGE_WAIT,
+  APP_VILLAGE_MENU,
+  APP_ADD_MEMBER_USERNAME,
+  APP_ADD_MEMBER_PASSWORD,
+  APP_VIEW_MEMBERS,
+  APP_MESSAGING,
+  APP_COMPOSE_MESSAGE
+};
+
+AppState appState = APP_INIT;
+String tempUsername = "";
+String tempPassword = "";
+String currentUsername = "";
+
+unsigned long lastKeyboardUpdate = 0;
+unsigned long lastLoRaCheck = 0;
+unsigned long lastDisplayUpdate = 0;
+const int KEYBOARD_UPDATE_INTERVAL = 50;
+const int LORA_CHECK_INTERVAL = 100;
+const int DISPLAY_UPDATE_INTERVAL = 2000;  // Only update e-paper every 2 seconds during input
+
+// Button handling (using keyboard for now)
+bool enterPressed = false;
+bool backPressed = false;
+
+void onMessageReceived(const Message& msg) {
+  Serial.println("Message from " + msg.sender + ": " + msg.content);
+  ui.addMessage(msg);
+  if (appState == APP_MESSAGING) {
+    ui.update();
+  }
+}
+
+void setup() {
+  // Absolute minimal test - just blink LED
+  pinMode(18, OUTPUT);  // Vext control
+  pinMode(35, OUTPUT);  // LED
+  
+  digitalWrite(18, HIGH); // Enable Vext
+  
+  // Try to init serial with USB CDC
+  Serial.begin(115200);
+  delay(3000);  // Give time for serial to stabilize
+  
+  Serial.println("\n\n=== MINIMAL TEST ===");
+  Serial.println("If you see this, serial works!");
+  Serial.println("Hardware should be OK");
+}
+
+void loop() {
+  // Blink to show we're alive
+  digitalWrite(18, HIGH);
+  digitalWrite(35, HIGH);
+  Serial.println("Loop running...");
+  delay(500);
+  
+  digitalWrite(18, LOW);
+  digitalWrite(35, LOW);
+  Serial.println("...blink");
+  delay(500);
+}
+
+/* COMMENTED OUT ALL THE REST FOR MINIMAL TEST
+  if (!ui.begin(EPD_SCK, EPD_MISO, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY)) {
+    Serial.println("[ERROR] Failed to initialize display");
+    while (1);
+  }
+  Serial.println("[INFO] Display initialized successfully!");
+  
+  // Show splash
+  ui.setState(STATE_SPLASH);
+  ui.update();
+  delay(2000);
+  
+  /*
+  // Initialize LoRa FIRST (uses default SPI bus)
+  Serial.println("[LoRa] Initializing...");
+  if (!messenger.begin(LORA_CS, LORA_DIO1, LORA_RST, LORA_BUSY)) {
+    Serial.println("[ERROR] Failed to initialize LoRa");
+    Serial.println("[ERROR] Check wiring and power");
+    // Don't call ui.showMessage during setup - it blocks!
+    // Continue anyway to test display
+  } else {
+    Serial.println("[LoRa] Initialized successfully!");
+    messenger.setMessageCallback(onMessageReceived);
+  }
+  */
+  
+  Serial.println("[System] LoRa init skipped for testing");
+  
+  // Initialize UI AFTER LoRa (will reconfigure SPI for display pins)
+  Serial.println("[INFO] Initializing e-paper display...");
+  if (!ui.begin(EPD_SCK, EPD_MISO, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY)) {
+    Serial.println("[ERROR] Failed to initialize display");
+    while (1);
+  }
+  Serial.println("[INFO] Display initialized successfully!");
+  
+  // Initialize I2C bus with correct pins BEFORE keyboard.begin()
+  Serial.print("[I2C] Initializing I2C bus on pins SDA=");
+  Serial.print(I2C_SDA);
+  Serial.print(", SCL=");
+  Serial.print(I2C_SCL);
+  Serial.println("...");
+  
+  // Try different I2C initialization approach
+  Wire.begin(I2C_SDA, I2C_SCL);
+  Wire.setClock(10000); // Try very slow 10kHz first
+  delay(500);
+  Serial.println("[I2C] I2C bus initialized at 10kHz");
+  
+  // Scan I2C bus to find devices
+  Serial.println("[I2C] Scanning for devices...");
+  byte devicesFound = 0;
+  for (byte addr = 1; addr < 127; addr++) {
+    Wire.beginTransmission(addr);
+    byte error = Wire.endTransmission();
+    if (error == 0) {
+      Serial.print("[I2C] Device found at address 0x");
+      if (addr < 16) Serial.print("0");
+      Serial.print(addr, HEX);
+      Serial.print(" (decimal ");
+      Serial.print(addr);
+      Serial.println(")");
+      devicesFound++;
+    }
+    delay(2);  // Longer delay between scans
+  }
+  Serial.print("[I2C] Scan complete. Found ");
+  Serial.print(devicesFound);
+  Serial.println(" device(s)");
+  
+  // Initialize keyboard (will check for CardKB at 0x5F)
+  Serial.println("[Keyboard] Checking for CardKB at address 0x5F...");
+  keyboard.begin();
+  
+  // Try to load existing village
+  if (village.loadFromFile()) {
+    Serial.println("[Village] Loaded existing village: " + village.getVillageName());
+    ui.setExistingVillageName(village.getVillageName());
+  } else {
+    Serial.println("[Village] No existing village found");
+  }
+  
+  // Now that all hardware is initialized, show the initial screen
+  Serial.println("[System] Initializing display for first time...");
+  appState = APP_MAIN_MENU;
+  ui.setState(STATE_VILLAGE_SELECT);
+  ui.resetMenuSelection();
+  // DON'T call ui.update() yet - display initialization is disabled for LoRa testing
+  //ui.update();  // Initial full display update after all hardware ready
+  
+  Serial.println("[System] Ready!");
+}
+
+void handleMainMenu() {
+  keyboard.update();
+  
+  // Check for up/down navigation - now supports arrow keys!
+  if (keyboard.isUpPressed()) {
+    ui.menuUp();
+    ui.updatePartial();
+    delay(200);
+  } else if (keyboard.isDownPressed()) {
+    ui.menuDown();
+    ui.updatePartial();
+    delay(200);
+  }
+  
+  // Check for enter
+  if (keyboard.isEnterPressed()) {
+    int selection = ui.getMenuSelection();
+    bool hasExistingVillage = village.getVillageName().length() > 0;
+    
+    // Adjust selection based on whether village exists
+    if (hasExistingVillage) {
+      if (selection == 0) {
+        // Enter existing village
+        Serial.println("[App] Entering existing village: " + village.getVillageName());
+        
+        // Setup encryption and messenger
+        encryption.setKey(village.getEncryptionKey());
+        messenger.setEncryption(&encryption);
+        messenger.setVillageInfo(village.getVillageName(), "Owner");
+        currentUsername = "Owner";
+        
+        appState = APP_VILLAGE_MENU;
+        ui.setState(STATE_VILLAGE_MENU);
+        ui.resetMenuSelection();
+        ui.update();
+      } else if (selection == 1) {
+        // Create new Village
+        Serial.println("[App] Create Village selected");
+        appState = APP_CREATE_VILLAGE_NAME;
+        ui.setState(STATE_CREATE_VILLAGE);
+        ui.clearInputText();
+        ui.update();
+      } else if (selection == 2) {
+        // Join Village
+        Serial.println("[App] Join Village selected");
+        appState = APP_JOIN_VILLAGE_USERNAME;
+        ui.setState(STATE_JOIN_VILLAGE);
+        ui.clearInputText();
+        ui.update();
+      }
+    } else {
+      if (selection == 0) {
+        // Create Village
+        Serial.println("[App] Create Village selected");
+        appState = APP_CREATE_VILLAGE_NAME;
+        ui.setState(STATE_CREATE_VILLAGE);
+        ui.clearInputText();
+        ui.update();
+      } else if (selection == 1) {
+        // Join Village
+        Serial.println("[App] Join Village selected");
+        appState = APP_JOIN_VILLAGE_USERNAME;
+        ui.setState(STATE_JOIN_VILLAGE);
+        ui.clearInputText();
+        ui.update();
+      }
+    }
+    
+    delay(200);
+  }
+}
+
+void handleCreateVillageName() {
+  keyboard.update();
+  
+  // Update input display - but only periodically to avoid flashing
+  if (keyboard.hasInput()) {
+    ui.clearInputText();
+    String input = keyboard.getCurrentBuffer();
+    for (char c : input) {
+      ui.addInputChar(c);
+    }
+    // Only update display every 2 seconds during input
+    if (millis() - lastDisplayUpdate > DISPLAY_UPDATE_INTERVAL) {
+      ui.update();
+      lastDisplayUpdate = millis();
+    }
+  }
+  
+  if (keyboard.isEnterPressed()) {
+    // Get the current input buffer when Enter is pressed
+    String villageName = keyboard.getCurrentBuffer();
+    keyboard.clearInput();  // Clear buffer after reading
+    
+    if (villageName.length() > 0) {
+      Serial.println("[App] Creating village: " + villageName);
+      
+      // Show what was typed
+      ui.showMessage("Creating...", villageName, 1000);
+      
+      if (village.createVillage(villageName)) {
+        // Setup encryption
+        encryption.setKey(village.getEncryptionKey());
+        messenger.setEncryption(&encryption);
+        messenger.setVillageInfo(villageName, "Owner");
+        currentUsername = "Owner";
+        
+        ui.showMessage("Success!", "Village created!", 2000);
+        ui.showMessage("Next Step", "Add members from\nVillage Menu", 3000);
+        
+        appState = APP_VILLAGE_MENU;
+        ui.setState(STATE_VILLAGE_MENU);
+        ui.resetMenuSelection();
+        ui.update();
+      } else {
+        ui.showMessage("Error", "Failed to create\nvillage", 2000);
+        appState = APP_MAIN_MENU;
+        ui.setState(STATE_MAIN_MENU);
+        ui.update();
+      }
+    }
+    
+    delay(200);
+  }
+}
+
+void handleJoinVillageUsername() {
+  keyboard.update();
+  
+  if (keyboard.hasInput()) {
+    ui.clearInputText();
+    String input = keyboard.getCurrentBuffer();
+    for (char c : input) {
+      ui.addInputChar(c);
+    }
+    // Don't update display on every keystroke
+  }
+  
+  if (keyboard.isEnterPressed()) {
+    tempUsername = keyboard.getCurrentBuffer();
+    keyboard.clearInput();
+    
+    if (tempUsername.length() > 0) {
+      Serial.println("[App] Username entered: " + tempUsername);
+      
+      // Show what was typed
+      ui.showMessage("Username:", tempUsername, 1000);
+      
+      // Now ask for password
+      appState = APP_JOIN_VILLAGE_PASSWORD;
+      ui.clearInputText();
+      ui.showMessage("Next", "Enter password", 1500);
+      ui.setState(STATE_JOIN_VILLAGE);
+      ui.update();
+    }
+    
+    delay(200);
+  }
+}
+
+void handleJoinVillagePassword() {
+  keyboard.update();
+  
+  if (keyboard.hasInput()) {
+    ui.clearInputText();
+    String input = keyboard.getCurrentBuffer();
+    for (char c : input) {
+      ui.addInputChar(c);
+    }
+    // Don't update display on every keystroke
+  }
+  
+  if (keyboard.isEnterPressed()) {
+    tempPassword = keyboard.getCurrentBuffer();
+    keyboard.clearInput();
+    
+    if (tempPassword.length() > 0) {
+      Serial.println("[App] Attempting to join village...");
+      
+      // Show password (masked)
+      ui.showMessage("Password:", "****", 1000);
+      
+      // Try to authenticate
+      if (village.loadFromFile() && village.authenticateMember(tempUsername, tempPassword)) {
+        currentUsername = tempUsername;
+        
+        // Setup encryption
+        encryption.setKey(village.getEncryptionKey());
+        messenger.setEncryption(&encryption);
+        messenger.setVillageInfo(village.getVillageName(), currentUsername);
+        
+        ui.showMessage("Success!", "Joined village!", 2000);
+        
+        appState = APP_VILLAGE_MENU;
+        ui.setState(STATE_VILLAGE_MENU);
+        ui.resetMenuSelection();
+        ui.update();
+      } else {
+        ui.showMessage("Error", "Invalid credentials\nAsk village owner", 3000);
+        appState = APP_MAIN_MENU;
+        ui.setState(STATE_MAIN_MENU);
+        ui.update();
+      }
+    }
+    
+    tempUsername = "";
+    tempPassword = "";
+    delay(200);
+  }
+}
+
+void handleVillageMenu() {
+  keyboard.update();
+  
+  // Debug output
+  if (keyboard.isUpPressed()) {
+    Serial.println("[VillageMenu] UP pressed");
+    ui.menuUp();
+    ui.updatePartial();
+    delay(200);
+  } else if (keyboard.isDownPressed()) {
+    Serial.println("[VillageMenu] DOWN pressed");
+    ui.menuDown();
+    ui.updatePartial();
+    delay(200);
+  }
+  
+  if (keyboard.isEnterPressed()) {
+    Serial.println("[VillageMenu] ENTER pressed");
+    int selection = ui.getMenuSelection();
+    
+    if (selection == 0) {
+      // Messages
+      appState = APP_MESSAGING;
+      ui.setState(STATE_MESSAGING);
+      ui.clearInputText();
+      ui.update();
+    } else if (selection == 1) {
+      // Add Member (owner only)
+      if (village.amOwner()) {
+        appState = APP_ADD_MEMBER_USERNAME;
+        ui.setState(STATE_ADD_MEMBER);
+        ui.clearInputText();
+        ui.update();
+      } else {
+        ui.showMessage("Error", "Owner only", 2000);
+      }
+    } else if (selection == 2) {
+      // View Members
+      appState = APP_VIEW_MEMBERS;
+      ui.setState(STATE_VIEW_MEMBERS);
+      ui.update();
+    }
+    
+    delay(200);
+  }
+}
+
+void handleAddMemberUsername() {
+  keyboard.update();
+  
+  if (keyboard.hasInput()) {
+    ui.clearInputText();
+    String input = keyboard.getCurrentBuffer();
+    for (char c : input) {
+      ui.addInputChar(c);
+    }
+    // Don't update display on every keystroke
+  }
+  
+  if (keyboard.isEnterPressed()) {
+    tempUsername = keyboard.getCurrentBuffer();
+    keyboard.clearInput();
+    
+    if (tempUsername.length() > 0) {
+      Serial.println("[App] Member username: " + tempUsername);
+      ui.showMessage("Username:", tempUsername, 1000);
+      appState = APP_ADD_MEMBER_PASSWORD;
+      ui.clearInputText();
+      ui.showMessage("Next", "Enter password", 1500);
+    }
+    
+    delay(200);
+  }
+}
+
+void handleAddMemberPassword() {
+  keyboard.update();
+  
+  if (keyboard.hasInput()) {
+    ui.clearInputText();
+    String input = keyboard.getCurrentBuffer();
+    for (char c : input) {
+      ui.addInputChar(c);
+    }
+    // Don't update display on every keystroke
+  }
+  
+  if (keyboard.isEnterPressed()) {
+    tempPassword = keyboard.getCurrentBuffer();
+    keyboard.clearInput();
+    
+    if (tempPassword.length() > 0) {
+      Serial.println("[App] Adding member: " + tempUsername);
+      ui.showMessage("Adding...", tempUsername, 1000);
+      
+      if (village.addMember(tempUsername, tempPassword)) {
+        ui.showMessage("Success!", "Member added:\n" + tempUsername, 2000);
+      } else {
+        ui.showMessage("Error", "Failed to add\nmember", 2000);
+      }
+      
+      tempUsername = "";
+      tempPassword = "";
+      
+      appState = APP_VILLAGE_MENU;
+      ui.setState(STATE_VILLAGE_MENU);
+      ui.resetMenuSelection();
+      ui.update();
+    }
+    
+    delay(200);
+  }
+}
+
+void handleViewMembers() {
+  static bool displayUpdated = false;
+  
+  keyboard.update();
+  
+  // Only update display once when entering this state
+  if (!displayUpdated) {
+    std::vector<String> memberList = village.getMemberList();
+    ui.setMemberList(memberList);
+    ui.update();
+    
+    Serial.println("[ViewMembers] Member count: " + String(memberList.size()));
+    for (const auto& member : memberList) {
+      Serial.println("[ViewMembers] - " + member);
+    }
+    displayUpdated = true;
+  }
+  
+  // Check for back key ('b' for back)
+  if (keyboard.hasInput()) {
+    String input = keyboard.getInput();
+    if (input == "b" || input == "B") {
+      displayUpdated = false;  // Reset for next time
+      appState = APP_VILLAGE_MENU;
+      ui.setState(STATE_VILLAGE_MENU);
+      ui.update();
+      delay(200);
+    }
+  }
+}
+
+void handleMessaging() {
+  keyboard.update();
+  
+  // Check for incoming messages
+  messenger.checkForMessages();
+  
+  if (keyboard.hasInput()) {
+    ui.clearInputText();
+    String input = keyboard.getCurrentBuffer();
+    for (char c : input) {
+      ui.addInputChar(c);
+    }
+    // Don't update display on every keystroke - wait for enter
+  }
+  
+  if (keyboard.isEnterPressed()) {
+    String message = keyboard.getCurrentBuffer();
+    keyboard.clearInput();
+    
+    if (message.length() > 0) {
+      Serial.println("[App] Sending message: " + message);
+      // Send message
+      if (messenger.sendMessage(message)) {
+        // Add to local history
+        Message msg;
+        msg.sender = currentUsername;
+        msg.content = message;
+        msg.timestamp = millis();
+        msg.received = false;
+        ui.addMessage(msg);
+        
+        Serial.println("[App] Message sent: " + message);
+      } else {
+        Serial.println("[App] Failed to send message");
+      }
+      
+      ui.clearInputText();
+      ui.update();
+    }
+    
+    delay(200);
+  }
+}
+
+void loop() {
+  // Blink to show we're alive
+  digitalWrite(18, HIGH);
+  digitalWrite(35, HIGH);
+  Serial.println("Loop running...");
+  delay(500);
+  
+  digitalWrite(18, LOW);
+  digitalWrite(35, LOW);
+  Serial.println("...blink");
+  delay(500);
+}
