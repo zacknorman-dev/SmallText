@@ -8,8 +8,10 @@
 #include <WiFi.h>
 #include "Logger.h"
 
-// Firmware version - update this with each release
-#define FIRMWARE_VERSION "0.13.0"
+// Firmware version comes from build flags in platformio.ini
+#ifndef FIRMWARE_VERSION
+#define FIRMWARE_VERSION "0.14.0"
+#endif
 
 enum UpdateStatus {
     UPDATE_IDLE,

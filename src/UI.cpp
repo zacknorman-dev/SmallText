@@ -797,14 +797,14 @@ void UI::menuDown() {
     int maxItems = 0;
     switch (currentState) {
         case STATE_VILLAGE_SELECT: {
-            // Count saved villages + "New Village" + "Join Village"
+            // Count saved villages + "New Village" + "Join Village" + "WiFi & Updates"
             int villageCount = 0;
             for (int i = 0; i < 10; i++) {
                 if (Village::hasVillageInSlot(i)) {
                     villageCount++;
                 }
             }
-            maxItems = villageCount + 1;  // +1 for "New Village" and "Join Village" (last index)
+            maxItems = villageCount + 2;  // +2 for "New Village", "Join Village", and "WiFi & Updates" (last index)
             break;
         }
         case STATE_MAIN_MENU:
@@ -812,6 +812,9 @@ void UI::menuDown() {
             break;
         case STATE_VILLAGE_MENU:
             maxItems = 3;
+            break;
+        case STATE_WIFI_SETUP_MENU:
+            maxItems = 2;  // Configure WiFi, Check Connection, Check for Updates (0-2)
             break;
         default:
             maxItems = 0;

@@ -1507,6 +1507,17 @@ void handleWiFiConnecting() {
 }
 
 void handleWiFiStatus() {
+  // Left arrow to go back
+  if (keyboard.isLeftPressed()) {
+    keyboard.clearInput();
+    appState = APP_WIFI_SETUP_MENU;
+    ui.setState(STATE_WIFI_SETUP_MENU);
+    ui.resetMenuSelection();
+    ui.update();
+    smartDelay(300);
+    return;
+  }
+  
   // Enter to continue
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     keyboard.clearInput();
