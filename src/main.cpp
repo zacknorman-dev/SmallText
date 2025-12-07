@@ -344,7 +344,7 @@ void setup() {
   // Initialize OTA updater
   Serial.println("[OTA] Initializing OTA updater...");
   otaUpdater.begin(&logger);
-  otaUpdater.setGitHubRepo("yourusername", "SmolTxt");  // TODO: Update with your GitHub repo
+  otaUpdater.setGitHubRepo("zacknorman-dev", "SmallText");
   Serial.println("[OTA] OTA updater ready");
   
   // Check if WiFi is configured - if so, connect
