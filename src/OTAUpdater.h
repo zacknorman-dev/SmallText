@@ -6,6 +6,7 @@
 #include <HTTPUpdate.h>
 #include <ArduinoJson.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include "Logger.h"
 
 // Firmware version comes from build flags in platformio.ini

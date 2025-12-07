@@ -116,6 +116,7 @@ bool OTAUpdater::fetchLatestRelease() {
         String assetName = asset["name"].as<String>();
         if (assetName.endsWith(".bin")) {
             downloadURL = asset["browser_download_url"].as<String>();
+            Serial.println("[OTA] Download URL: " + downloadURL);
             break;
         }
     }
@@ -184,6 +185,7 @@ bool OTAUpdater::performUpdate() {
     
     status = UPDATE_DOWNLOADING;
     Serial.println("[OTA] Downloading: " + downloadURL);
+    Serial.println("[OTA] Free heap before download: " + String(ESP.getFreeHeap()));
     
     if (logger) logger->info("OTA: Starting update from " + downloadURL);
     
@@ -196,8 +198,18 @@ bool OTAUpdater::performUpdate() {
         });
     }
     
-    // Perform update
-    WiFiClient client;
+    // Configure HTTPUpdate for better reliability
+    httpUpdate.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
+    httpUpdate.rebootOnUpdate(false);  // Manual restart for logging
+    
+    // Perform update with better timeout handling
+    WiFiClientSecure client;
+    client.setInsecure();  // Skip certificate validation for GitHub
+    client.setTimeout(60000);  // 60 second timeout
+    
+    // Set larger buffer for faster download
+    client.setNoDelay(true);
+    
     t_httpUpdate_return ret = httpUpdate.update(client, downloadURL);
     
     switch (ret) {

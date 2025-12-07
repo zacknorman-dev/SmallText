@@ -3,6 +3,7 @@
 #include "Village.h"
 #include "Encryption.h"
 #include "LoRaMessenger.h"
+#include "MQTTMessenger.h"
 #include "Keyboard.h"
 #include "UI.h"
 #include "Battery.h"
@@ -34,6 +35,7 @@
 Village village;
 Encryption encryption;
 LoRaMessenger messenger;
+MQTTMessenger mqttMessenger;
 Keyboard keyboard;
 UI ui;
 Battery battery;
@@ -220,6 +222,9 @@ void onVillageNameReceived(const String& villageName) {
   
   // Also update messenger with new village name
   messenger.setVillageInfo(village.getVillageId(), villageName, village.getUsername());
+  if (mqttMessenger.isConnected()) {
+    mqttMessenger.setVillageInfo(village.getVillageId(), villageName, village.getUsername());
+  }
 }
 
 void setup() {
@@ -353,6 +358,23 @@ void setup() {
     if (wifiManager.connect()) {
       Serial.println("[WiFi] Connected: " + wifiManager.getIPAddress());
       logger.info("WiFi connected: " + wifiManager.getIPAddress());
+      
+      // Initialize MQTT messenger after WiFi connects
+      Serial.println("[MQTT] Initializing MQTT messenger...");
+      if (mqttMessenger.begin()) {
+        Serial.println("[MQTT] MQTT messenger ready");
+        logger.info("MQTT messenger initialized");
+        
+        // Set up MQTT callbacks (same as LoRa)
+        mqttMessenger.setMessageCallback(onMessageReceived);
+        mqttMessenger.setAckCallback(onMessageAcked);
+        mqttMessenger.setReadCallback(onMessageReadReceipt);
+        
+        // Set encryption
+        mqttMessenger.setEncryption(&encryption);
+      } else {
+        Serial.println("[MQTT] Failed to initialize");
+      }
     }
   } else {
     Serial.println("[WiFi] No saved WiFi credentials");
@@ -407,6 +429,9 @@ void loop() {
   
   // Process incoming messages (calls new loop() method)
   messenger.loop();
+  
+  // Process MQTT messages if connected
+  mqttMessenger.loop();
   
   // Update battery readings (rate-limited internally)
   battery.update();
@@ -566,6 +591,12 @@ void handleMainMenu() {
         encryption.setKey(village.getEncryptionKey());
         messenger.setEncryption(&encryption);
         messenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
+        
+        // Configure MQTT if connected
+        if (mqttMessenger.isConnected()) {
+          mqttMessenger.setEncryption(&encryption);
+          mqttMessenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
+        }
         
         // Go to village menu
         keyboard.clearInput();
@@ -1048,6 +1079,12 @@ void handleUsernameInput() {
       messenger.setEncryption(&encryption);
       messenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
       
+      // Configure MQTT if connected
+      if (mqttMessenger.isConnected()) {
+        mqttMessenger.setEncryption(&encryption);
+        mqttMessenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
+      }
+      
       if (isCreatingVillage) {
         // Show passphrase for creators
         String infoMsg = "The secret passphrase for\nthis village is:\n\n";
@@ -1273,7 +1310,14 @@ void handleMessageCompose() {
       ui.setInputText("Sending...");
       ui.updatePartial();  // Quick partial update to show sending feedback
       
+      // Send via both LoRa and MQTT (if connected)
       messenger.sendShout(currentText);
+      if (mqttMessenger.isConnected()) {
+        mqttMessenger.sendShout(currentText);
+        Serial.println("[App] Message sent via MQTT and LoRa");
+      } else {
+        Serial.println("[App] Message sent via LoRa only (MQTT not connected)");
+      }
       
       Message sentMsg;
       sentMsg.sender = village.getUsername();
