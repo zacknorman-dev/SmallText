@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.30.0"
+#define BUILD_NUMBER "v0.31.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -236,26 +236,22 @@ void onCommandReceived(const String& command) {
 
 // Handle sync request from other device
 void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp) {
-  Serial.println("[Sync] Request from " + requestorMAC + " for messages after " + String(requestedTimestamp));
+  Serial.println("[Sync] Request from " + requestorMAC + " (ignoring timestamp - will send all messages)");
   logger.info("Sync request from " + requestorMAC);
   
-  // Load our messages and filter for ones newer than requested timestamp
+  // Load ALL our messages - deduplication will happen on receiving device
+  // Can't use timestamp comparison because millis() is device-specific
   std::vector<Message> allMessages = village.loadMessages();
-  std::vector<Message> newMessages;
   
-  for (const Message& msg : allMessages) {
-    if (msg.timestamp > requestedTimestamp) {
-      newMessages.push_back(msg);
-    }
-  }
-  
-  if (newMessages.empty()) {
-    Serial.println("[Sync] No new messages to send");
+  if (allMessages.empty()) {
+    Serial.println("[Sync] No messages to send");
+    logger.info("Sync: No messages");
     return;
   }
   
-  Serial.println("[Sync] Sending " + String(newMessages.size()) + " messages to " + requestorMAC);
-  mqttMessenger.sendSyncResponse(requestorMAC, newMessages);
+  Serial.println("[Sync] Sending " + String(allMessages.size()) + " messages to " + requestorMAC);
+  logger.info("Sync: Sending " + String(allMessages.size()) + " msgs");
+  mqttMessenger.sendSyncResponse(requestorMAC, allMessages);
 }
 
 void onVillageNameReceived(const String& villageName) {

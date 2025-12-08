@@ -472,12 +472,13 @@ bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
     }
     
     // Publish sync request to village topic
+    // Timestamp ignored - will send all messages and rely on deduplication
     // Format: sync-request/{deviceMAC}
-    // Payload: {timestamp: lastMessageTimestamp, mac: myMAC}
+    // Payload: {mac: myMAC}
     
     JsonDocument doc;
-    doc["timestamp"] = lastMessageTimestamp;
     doc["mac"] = String(myMAC, HEX);
+    doc["timestamp"] = lastMessageTimestamp;  // Keep for backwards compat but ignored
     
     String payload;
     serializeJson(doc, payload);
@@ -499,7 +500,7 @@ bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
     bool success = mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
     
     if (success) {
-        Serial.println("[MQTT] Sync request sent: timestamp=" + String(lastMessageTimestamp));
+        Serial.println("[MQTT] Sync request sent (will receive all messages, dedup on receive)");
         logger.info("Sync request sent");
     } else {
         Serial.println("[MQTT] Sync request failed");
