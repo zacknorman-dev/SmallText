@@ -739,58 +739,59 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
     }
     
     String currentVillageId = String(villageId);
-    bool found = false;
-    int lineNum = 0;
-    int messagesScanned = 0;
     
-    // Read all lines and update the target message
+    // Read all lines into memory first
     while (readFile.available()) {
         String line = readFile.readStringUntil('\n');
         line.trim();
-        lineNum++;
+        allLines.push_back(line);
+    }
+    readFile.close();
+    
+    // SCAN BACKWARDS from end of file (newest messages are appended at bottom)
+    bool found = false;
+    int messagesScanned = 0;
+    
+    for (int i = allLines.size() - 1; i >= 0 && !found; i--) {
+        String& line = allLines[i];
         
         if (line.length() == 0) {
-            allLines.push_back("");  // Preserve empty lines
-            continue;
+            continue;  // Skip empty lines
         }
         
         JsonDocument doc;
         DeserializationError error = deserializeJson(doc, line);
         
         if (error) {
-            logger.error("JSON parse error at line " + String(lineNum));
-            allLines.push_back(line);  // Preserve unparseable lines
-            continue;
+            continue;  // Skip unparseable lines
         }
         
         String msgVillage = doc["village"] | "";
         String msgId = doc["messageId"] | "";
         
-        // Only try to match if we haven't exceeded scan limit
-        // Update status if this is our target message and we're still scanning
-        if (!found && messagesScanned < MAX_MESSAGES_TO_SCAN && 
-            msgVillage == currentVillageId && msgId == messageId) {
-            doc["status"] = newStatus;
-            found = true;
-            
-            // Re-serialize the updated message
-            String updatedLine;
-            serializeJson(doc, updatedLine);
-            allLines.push_back(updatedLine);
-            
-            logger.info("Updated message " + messageId + " to status " + String(newStatus));
-        } else {
-            // Keep all other messages unchanged (including other villages)
-            allLines.push_back(line);
-        }
-        
-        // Count messages from our village for scan limit
+        // Count messages from our village first (for scan limit)
         if (msgVillage == currentVillageId) {
             messagesScanned++;
+            
+            // Stop scanning after MAX_MESSAGES_TO_SCAN from our village
+            if (messagesScanned > MAX_MESSAGES_TO_SCAN) {
+                break;
+            }
+            
+            // Check if this is our target message
+            if (msgId == messageId) {
+                doc["status"] = newStatus;
+                found = true;
+                
+                // Re-serialize the updated message
+                String updatedLine;
+                serializeJson(doc, updatedLine);
+                allLines[i] = updatedLine;
+                
+                logger.info("Updated message " + messageId + " to status " + String(newStatus));
+            }
         }
     }
-    
-    readFile.close();
     
     if (!found) {
         logger.error("Message not found: " + messageId);

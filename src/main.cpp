@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.33.2"
+#define BUILD_NUMBER "v0.33.3"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
