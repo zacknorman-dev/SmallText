@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.24.0"
+#define BUILD_NUMBER "v0.25.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -108,6 +108,7 @@ const int MAX_MESSAGES_TO_LOAD = 30;  // Only load most recent 30 messages
 const int MAX_READ_RECEIPTS = 10;  // Only send read receipts for last 10 unread messages
 unsigned long lastRadioTransmission = 0;  // Track when radio last transmitted (for timing read receipts)
 unsigned long lastVillageNameRequest = 0;  // Track pending village name requests (retry every 30s)
+unsigned long lastOTACheck = 0;  // Track automatic OTA update checks
 
 // Timestamp baseline to ensure new messages after reboot sort correctly
 unsigned long timestampBaseline = 0;
@@ -201,9 +202,27 @@ void onCommandReceived(const String& command) {
   logger.info("Command: " + command);
   
   if (command == "update") {
-    Serial.println("[Command] Forcing OTA update check...");
-    logger.info("Forcing OTA update via MQTT command");
-    otaUpdater.checkForUpdate();
+    Serial.println("[Command] Critical update requested");
+    logger.info("Critical update command received");
+    
+    // Only show update screen if on main menu (not interrupting active use)
+    if (appState == APP_MAIN_MENU || appState == APP_VILLAGE_MENU) {
+      if (otaUpdater.checkForUpdate()) {
+        logger.info("OTA: Critical update available: " + otaUpdater.getLatestVersion());
+        appState = APP_OTA_CHECKING;
+        ui.setState(STATE_OTA_CHECK);
+        String updateInfo = "CRITICAL UPDATE\n\n";
+        updateInfo += "New: " + otaUpdater.getLatestVersion() + "\n";
+        updateInfo += "Current: " + otaUpdater.getCurrentVersion() + "\n\n";
+        updateInfo += "Press RIGHT to continue";
+        ui.setStatusMessage(updateInfo);
+        ui.update();
+      } else {
+        logger.info("OTA: No update available");
+      }
+    } else {
+      logger.info("OTA: Update command ignored - user is busy");
+    }
   } else if (command == "reboot") {
     Serial.println("[Command] Rebooting device...");
     logger.info("Rebooting via MQTT command");
@@ -409,6 +428,26 @@ void setup() {
   }
   Serial.print("[Setup] Timestamp baseline initialized: ");
   Serial.println(timestampBaseline);
+  
+  // Check for OTA updates on boot (if WiFi connected)
+  if (wifiManager.isConnected()) {
+    Serial.println("[OTA] Checking for updates on boot...");
+    logger.info("OTA: Boot update check");
+    if (otaUpdater.checkForUpdate()) {
+      logger.info("OTA: New version available: " + otaUpdater.getLatestVersion());
+      // Show update screen and let user decide
+      appState = APP_OTA_CHECKING;
+      ui.setState(STATE_OTA_CHECK);
+      String updateInfo = "Update Available\n\n";
+      updateInfo += "New: " + otaUpdater.getLatestVersion() + "\n";
+      updateInfo += "Current: " + otaUpdater.getCurrentVersion() + "\n\n";
+      updateInfo += "Press RIGHT to update\nPress LEFT to skip";
+      ui.setStatusMessage(updateInfo);
+      ui.update();
+      Serial.println("[System] Showing update screen");
+      return; // Stay in setup, will continue in loop
+    }
+  }
   
   // Show village select screen
   Serial.println("[System] Going to village select");
@@ -1598,45 +1637,48 @@ void handleWiFiStatus() {
 }
 
 void handleOTAChecking() {
-  // Left arrow to cancel
+  // Left arrow to cancel/skip update
   if (keyboard.isLeftPressed()) {
     keyboard.clearInput();
-    appState = APP_WIFI_SETUP_MENU;
-    ui.setState(STATE_WIFI_SETUP_MENU);
+    logger.info("OTA: User declined update");
+    appState = APP_MAIN_MENU;
+    ui.setState(STATE_VILLAGE_SELECT);
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
     return;
   }
   
-  // Enter to perform update if available
+  // Right arrow or Enter to perform update if available
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     if (otaUpdater.getStatus() == UPDATE_AVAILABLE) {
-      // Start update
+      // User approved update
       keyboard.clearInput();
+      logger.info("OTA: User approved update");
       appState = APP_OTA_UPDATING;
       ui.setState(STATE_OTA_UPDATE);
-      ui.setInputText("Downloading...\nPlease wait");
+      ui.setStatusMessage("Downloading...\nPlease wait");
       ui.update();
       
       // Perform update (blocking, will restart on success)
       otaUpdater.performUpdate();
       
       // If we get here, update failed
-      ui.setInputText("Update Failed\nTry again later");
+      ui.setStatusMessage("Update Failed\nTry again later");
       ui.update();
       logger.error("OTA update failed");
       smartDelay(2000);
       
-      appState = APP_WIFI_SETUP_MENU;
-      ui.setState(STATE_WIFI_SETUP_MENU);
+      appState = APP_MAIN_MENU;
+      ui.setState(STATE_VILLAGE_SELECT);
       ui.resetMenuSelection();
       ui.update();
     } else {
-      // No update available, go back
+      // No update available, go back to main menu
       keyboard.clearInput();
-      appState = APP_WIFI_SETUP_MENU;
-      ui.setState(STATE_WIFI_SETUP_MENU);
+      logger.info("OTA: No update available");
+      appState = APP_MAIN_MENU;
+      ui.setState(STATE_VILLAGE_SELECT);
       ui.resetMenuSelection();
       ui.update();
     }
