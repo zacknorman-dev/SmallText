@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.33.0"
+#define BUILD_NUMBER "v0.33.1"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -146,9 +146,10 @@ void onMessageReceived(const Message& msg) {
   village.saveMessage(adjustedMsg);
   Serial.println("[Message] Total messages in history: " + String(ui.getMessageCount()));
   
-  // If we're currently in the messaging screen, mark as read immediately and send receipt
-  if (appState == APP_MESSAGING && inMessagingScreen) {
-    Serial.println("[App] Already in messaging screen, marking message as read");
+  // Only mark as read if this is a NEW message (not a synced historical message)
+  // Synced messages have MSG_RECEIVED status and should keep that status
+  if (appState == APP_MESSAGING && inMessagingScreen && adjustedMsg.status != MSG_RECEIVED) {
+    Serial.println("[App] Already in messaging screen, marking NEW message as read");
     
     // Mark message as read locally
     adjustedMsg.status = MSG_READ;
