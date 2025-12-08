@@ -649,6 +649,14 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
     Serial.println("[MQTT] Sync response batch " + String(batch) + "/" + String(total));
     logger.info("Sync batch " + String(batch) + "/" + String(total));
     
+    // OPTIMIZATION: Set global sync flag to skip expensive status updates during sync
+    // This is a global from main.cpp - forward declaration needed
+    extern bool isSyncing;
+    if (batch == 1) {
+        isSyncing = true;  // Start of sync
+        Serial.println("[MQTT] Sync started - disabling status updates");
+    }
+    
     JsonArray msgArray = doc["messages"];
     int msgCount = 0;
     
@@ -668,6 +676,12 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
             onMessageReceived(msg);
             msgCount++;
         }
+    }
+    
+    // End of sync - re-enable status updates
+    if (batch == total) {
+        isSyncing = false;
+        Serial.println("[MQTT] Sync completed - re-enabled status updates");
     }
     
     Serial.println("[MQTT] Processed " + String(msgCount) + " synced messages");

@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.33.4"
+#define BUILD_NUMBER "v0.33.5"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -87,6 +87,7 @@ bool inMessagingScreen = false;  // Flag to track if we're viewing the messaging
 unsigned long lastMessagingActivity = 0;  // Timestamp of last activity in messaging
 const unsigned long MESSAGING_TIMEOUT = 300000;  // 5 minutes timeout
 int currentVillageSlot = -1;  // Track which village slot is currently active (-1 = none)
+bool isSyncing = false;  // Flag to track if we're currently syncing (skip status updates during sync)
 
 // Typing detection - pause non-critical operations while user is actively typing
 unsigned long lastKeystroke = 0;
@@ -148,7 +149,8 @@ void onMessageReceived(const Message& msg) {
   
   // Only mark as read if this is a NEW message (not a synced historical message)
   // Synced messages have MSG_RECEIVED status and should keep that status
-  if (appState == APP_MESSAGING && inMessagingScreen && adjustedMsg.status != MSG_RECEIVED) {
+  // ALSO skip status updates entirely during sync to avoid watchdog timeout
+  if (!isSyncing && appState == APP_MESSAGING && inMessagingScreen && adjustedMsg.status != MSG_RECEIVED) {
     Serial.println("[App] Already in messaging screen, marking NEW message as read");
     
     // Mark message as read locally
@@ -180,7 +182,9 @@ void onMessageReceived(const Message& msg) {
 void onMessageAcked(const String& messageId, const String& fromMAC) {
   Serial.println("[Message] ACK received for: " + messageId + " from " + fromMAC);
   ui.updateMessageStatus(messageId, MSG_RECEIVED);
-  village.updateMessageStatus(messageId, MSG_RECEIVED);  // Persist to storage
+  if (!isSyncing) {
+    village.updateMessageStatus(messageId, MSG_RECEIVED);  // Persist to storage (skip during sync)
+  }
   
   // Update display if we're actively viewing messaging screen
   if (inMessagingScreen) {
@@ -191,7 +195,9 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
 void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
   Serial.println("[Message] Read receipt for: " + messageId + " from " + fromMAC);
   ui.updateMessageStatus(messageId, MSG_READ);
-  village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage
+  if (!isSyncing) {
+    village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage (skip during sync)
+  }
   
   // Update display if we're actively viewing messaging screen
   if (inMessagingScreen) {
