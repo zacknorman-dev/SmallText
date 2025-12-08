@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.33.6"
+#define BUILD_NUMBER "v0.33.7-debug"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -133,6 +133,7 @@ void handleUsernameInput();
 void handleViewMembers();
 void handleMessaging();
 void handleMessageCompose();
+void dumpMessageStoreDebug(int completedPhase);
 
 // Message callback
 void onMessageReceived(const Message& msg) {
@@ -141,6 +142,15 @@ void onMessageReceived(const Message& msg) {
   // Check if this message already exists in storage to determine if it's truly new
   bool isNewMessage = !village.messageIdExists(msg.messageId);
   
+  // ===== SYNC DEBUG: Log every incoming message during sync =====
+  int syncPhase = mqttMessenger.getCurrentSyncPhase();
+  if (syncPhase > 0) {
+    Serial.println("[SYNC DEBUG] Receiving msg: ID=" + msg.messageId + 
+                   " from=" + msg.sender + 
+                   " isNew=" + String(isNewMessage ? "YES" : "NO") + 
+                   " phase=" + String(syncPhase));
+  }
+  
   // Ensure received message timestamp is greater than stored messages
   Message adjustedMsg = msg;
   adjustedMsg.timestamp = max(msg.timestamp, max(millis(), timestampBaseline + 1));
@@ -148,8 +158,6 @@ void onMessageReceived(const Message& msg) {
   
   // SMART CACHE LAYER: Decide whether to update UI based on sync state and message novelty
   bool shouldUpdateUI = false;
-  
-  int syncPhase = mqttMessenger.getCurrentSyncPhase();
   
   if (syncPhase == 0) {
     // Not syncing - this is a real-time message, always show it
@@ -265,10 +273,40 @@ void onCommandReceived(const String& command) {
     logger.info("Rebooting via MQTT command");
     smartDelay(1000);
     ESP.restart();
+  } else if (command == "dump") {
+    Serial.println("[Command] Dumping message store state...");
+    dumpMessageStoreDebug(0);  // 0 = manual dump, not sync-triggered
   } else {
     Serial.println("[Command] Unknown command: " + command);
     logger.error("Unknown command: " + command);
   }
+}
+
+// Debug function to dump message store state after sync phase completes
+void dumpMessageStoreDebug(int completedPhase) {
+  char myMAC[13];
+  sprintf(myMAC, "%012llx", ESP.getEfuseMac());
+  
+  std::vector<Message> allMessages = village.loadMessages();
+  
+  Serial.println("========================================");
+  Serial.println("[SYNC DEBUG] Device " + String(myMAC) + " AFTER Phase " + String(completedPhase) + " complete");
+  Serial.println("[SYNC DEBUG] Total messages in storage NOW: " + String(allMessages.size()));
+  Serial.println("[SYNC DEBUG] Message IDs NOW in store (chronological order):");
+  
+  for (int i = 0; i < allMessages.size() && i < 50; i++) {  // Limit to 50 to avoid spam
+    Serial.println("  [" + String(i) + "] ID=" + allMessages[i].messageId + 
+                   " from=" + allMessages[i].sender + 
+                   " time=" + String(allMessages[i].timestamp) + 
+                   " status=" + String((int)allMessages[i].status));
+  }
+  
+  if (allMessages.size() > 50) {
+    Serial.println("  ... (" + String(allMessages.size() - 50) + " more messages)");
+  }
+  
+  Serial.println("[SYNC DEBUG] UI message count: " + String(ui.getMessageCount()));
+  Serial.println("========================================");
 }
 
 // Handle sync request from other device
@@ -302,6 +340,21 @@ void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp)
     logger.info("Sync: No messages with IDs");
     return;
   }
+  
+  // ===== DETAILED SYNC DEBUG: Dump our message store state =====
+  char myMAC[13];
+  sprintf(myMAC, "%012llx", ESP.getEfuseMac());
+  Serial.println("========================================");
+  Serial.println("[SYNC DEBUG] Device " + String(myMAC) + " preparing to send Phase " + String(phase) + " to " + requestorMAC);
+  Serial.println("[SYNC DEBUG] Total messages in storage: " + String(validMessages.size()));
+  Serial.println("[SYNC DEBUG] Message IDs in our store (chronological order):");
+  for (int i = 0; i < validMessages.size(); i++) {
+    Serial.println("  [" + String(i) + "] ID=" + validMessages[i].messageId + 
+                   " from=" + validMessages[i].sender + 
+                   " time=" + String(validMessages[i].timestamp) + 
+                   " status=" + String((int)validMessages[i].status));
+  }
+  Serial.println("========================================");
   
   Serial.println("[Sync] Phase " + String(phase) + ": Sending from " + String(validMessages.size()) + " total messages (filtered " + String(allMessages.size() - validMessages.size()) + " without IDs) to " + requestorMAC);
   logger.info("Sync phase " + String(phase) + ": " + String(validMessages.size()) + " msgs");

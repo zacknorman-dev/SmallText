@@ -735,6 +735,10 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
     if (batch == total) {
         Serial.println("[MQTT] Phase " + String(phase) + " complete - processed " + String(msgCount) + " messages");
         
+        // ===== SYNC DEBUG: Trigger message store dump after phase completes =====
+        extern void dumpMessageStoreDebug(int completedPhase);
+        dumpMessageStoreDebug(phase);
+        
         if (phase == 1) {
             // Phase 1 complete - re-enable status updates, user has recent messages
             isSyncing = false;
