@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.33.8"
+#define BUILD_NUMBER "v0.33.9"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -194,9 +194,9 @@ void onMessageReceived(const Message& msg) {
   }
   
   // Only mark as read if this is a NEW message (not a synced historical message)
-  // Synced messages have MSG_RECEIVED status and should keep that status
-  // ALSO skip status updates entirely during sync to avoid watchdog timeout
-  if (!isSyncing && appState == APP_MESSAGING && inMessagingScreen && msg.status != MSG_RECEIVED) {
+  // Skip status updates during sync to avoid watchdog timeout
+  // All incoming messages already have MSG_RECEIVED status, so we just check we're viewing messages
+  if (!isSyncing && appState == APP_MESSAGING && inMessagingScreen) {
     Serial.println("[App] Already in messaging screen, marking NEW message as read");
     
     // Mark message as read locally
