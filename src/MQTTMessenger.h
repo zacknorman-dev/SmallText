@@ -79,6 +79,9 @@ public:
     // Connection status
     bool isConnected() { return connected && mqttClient.connected(); }
     String getConnectionStatus();
+    
+    // MQTT client access for Logger
+    PubSubClient* getClient() { return &mqttClient; }
 };
 
 #endif

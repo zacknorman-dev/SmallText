@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <LittleFS.h>
+#include <PubSubClient.h>
 #include <vector>
 
 // Log levels
@@ -23,6 +24,9 @@ private:
     LogLevel currentLevel;
     unsigned long bootTime;
     bool serialConnected;
+    PubSubClient* mqttClient;
+    uint64_t deviceMAC;
+    String debugTopic;
     
     struct LogEntry {
         unsigned long timestamp;
@@ -43,6 +47,7 @@ public:
     
     bool begin();
     void setLogLevel(LogLevel level);
+    void setMQTTClient(PubSubClient* client);
     
     // Main logging functions
     void log(LogLevel level, const String& message);

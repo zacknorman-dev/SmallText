@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.21.0"
+#define BUILD_NUMBER "v0.22.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -371,6 +371,9 @@ void setup() {
         
         // Set encryption
         mqttMessenger.setEncryption(&encryption);
+        
+        // Enable MQTT debug logging
+        logger.setMQTTClient(mqttMessenger.getClient());
       } else {
         Serial.println("[MQTT] Failed to initialize");
       }
