@@ -1347,7 +1347,7 @@ void handleMessageCompose() {
       sentMsg.timestamp = millis();
       sentMsg.received = false;
       sentMsg.messageId = messageId;
-      sentMsg.status = messageId.isEmpty() ? MSG_PENDING : MSG_SENT;
+      sentMsg.status = messageId.isEmpty() ? MSG_SENT : MSG_SENT;
       ui.addMessage(sentMsg);
       
       // Clear input and switch to messaging view

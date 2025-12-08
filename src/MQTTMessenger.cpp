@@ -323,7 +323,7 @@ ParsedMessage MQTTMessenger::parseMessage(const String& decrypted) {
     return msg;
 }
 
-bool MQTTMessenger::sendShout(const String& message) {
+String MQTTMessenger::sendShout(const String& message) {
     if (!isConnected() || !encryption) {
         Serial.println("[MQTT] Not connected or no encryption");
         return "";
@@ -359,10 +359,10 @@ bool MQTTMessenger::sendShout(const String& message) {
     }
 }
 
-bool MQTTMessenger::sendWhisper(const String& recipientMAC, const String& message) {
+String MQTTMessenger::sendWhisper(const String& recipientMAC, const String& message) {
     if (!isConnected() || !encryption) {
         Serial.println("[MQTT] Not connected or no encryption");
-        return false;
+        return "";
     }
     
     String msgId = generateMessageId();
@@ -378,7 +378,7 @@ bool MQTTMessenger::sendWhisper(const String& recipientMAC, const String& messag
     size_t encryptedLen;
     if (!encryption->encryptString(formatted, encrypted, MAX_CIPHERTEXT, &encryptedLen)) {
         Serial.println("[MQTT] Encryption failed");
-        return false;
+        return "";
     }
     
     // Publish to whisper topic for specific recipient
@@ -388,11 +388,11 @@ bool MQTTMessenger::sendWhisper(const String& recipientMAC, const String& messag
     if (success) {
         Serial.println("[MQTT] WHISPER sent to " + recipientMAC + ": " + message);
         logger.info("MQTT WHISPER sent: " + message);
+        return msgId;
     } else {
         Serial.println("[MQTT] Publish failed");
+        return "";
     }
-    
-    return success;
 }
 
 bool MQTTMessenger::sendAck(const String& messageId, const String& targetMAC) {
