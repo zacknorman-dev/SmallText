@@ -718,6 +718,12 @@ bool Village::clearMessages() {
 bool Village::updateMessageStatus(const String& messageId, int newStatus) {
     if (!initialized) return false;
     
+    // Skip empty messageIds (from old builds) - prevents matching all messages
+    if (messageId.isEmpty()) {
+        logger.error("Skipping status update for empty messageId");
+        return false;
+    }
+    
     // CRITICAL FIX: Load ALL messages from file (not filtered by village)
     // to prevent deleting messages from other villages
     std::vector<String> allLines;

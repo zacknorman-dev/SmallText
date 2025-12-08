@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.32.0"
+#define BUILD_NUMBER "v0.33.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -75,6 +75,7 @@ void smartDelay(unsigned long ms) {
   unsigned long start = millis();
   while (millis() - start < ms) {
     keyboard.update();  // Poll keyboard every 10ms instead of continuously
+    mqttMessenger.loop();  // Process MQTT messages during delays
     yield();  // Let ESP32 handle background tasks
     delay(10);  // Add delay to prevent 880k+ polling spam
   }
@@ -243,15 +244,23 @@ void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp)
   // Can't use timestamp comparison because millis() is device-specific
   std::vector<Message> allMessages = village.loadMessages();
   
-  if (allMessages.empty()) {
-    Serial.println("[Sync] No messages to send");
-    logger.info("Sync: No messages");
+  // Filter out messages without IDs (from old builds) - can't be deduplicated
+  std::vector<Message> validMessages;
+  for (const Message& msg : allMessages) {
+    if (!msg.messageId.isEmpty()) {
+      validMessages.push_back(msg);
+    }
+  }
+  
+  if (validMessages.empty()) {
+    Serial.println("[Sync] No valid messages to send");
+    logger.info("Sync: No messages with IDs");
     return;
   }
   
-  Serial.println("[Sync] Sending " + String(allMessages.size()) + " messages to " + requestorMAC);
-  logger.info("Sync: Sending " + String(allMessages.size()) + " msgs");
-  mqttMessenger.sendSyncResponse(requestorMAC, allMessages);
+  Serial.println("[Sync] Sending " + String(validMessages.size()) + " messages (filtered " + String(allMessages.size() - validMessages.size()) + " without IDs) to " + requestorMAC);
+  logger.info("Sync: Sending " + String(validMessages.size()) + " msgs");
+  mqttMessenger.sendSyncResponse(requestorMAC, validMessages);
 }
 
 void onVillageNameReceived(const String& villageName) {
