@@ -326,7 +326,7 @@ ParsedMessage MQTTMessenger::parseMessage(const String& decrypted) {
 bool MQTTMessenger::sendShout(const String& message) {
     if (!isConnected() || !encryption) {
         Serial.println("[MQTT] Not connected or no encryption");
-        return false;
+        return "";
     }
     
     String msgId = generateMessageId();
@@ -342,7 +342,7 @@ bool MQTTMessenger::sendShout(const String& message) {
     size_t encryptedLen;
     if (!encryption->encryptString(formatted, encrypted, MAX_CIPHERTEXT, &encryptedLen)) {
         Serial.println("[MQTT] Encryption failed");
-        return false;
+        return "";
     }
     
     // Publish to shout topic
@@ -352,11 +352,11 @@ bool MQTTMessenger::sendShout(const String& message) {
     if (success) {
         Serial.println("[MQTT] SHOUT sent: " + message);
         logger.info("MQTT SHOUT sent: " + message);
+        return msgId;
     } else {
         Serial.println("[MQTT] Publish failed");
+        return "";
     }
-    
-    return success;
 }
 
 bool MQTTMessenger::sendWhisper(const String& recipientMAC, const String& message) {

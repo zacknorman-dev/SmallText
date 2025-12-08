@@ -73,8 +73,8 @@ public:
     void setCommandCallback(void (*callback)(const String& command));
     
     // Messaging API (matches LoRaMessenger)
-    bool sendShout(const String& message);
-    bool sendWhisper(const String& recipientMAC, const String& message);
+    String sendShout(const String& message);
+    String sendWhisper(const String& recipientMAC, const String& message);
     bool sendAck(const String& messageId, const String& targetMAC);
     bool sendReadReceipt(const String& messageId, const String& targetMAC);
     
