@@ -724,6 +724,11 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
         return false;
     }
     
+    // OPTIMIZATION: Only scan last 20 messages for status updates
+    // Recent messages are most likely to need status updates (acks, read receipts)
+    // This prevents scanning 100+ messages during sync, avoiding watchdog timeouts
+    const int MAX_MESSAGES_TO_SCAN = 20;
+    
     // CRITICAL FIX: Load ALL messages from file (not filtered by village)
     // to prevent deleting messages from other villages
     std::vector<String> allLines;
@@ -736,6 +741,7 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
     String currentVillageId = String(villageId);
     bool found = false;
     int lineNum = 0;
+    int messagesScanned = 0;
     
     // Read all lines and update the target message
     while (readFile.available()) {
@@ -760,8 +766,10 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
         String msgVillage = doc["village"] | "";
         String msgId = doc["messageId"] | "";
         
-        // Update status if this is our target message
-        if (msgVillage == currentVillageId && msgId == messageId) {
+        // Only try to match if we haven't exceeded scan limit
+        // Update status if this is our target message and we're still scanning
+        if (!found && messagesScanned < MAX_MESSAGES_TO_SCAN && 
+            msgVillage == currentVillageId && msgId == messageId) {
             doc["status"] = newStatus;
             found = true;
             
@@ -774,6 +782,11 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
         } else {
             // Keep all other messages unchanged (including other villages)
             allLines.push_back(line);
+        }
+        
+        // Count messages from our village for scan limit
+        if (msgVillage == currentVillageId) {
+            messagesScanned++;
         }
     }
     
