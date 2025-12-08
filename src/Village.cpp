@@ -616,6 +616,7 @@ bool Village::saveMessage(const Message& msg) {
     
     serializeJson(doc, file);
     file.println();
+    file.flush();  // CRITICAL: Ensure data is written to disk before closing
     file.close();
     
     // Add to cache for deduplication
