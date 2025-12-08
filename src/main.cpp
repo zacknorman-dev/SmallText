@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.26.0"
+#define BUILD_NUMBER "v0.27.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -1369,19 +1369,21 @@ void handleMessageCompose() {
       // Send via MQTT only (LoRa disabled for speed)
       // messenger.sendShout(currentText);  // LoRa disabled
       String messageId = "";
-      logger.info("Attempting MQTT send, connected: " + String(mqttMessenger.isConnected()));
-      if (mqttMessenger.isConnected()) {
+      bool mqttConn = mqttMessenger.isConnected();
+      logger.info("MQTT send attempt: connected=" + String(mqttConn ? "YES" : "NO"));
+      
+      if (mqttConn) {
         messageId = mqttMessenger.sendShout(currentText);
         if (!messageId.isEmpty()) {
           Serial.println("[App] Message sent via MQTT: " + messageId);
           logger.info("MQTT send SUCCESS, ID: " + messageId);
         } else {
           Serial.println("[App] MQTT send failed");
-          logger.error("MQTT send FAILED - empty ID returned");
+          logger.error("MQTT send FAILED - sendShout returned empty ID");
         }
       } else {
         Serial.println("[App] MQTT not connected - message not sent");
-        logger.error("MQTT not connected - message not sent");
+        logger.error("MQTT NOT CONNECTED - cannot send");
       }
       
       Message sentMsg;
