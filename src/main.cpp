@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.33.7-debug"
+#define BUILD_NUMBER "v0.33.8"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -115,6 +115,17 @@ unsigned long lastOTACheck = 0;  // Track automatic OTA update checks
 // Timestamp baseline to ensure new messages after reboot sort correctly
 unsigned long timestampBaseline = 0;
 
+// Get current Unix timestamp (seconds since epoch)
+unsigned long getCurrentTime() {
+  // If WiFi has synced NTP, use real Unix time
+  long offset = wifiManager.getTimeOffset();
+  if (offset != 0) {
+    return (millis() / 1000) + offset;
+  }
+  // Fallback to millis() if NTP not synced (shouldn't happen in normal operation)
+  return millis();
+}
+
 // Forward declarations
 void handleMainMenu();
 void handleWiFiSetupMenu();
@@ -151,10 +162,8 @@ void onMessageReceived(const Message& msg) {
                    " phase=" + String(syncPhase));
   }
   
-  // Ensure received message timestamp is greater than stored messages
-  Message adjustedMsg = msg;
-  adjustedMsg.timestamp = max(msg.timestamp, max(millis(), timestampBaseline + 1));
-  timestampBaseline = adjustedMsg.timestamp;  // Update baseline
+  // PRESERVE ORIGINAL TIMESTAMP - no adjustment needed now that we use NTP time
+  // All devices share the same Unix timestamp baseline
   
   // SMART CACHE LAYER: Decide whether to update UI based on sync state and message novelty
   bool shouldUpdateUI = false;
@@ -174,11 +183,11 @@ void onMessageReceived(const Message& msg) {
   }
   
   // Always persist to storage (with duplicate detection)
-  village.saveMessage(adjustedMsg);
+  village.saveMessage(msg);
   
   // Conditionally update UI
   if (shouldUpdateUI) {
-    ui.addMessage(adjustedMsg);
+    ui.addMessage(msg);
     Serial.println("[Message] Added to UI. Total messages in history: " + String(ui.getMessageCount()));
   } else {
     Serial.println("[Message] Silently cached (not added to UI)");
@@ -187,24 +196,23 @@ void onMessageReceived(const Message& msg) {
   // Only mark as read if this is a NEW message (not a synced historical message)
   // Synced messages have MSG_RECEIVED status and should keep that status
   // ALSO skip status updates entirely during sync to avoid watchdog timeout
-  if (!isSyncing && appState == APP_MESSAGING && inMessagingScreen && adjustedMsg.status != MSG_RECEIVED) {
+  if (!isSyncing && appState == APP_MESSAGING && inMessagingScreen && msg.status != MSG_RECEIVED) {
     Serial.println("[App] Already in messaging screen, marking NEW message as read");
     
     // Mark message as read locally
-    adjustedMsg.status = MSG_READ;
-    ui.updateMessageStatus(adjustedMsg.messageId, MSG_READ);
-    village.updateMessageStatus(adjustedMsg.messageId, MSG_READ);
+    ui.updateMessageStatus(msg.messageId, MSG_READ);
+    village.updateMessageStatus(msg.messageId, MSG_READ);
     
     // Mark that radio just transmitted (the ACK)
     lastRadioTransmission = millis();
     
     // Queue read receipt for background sending (don't send immediately - radio may be busy)
-    if (!adjustedMsg.senderMAC.isEmpty()) {
+    if (!msg.senderMAC.isEmpty()) {
       ReadReceiptQueueItem item;
-      item.messageId = adjustedMsg.messageId;
-      item.recipientMAC = adjustedMsg.senderMAC;
+      item.messageId = msg.messageId;
+      item.recipientMAC = msg.senderMAC;
       readReceiptQueue.push_back(item);
-      Serial.println("[App] Queued immediate read receipt for: " + adjustedMsg.messageId);
+      Serial.println("[App] Queued immediate read receipt for: " + msg.messageId);
     }
     
     smartDelay(100);  // Brief delay after transmission
@@ -549,28 +557,15 @@ void setup() {
     Serial.println("[WiFi] No saved WiFi credentials");
   }
   
-  // Initialize timestamp baseline from existing messages in storage
-  std::vector<Message> existingMessages = village.loadMessages();
-  unsigned long lastMessageTimestamp = 0;
-  
-  for (const auto& msg : existingMessages) {
-    if (msg.timestamp > timestampBaseline) {
-      timestampBaseline = msg.timestamp;
-    }
-    if (msg.timestamp > lastMessageTimestamp) {
-      lastMessageTimestamp = msg.timestamp;
-    }
-  }
-  Serial.print("[Setup] Timestamp baseline initialized: ");
-  Serial.println(timestampBaseline);
+  // Note: Timestamp baseline no longer needed - using NTP-synced Unix timestamps
   
   // Rebuild message ID cache for deduplication
   village.rebuildMessageIdCache();
   
   // Request message sync if we have MQTT connection (in case we missed messages while offline)
-  if (mqttMessenger.isConnected() && lastMessageTimestamp > 0) {
-    Serial.println("[Sync] Requesting messages newer than " + String(lastMessageTimestamp));
-    mqttMessenger.requestSync(lastMessageTimestamp);
+  if (mqttMessenger.isConnected()) {
+    Serial.println("[Sync] Requesting sync from peers");
+    mqttMessenger.requestSync(0);  // Request all messages, will deduplicate locally
   }
   
   // Check for OTA updates on boot (if WiFi connected)

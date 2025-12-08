@@ -313,11 +313,12 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
         
         // Deliver message to app
         if (onMessageReceived) {
+            extern unsigned long getCurrentTime();
             Message m;
             m.sender = msg.senderName;
             m.senderMAC = msg.senderMAC;
             m.content = msg.content;
-            m.timestamp = millis();
+            m.timestamp = getCurrentTime();
             m.received = true;
             m.status = MSG_RECEIVED;
             m.messageId = msg.messageId;

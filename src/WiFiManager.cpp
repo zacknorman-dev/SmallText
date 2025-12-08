@@ -6,6 +6,8 @@ WiFiManager::WiFiManager() {
     lastReconnectAttempt = 0;
     reconnectInterval = 30000; // 30 seconds between reconnect attempts
     connectionAttempts = 0;
+    lastNTPSync = 0;
+    timeOffset = 0;
 }
 
 bool WiFiManager::begin() {
@@ -92,6 +94,10 @@ bool WiFiManager::connectWithCredentials(const String& ssid, const String& passw
         Serial.println("[WiFi] Connected!");
         Serial.println("[WiFi] IP: " + WiFi.localIP().toString());
         Serial.println("[WiFi] RSSI: " + String(WiFi.RSSI()) + " dBm");
+        
+        // Sync NTP time after successful connection
+        syncNTPTime();
+        
         return true;
     }
     
@@ -154,6 +160,17 @@ void WiFiManager::update() {
             connect();
         }
     }
+    
+    // Periodic NTP sync (every 24 hours)
+    if (state == WIFI_CONNECTED && lastNTPSync > 0) {
+        unsigned long timeSinceLastSync = millis() - lastNTPSync;
+        const unsigned long SYNC_INTERVAL = 24UL * 60UL * 60UL * 1000UL;  // 24 hours in ms
+        
+        if (timeSinceLastSync > SYNC_INTERVAL) {
+            Serial.println("[WiFi] 24 hour NTP re-sync");
+            syncNTPTime();
+        }
+    }
 }
 
 void WiFiManager::updateState() {
@@ -173,5 +190,59 @@ void WiFiManager::setAutoReconnect(bool enabled) {
 
 void WiFiManager::setReconnectInterval(unsigned long intervalMs) {
     reconnectInterval = intervalMs;
-    Serial.println("[WiFi] Reconnect interval: " + String(intervalMs) + "ms");
+    Serial.println("[WiFi] Reconnect interval set to: " + String(intervalMs) + "ms");
+}
+
+void WiFiManager::configureNTP() {
+    // Configure NTP with pool servers and timezone offset
+    // UTC-5 for EST, or 0 for UTC (adjust as needed)
+    configTime(0, 0, "pool.ntp.org", "time.nist.gov", "time.google.com");
+    Serial.println("[WiFi] NTP configured");
+}
+
+bool WiFiManager::syncNTPTime() {
+    if (!isConnected()) {
+        Serial.println("[WiFi] Cannot sync NTP - not connected");
+        return false;
+    }
+    
+    Serial.println("[WiFi] Syncing NTP time...");
+    configureNTP();
+    
+    // Wait for time to be set (with timeout)
+    int attempts = 0;
+    const int MAX_ATTEMPTS = 20;  // 10 seconds total
+    
+    while (attempts < MAX_ATTEMPTS) {
+        time_t now = time(nullptr);
+        if (now > 1000000000) {  // Valid Unix timestamp (after year 2001)
+            // Calculate offset between millis() and Unix time
+            unsigned long currentMillis = millis();
+            timeOffset = now - (currentMillis / 1000);
+            lastNTPSync = currentMillis;
+            
+            // Convert to readable time for logging
+            struct tm timeinfo;
+            gmtime_r(&now, &timeinfo);
+            char timeStr[64];
+            strftime(timeStr, sizeof(timeStr), "%Y-%m-%d %H:%M:%S UTC", &timeinfo);
+            
+            Serial.println("[WiFi] NTP sync successful: " + String(timeStr));
+            Serial.println("[WiFi] Time offset: " + String(timeOffset) + " seconds");
+            return true;
+        }
+        delay(500);
+        attempts++;
+    }
+    
+    Serial.println("[WiFi] NTP sync timeout");
+    return false;
+}
+
+unsigned long WiFiManager::getLastNTPSync() const {
+    return lastNTPSync;
+}
+
+long WiFiManager::getTimeOffset() const {
+    return timeOffset;
 }

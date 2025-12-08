@@ -866,11 +866,12 @@ void LoRaMessenger::handleReceivedMessage(const ParsedMessage& msg) {
         
         // Display message (call callback if set)
         if (onMessageReceived) {
+            extern unsigned long getCurrentTime();
             Message m;
             m.sender = msg.senderName;  // Use display name, not MAC
             m.senderMAC = msg.senderMAC;  // Store MAC for sending receipts
             m.content = msg.content;
-            m.timestamp = millis();
+            m.timestamp = getCurrentTime();
             m.received = true;
             m.status = MSG_RECEIVED;  // Start as received
             m.messageId = msg.messageId;
