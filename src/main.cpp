@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.19.0"
+#define BUILD_NUMBER "v0.20.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -255,17 +255,16 @@ void setup() {
   Serial.flush();
   smartDelay(100);
   
-  // Initialize LoRa FIRST (uses default SPI bus)
-  Serial.println("[LoRa] Initializing LoRa radio...");
-  Serial.flush();
-  if (!messenger.begin(LORA_CS, LORA_DIO1, LORA_RST, LORA_BUSY)) {
-    logger.critical("LoRa radio initialization failed");
-    Serial.println("[LoRa] WARNING - Failed to initialize!");
-    Serial.println("[LoRa] Continuing without radio...");
-  } else {
-    logger.info("LoRa radio initialized successfully");
-    Serial.println("[LoRa] Success! Radio ready");
-  }
+  // LoRa disabled - using MQTT only for faster messaging
+  Serial.println("[LoRa] LoRa disabled - MQTT-only mode");
+  // if (!messenger.begin(LORA_CS, LORA_DIO1, LORA_RST, LORA_BUSY)) {
+  //   logger.critical("LoRa radio initialization failed");
+  //   Serial.println("[LoRa] WARNING - Failed to initialize!");
+  //   Serial.println("[LoRa] Continuing without radio...");
+  // } else {
+  //   logger.info("LoRa radio initialized successfully");
+  //   Serial.println("[LoRa] Success! Radio ready");
+  // }
   Serial.flush();
   smartDelay(100);
   
@@ -427,8 +426,8 @@ void loop() {
     inMessagingScreen = false;
   }
   
-  // Process incoming messages (calls new loop() method)
-  messenger.loop();
+  // Process incoming messages via MQTT only
+  // messenger.loop();  // LoRa disabled
   
   // Process MQTT messages if connected
   mqttMessenger.loop();
@@ -443,11 +442,11 @@ void loop() {
     ReadReceiptQueueItem item = readReceiptQueue.front();
     readReceiptQueue.erase(readReceiptQueue.begin());
     
-    // Clear any pending receive flag before transmitting to avoid self-reception
-    LoRaMessenger::clearReceivedFlag();
+    // Send read receipt via MQTT only
+    // LoRaMessenger::clearReceivedFlag();  // LoRa disabled
     
     Serial.println("[App] Sending queued read receipt for: " + item.messageId);
-    messenger.sendReadReceipt(item.messageId, item.recipientMAC);
+    mqttMessenger.sendReadReceipt(item.messageId, item.recipientMAC);
     
     lastReadReceiptSent = millis();
     lastRadioTransmission = millis();
@@ -1310,13 +1309,13 @@ void handleMessageCompose() {
       ui.setInputText("Sending...");
       ui.updatePartial();  // Quick partial update to show sending feedback
       
-      // Send via both LoRa and MQTT (if connected)
-      messenger.sendShout(currentText);
+      // Send via MQTT only (LoRa disabled for speed)
+      // messenger.sendShout(currentText);  // LoRa disabled
       if (mqttMessenger.isConnected()) {
         mqttMessenger.sendShout(currentText);
-        Serial.println("[App] Message sent via MQTT and LoRa");
+        Serial.println("[App] Message sent via MQTT");
       } else {
-        Serial.println("[App] Message sent via LoRa only (MQTT not connected)");
+        Serial.println("[App] MQTT not connected - message not sent");
       }
       
       Message sentMsg;
