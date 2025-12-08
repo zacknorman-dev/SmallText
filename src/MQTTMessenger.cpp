@@ -15,6 +15,7 @@ MQTTMessenger::MQTTMessenger() : mqttClient(wifiClient) {
     onMessageReceived = nullptr;
     onMessageAcked = nullptr;
     onMessageRead = nullptr;
+    onCommandReceived = nullptr;
     lastReconnectAttempt = 0;
     lastPingTime = 0;
     lastSeenCleanup = 0;
@@ -81,6 +82,10 @@ void MQTTMessenger::setReadCallback(void (*callback)(const String& messageId, co
     onMessageRead = callback;
 }
 
+void MQTTMessenger::setCommandCallback(void (*callback)(const String& command)) {
+    onCommandReceived = callback;
+}
+
 String MQTTMessenger::generateMessageId() {
     static uint32_t counter = 0;
     counter++;
@@ -125,6 +130,13 @@ bool MQTTMessenger::reconnect() {
             Serial.println("[MQTT] Subscribed to: " + baseTopic);
             logger.info("MQTT: Connected and subscribed to " + myVillageName);
         }
+        
+        // Subscribe to device command topic (for remote control)
+        char macStr[13];
+        sprintf(macStr, "%012llx", myMAC);
+        String commandTopic = "smoltxt/" + String(macStr) + "/command";
+        mqttClient.subscribe(commandTopic.c_str());
+        Serial.println("[MQTT] Subscribed to command topic: " + commandTopic);
         
         return true;
     } else {
@@ -171,6 +183,26 @@ void MQTTMessenger::mqttCallback(char* topic, uint8_t* payload, unsigned int len
 
 void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* payload, unsigned int length) {
     Serial.println("[MQTT] Received on topic: " + topic);
+    
+    // Check if this is a command message
+    char macStr[13];
+    sprintf(macStr, "%012llx", myMAC);
+    String commandTopic = "smoltxt/" + String(macStr) + "/command";
+    
+    if (topic == commandTopic) {
+        // Command messages are plain text, not encrypted
+        String command = "";
+        for (unsigned int i = 0; i < length; i++) {
+            command += (char)payload[i];
+        }
+        Serial.println("[MQTT] Received command: " + command);
+        logger.info("MQTT command: " + command);
+        
+        if (onCommandReceived) {
+            onCommandReceived(command);
+        }
+        return;
+    }
     
     if (!encryption) {
         Serial.println("[MQTT] No encryption set, ignoring message");

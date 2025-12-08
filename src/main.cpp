@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.22.0"
+#define BUILD_NUMBER "v0.23.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -196,6 +196,25 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
   }
 }
 
+void onCommandReceived(const String& command) {
+  Serial.println("[Command] Received: " + command);
+  logger.info("Command: " + command);
+  
+  if (command == "update") {
+    Serial.println("[Command] Forcing OTA update check...");
+    logger.info("Forcing OTA update via MQTT command");
+    otaUpdater.checkForUpdate();
+  } else if (command == "reboot") {
+    Serial.println("[Command] Rebooting device...");
+    logger.info("Rebooting via MQTT command");
+    smartDelay(1000);
+    ESP.restart();
+  } else {
+    Serial.println("[Command] Unknown command: " + command);
+    logger.error("Unknown command: " + command);
+  }
+}
+
 void onVillageNameReceived(const String& villageName) {
   // Check if this is a REQUEST signal (owner should respond)
   if (villageName == "REQUEST") {
@@ -222,9 +241,7 @@ void onVillageNameReceived(const String& villageName) {
   
   // Update MQTT messenger with new village name
   // messenger.setVillageInfo(village.getVillageId(), villageName, village.getUsername());  // LoRa disabled
-  if (mqttMessenger.isConnected()) {
-    mqttMessenger.setVillageInfo(village.getVillageId(), villageName, village.getUsername());
-  }
+  mqttMessenger.setVillageInfo(village.getVillageId(), villageName, village.getUsername());
 }
 
 void setup() {
@@ -368,6 +385,7 @@ void setup() {
         mqttMessenger.setMessageCallback(onMessageReceived);
         mqttMessenger.setAckCallback(onMessageAcked);
         mqttMessenger.setReadCallback(onMessageReadReceipt);
+        mqttMessenger.setCommandCallback(onCommandReceived);
         
         // Set encryption
         mqttMessenger.setEncryption(&encryption);
@@ -594,11 +612,9 @@ void handleMainMenu() {
         // messenger.setEncryption(&encryption);  // LoRa disabled
         // messenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());  // LoRa disabled
         
-        // Configure MQTT if connected
-        if (mqttMessenger.isConnected()) {
-          mqttMessenger.setEncryption(&encryption);
-          mqttMessenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
-        }
+        // Configure MQTT (set even if not connected yet)
+        mqttMessenger.setEncryption(&encryption);
+        mqttMessenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
         
         // Go to village menu
         keyboard.clearInput();
@@ -1081,11 +1097,9 @@ void handleUsernameInput() {
       // messenger.setEncryption(&encryption);  // LoRa disabled
       // messenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());  // LoRa disabled
       
-      // Configure MQTT if connected
-      if (mqttMessenger.isConnected()) {
-        mqttMessenger.setEncryption(&encryption);
-        mqttMessenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
-      }
+      // Configure MQTT (set even if not connected yet)
+      mqttMessenger.setEncryption(&encryption);
+      mqttMessenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
       
       if (isCreatingVillage) {
         // Show passphrase for creators
