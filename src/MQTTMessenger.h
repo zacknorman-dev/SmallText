@@ -45,6 +45,11 @@ private:
     std::set<String> seenMessageIds;
     unsigned long lastSeenCleanup;
     
+    // Sync phase tracking for progressive background sync
+    int currentSyncPhase;  // 0 = not syncing, 1 = first 20, 2 = next 20, etc.
+    String syncTargetMAC;   // MAC we're syncing with
+    unsigned long lastSyncPhaseTime;  // Timestamp of last phase completion
+    
     // Helper methods
     String generateMessageId();
     String generateTopic(const String& messageType, const String& target = "");
@@ -84,11 +89,14 @@ public:
     
     // Message sync for offline devices
     bool requestSync(unsigned long lastMessageTimestamp);  // Request messages newer than timestamp
-    bool sendSyncResponse(const String& targetMAC, const std::vector<Message>& messages);  // Send messages to peer
+    bool sendSyncResponse(const String& targetMAC, const std::vector<Message>& messages, int phase = 1);  // Send messages to peer (phase 1 = recent 20, phase 2+ = older batches)
     
     // Connection status
     bool isConnected() { return connected && mqttClient.connected(); }
     String getConnectionStatus();
+    
+    // Sync phase tracking (for UI decisions)
+    int getCurrentSyncPhase() const { return currentSyncPhase; }
     
     // MQTT client access for Logger
     PubSubClient* getClient() { return &mqttClient; }

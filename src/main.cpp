@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.33.5"
+#define BUILD_NUMBER "v0.33.6"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -138,14 +138,43 @@ void handleMessageCompose();
 void onMessageReceived(const Message& msg) {
   Serial.println("[Message] From " + msg.sender + ": " + msg.content);
   
+  // Check if this message already exists in storage to determine if it's truly new
+  bool isNewMessage = !village.messageIdExists(msg.messageId);
+  
   // Ensure received message timestamp is greater than stored messages
   Message adjustedMsg = msg;
   adjustedMsg.timestamp = max(msg.timestamp, max(millis(), timestampBaseline + 1));
   timestampBaseline = adjustedMsg.timestamp;  // Update baseline
   
-  ui.addMessage(adjustedMsg);
+  // SMART CACHE LAYER: Decide whether to update UI based on sync state and message novelty
+  bool shouldUpdateUI = false;
+  
+  int syncPhase = mqttMessenger.getCurrentSyncPhase();
+  
+  if (syncPhase == 0) {
+    // Not syncing - this is a real-time message, always show it
+    shouldUpdateUI = true;
+    Serial.println("[Message] Real-time message - updating UI");
+  } else if (syncPhase == 1 && isNewMessage) {
+    // Phase 1 (recent 20) AND truly new - show it so user sees recent missed messages
+    shouldUpdateUI = true;
+    Serial.println("[Message] Phase 1 sync - new message found, updating UI");
+  } else {
+    // Background sync (phase 2+) OR duplicate in phase 1 - silent persistence only
+    shouldUpdateUI = false;
+    Serial.println("[Message] Background sync or duplicate - silent save only (no UI update)");
+  }
+  
+  // Always persist to storage (with duplicate detection)
   village.saveMessage(adjustedMsg);
-  Serial.println("[Message] Total messages in history: " + String(ui.getMessageCount()));
+  
+  // Conditionally update UI
+  if (shouldUpdateUI) {
+    ui.addMessage(adjustedMsg);
+    Serial.println("[Message] Added to UI. Total messages in history: " + String(ui.getMessageCount()));
+  } else {
+    Serial.println("[Message] Silently cached (not added to UI)");
+  }
   
   // Only mark as read if this is a NEW message (not a synced historical message)
   // Synced messages have MSG_RECEIVED status and should keep that status
@@ -244,8 +273,17 @@ void onCommandReceived(const String& command) {
 
 // Handle sync request from other device
 void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp) {
-  Serial.println("[Sync] Request from " + requestorMAC + " (ignoring timestamp - will send all messages)");
-  logger.info("Sync request from " + requestorMAC);
+  // HACK: requestedTimestamp is overloaded to carry phase number for background sync
+  // Phase numbers are small (1-20), real timestamps are large (milliseconds since epoch)
+  int phase = 1;
+  if (requestedTimestamp > 0 && requestedTimestamp < 100) {
+    phase = (int)requestedTimestamp;
+    Serial.println("[Sync] Background phase " + String(phase) + " request from " + requestorMAC);
+  } else {
+    Serial.println("[Sync] Initial sync request from " + requestorMAC);
+  }
+  
+  logger.info("Sync phase " + String(phase) + " from " + requestorMAC);
   
   // Load ALL our messages - deduplication will happen on receiving device
   // Can't use timestamp comparison because millis() is device-specific
@@ -265,9 +303,11 @@ void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp)
     return;
   }
   
-  Serial.println("[Sync] Sending " + String(validMessages.size()) + " messages (filtered " + String(allMessages.size() - validMessages.size()) + " without IDs) to " + requestorMAC);
-  logger.info("Sync: Sending " + String(validMessages.size()) + " msgs");
-  mqttMessenger.sendSyncResponse(requestorMAC, validMessages);
+  Serial.println("[Sync] Phase " + String(phase) + ": Sending from " + String(validMessages.size()) + " total messages (filtered " + String(allMessages.size() - validMessages.size()) + " without IDs) to " + requestorMAC);
+  logger.info("Sync phase " + String(phase) + ": " + String(validMessages.size()) + " msgs");
+  
+  // Send the appropriate phase
+  mqttMessenger.sendSyncResponse(requestorMAC, validMessages, phase);
 }
 
 void onVillageNameReceived(const String& villageName) {

@@ -21,6 +21,9 @@ MQTTMessenger::MQTTMessenger() : mqttClient(wifiClient) {
     lastPingTime = 0;
     lastSeenCleanup = 0;
     connected = false;
+    currentSyncPhase = 0;  // Not syncing
+    syncTargetMAC = "";
+    lastSyncPhaseTime = 0;
     
     // Generate unique client ID from MAC
     char macStr[13];
@@ -167,8 +170,24 @@ void MQTTMessenger::loop() {
         connected = true;
     }
     
-    // Cleanup old seen messages (every 5 minutes)
+    // Background sync phase continuation
+    // If Phase 1 is complete and more history exists, request next phase after delay
     unsigned long now = millis();
+    if (currentSyncPhase > 1 && !syncTargetMAC.isEmpty()) {
+        // Wait 5 seconds between background phases to not overwhelm the device
+        if (now - lastSyncPhaseTime > 5000) {
+            Serial.println("[MQTT] Requesting background sync Phase " + String(currentSyncPhase));
+            
+            // Send sync request with phase number (using timestamp field as hack)
+            requestSync(currentSyncPhase);  // Phase number passed as timestamp
+            
+            // Reset state so we don't spam requests
+            syncTargetMAC = "";
+            currentSyncPhase = 0;
+        }
+    }
+    
+    // Cleanup old seen messages (every 5 minutes)
     if (now - lastSeenCleanup > 300000) {
         cleanupSeenMessages();
         lastSeenCleanup = now;
@@ -510,7 +529,7 @@ bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
     return success;
 }
 
-bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<Message>& messages) {
+bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<Message>& messages, int phase) {
     if (!connected || !mqttClient.connected()) {
         Serial.println("[MQTT] Cannot send sync response - not connected");
         return false;
@@ -521,31 +540,56 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
         return true;
     }
     
-    Serial.println("[MQTT] Sending sync response with " + String(messages.size()) + " messages to " + targetMAC);
-    logger.info("Sync response: " + String(messages.size()) + " msgs to " + targetMAC);
+    // BATCHED SYNC: Send only 20 messages per phase, starting with most recent
+    const int MESSAGES_PER_PHASE = 20;
+    int totalMessages = messages.size();
+    
+    // Calculate which 20 messages to send for this phase
+    // Phase 1: Last 20 (most recent)
+    // Phase 2: Messages 21-40
+    // Phase 3: Messages 41-60, etc.
+    int startIdx = max(0, totalMessages - (phase * MESSAGES_PER_PHASE));
+    int endIdx = totalMessages - ((phase - 1) * MESSAGES_PER_PHASE);
+    
+    // Extract the slice for this phase
+    std::vector<Message> phaseMessages;
+    for (int i = startIdx; i < endIdx && i < totalMessages; i++) {
+        phaseMessages.push_back(messages[i]);
+    }
+    
+    if (phaseMessages.empty()) {
+        Serial.println("[MQTT] Phase " + String(phase) + " complete - no more messages");
+        logger.info("Sync phase " + String(phase) + " complete");
+        return true;
+    }
+    
+    Serial.println("[MQTT] Sync Phase " + String(phase) + ": Sending " + String(phaseMessages.size()) + " messages (" + String(startIdx) + "-" + String(endIdx-1) + " of " + String(totalMessages) + ") to " + targetMAC);
+    logger.info("Sync phase " + String(phase) + ": " + String(phaseMessages.size()) + " msgs");
     
     // Send messages in batches to avoid payload size limits
     const int BATCH_SIZE = 1;  // Reduced to 1 to ensure delivery
     int totalSent = 0;
     
-    for (size_t i = 0; i < messages.size(); i += BATCH_SIZE) {
+    for (size_t i = 0; i < phaseMessages.size(); i += BATCH_SIZE) {
         JsonDocument doc;
         JsonArray msgArray = doc["messages"].to<JsonArray>();
         
         // Add up to BATCH_SIZE messages
-        for (size_t j = i; j < messages.size() && j < i + BATCH_SIZE; j++) {
+        for (size_t j = i; j < phaseMessages.size() && j < i + BATCH_SIZE; j++) {
             JsonObject msgObj = msgArray.add<JsonObject>();
-            msgObj["sender"] = messages[j].sender;
-            msgObj["senderMAC"] = messages[j].senderMAC;
-            msgObj["content"] = messages[j].content;
-            msgObj["timestamp"] = messages[j].timestamp;
-            msgObj["messageId"] = messages[j].messageId;
-            msgObj["received"] = messages[j].received;
-            msgObj["status"] = (int)messages[j].status;
+            msgObj["sender"] = phaseMessages[j].sender;
+            msgObj["senderMAC"] = phaseMessages[j].senderMAC;
+            msgObj["content"] = phaseMessages[j].content;
+            msgObj["timestamp"] = phaseMessages[j].timestamp;
+            msgObj["messageId"] = phaseMessages[j].messageId;
+            msgObj["received"] = phaseMessages[j].received;
+            msgObj["status"] = (int)phaseMessages[j].status;
         }
         
         doc["batch"] = (i / BATCH_SIZE) + 1;
-        doc["total"] = (messages.size() + BATCH_SIZE - 1) / BATCH_SIZE;
+        doc["total"] = (phaseMessages.size() + BATCH_SIZE - 1) / BATCH_SIZE;
+        doc["phase"] = phase;  // Include phase number in payload
+        doc["morePhases"] = (startIdx > 0);  // Indicate if more history available
         
         String payload;
         serializeJson(doc, payload);
@@ -563,8 +607,8 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
         bool success = mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
         
         if (success) {
-            totalSent += min(BATCH_SIZE, (int)(messages.size() - i));
-            Serial.println("[MQTT] Sent sync batch " + String((i / BATCH_SIZE) + 1) + " (" + String(totalSent) + "/" + String(messages.size()) + " messages)");
+            totalSent += min(BATCH_SIZE, (int)(phaseMessages.size() - i));
+            Serial.println("[MQTT] Phase " + String(phase) + " batch " + String((i / BATCH_SIZE) + 1) + "/" + String((phaseMessages.size() + BATCH_SIZE - 1) / BATCH_SIZE) + " sent");
             logger.info("Sync batch " + String((i / BATCH_SIZE) + 1) + " sent");
             delay(100);  // Brief delay between batches
         } else {
@@ -645,16 +689,19 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
     
     int batch = doc["batch"] | 0;
     int total = doc["total"] | 0;
+    int phase = doc["phase"] | 1;
+    bool morePhases = doc["morePhases"] | false;
     
-    Serial.println("[MQTT] Sync response batch " + String(batch) + "/" + String(total));
-    logger.info("Sync batch " + String(batch) + "/" + String(total));
+    Serial.println("[MQTT] Sync phase " + String(phase) + " batch " + String(batch) + "/" + String(total));
+    logger.info("Sync phase " + String(phase) + " batch " + String(batch) + "/" + String(total));
     
     // OPTIMIZATION: Set global sync flag to skip expensive status updates during sync
     // This is a global from main.cpp - forward declaration needed
     extern bool isSyncing;
-    if (batch == 1) {
+    if (batch == 1 && phase == 1) {
         isSyncing = true;  // Start of sync
-        Serial.println("[MQTT] Sync started - disabling status updates");
+        currentSyncPhase = 1;
+        Serial.println("[MQTT] Sync Phase 1 started (recent 20 messages) - disabling status updates");
     }
     
     JsonArray msgArray = doc["messages"];
@@ -670,6 +717,12 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
         msg.received = msgObj["received"] | true;
         msg.status = (MessageStatus)(msgObj["status"] | MSG_RECEIVED);
         
+        // Store sender MAC from first message for background sync continuation
+        if (msgCount == 0 && batch == 1 && phase == 1 && !msg.senderMAC.isEmpty()) {
+            syncTargetMAC = msg.senderMAC;
+            Serial.println("[MQTT] Stored sync target MAC: " + syncTargetMAC + " for background phases");
+        }
+        
         // Deliver to app via message callback (deduplication happens in Village::saveMessage)
         if (onMessageReceived) {
             Serial.println("[MQTT] Synced message: " + msg.messageId + " from " + msg.sender);
@@ -678,13 +731,42 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
         }
     }
     
-    // End of sync - re-enable status updates
+    // End of phase
     if (batch == total) {
-        isSyncing = false;
-        Serial.println("[MQTT] Sync completed - re-enabled status updates");
+        Serial.println("[MQTT] Phase " + String(phase) + " complete - processed " + String(msgCount) + " messages");
+        
+        if (phase == 1) {
+            // Phase 1 complete - re-enable status updates, user has recent messages
+            isSyncing = false;
+            Serial.println("[MQTT] Phase 1 complete - recent messages synced, re-enabled status updates");
+            logger.info("Phase 1 complete: " + String(msgCount) + " recent msgs");
+            
+            // Store sync state for background phase continuation
+            if (morePhases) {
+                currentSyncPhase = 2;
+                lastSyncPhaseTime = millis();
+                Serial.println("[MQTT] More history available - will request Phase 2 in background after delay");
+            } else {
+                currentSyncPhase = 0;  // All done
+                Serial.println("[MQTT] Sync fully complete - no more history");
+            }
+        } else {
+            // Background phase complete
+            Serial.println("[MQTT] Background phase " + String(phase) + " complete");
+            logger.info("Phase " + String(phase) + " complete: " + String(msgCount) + " msgs");
+            
+            if (morePhases) {
+                currentSyncPhase = phase + 1;
+                lastSyncPhaseTime = millis();
+                Serial.println("[MQTT] Will request Phase " + String(currentSyncPhase) + " in background");
+            } else {
+                currentSyncPhase = 0;  // All history synced
+                Serial.println("[MQTT] All history synced");
+            }
+        }
     }
     
-    Serial.println("[MQTT] Processed " + String(msgCount) + " synced messages");
+    Serial.println("[MQTT] Processed " + String(msgCount) + " synced messages in phase " + String(phase));
     logger.info("Synced " + String(msgCount) + " messages");
 }
 
