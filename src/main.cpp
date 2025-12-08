@@ -215,7 +215,7 @@ void onCommandReceived(const String& command) {
         updateInfo += "New: " + otaUpdater.getLatestVersion() + "\n";
         updateInfo += "Current: " + otaUpdater.getCurrentVersion() + "\n\n";
         updateInfo += "Press RIGHT to continue";
-        ui.setStatusMessage(updateInfo);
+        ui.setInputText(updateInfo);
         ui.update();
       } else {
         logger.info("OTA: No update available");
@@ -442,7 +442,7 @@ void setup() {
       updateInfo += "New: " + otaUpdater.getLatestVersion() + "\n";
       updateInfo += "Current: " + otaUpdater.getCurrentVersion() + "\n\n";
       updateInfo += "Press RIGHT to update\nPress LEFT to skip";
-      ui.setStatusMessage(updateInfo);
+      ui.setInputText(updateInfo);
       ui.update();
       Serial.println("[System] Showing update screen");
       return; // Stay in setup, will continue in loop
@@ -1641,6 +1641,7 @@ void handleOTAChecking() {
   if (keyboard.isLeftPressed()) {
     keyboard.clearInput();
     logger.info("OTA: User declined update");
+    ui.setInputText("");  // Clear the input text
     appState = APP_MAIN_MENU;
     ui.setState(STATE_VILLAGE_SELECT);
     ui.resetMenuSelection();
@@ -1657,18 +1658,19 @@ void handleOTAChecking() {
       logger.info("OTA: User approved update");
       appState = APP_OTA_UPDATING;
       ui.setState(STATE_OTA_UPDATE);
-      ui.setStatusMessage("Downloading...\nPlease wait");
+      ui.setInputText("Downloading...\nPlease wait");
       ui.update();
       
       // Perform update (blocking, will restart on success)
       otaUpdater.performUpdate();
       
       // If we get here, update failed
-      ui.setStatusMessage("Update Failed\nTry again later");
+      ui.setInputText("Update Failed\nTry again later");
       ui.update();
       logger.error("OTA update failed");
       smartDelay(2000);
       
+      ui.setInputText("");  // Clear the input text
       appState = APP_MAIN_MENU;
       ui.setState(STATE_VILLAGE_SELECT);
       ui.resetMenuSelection();
@@ -1677,6 +1679,7 @@ void handleOTAChecking() {
       // No update available, go back to main menu
       keyboard.clearInput();
       logger.info("OTA: No update available");
+      ui.setInputText("");  // Clear the input text
       appState = APP_MAIN_MENU;
       ui.setState(STATE_VILLAGE_SELECT);
       ui.resetMenuSelection();
