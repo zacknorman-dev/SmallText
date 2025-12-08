@@ -467,6 +467,7 @@ bool MQTTMessenger::sendReadReceipt(const String& messageId, const String& targe
 bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
     if (!connected || !mqttClient.connected()) {
         Serial.println("[MQTT] Cannot request sync - not connected");
+        logger.error("Sync request failed: not connected");
         return false;
     }
     
@@ -481,22 +482,28 @@ bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
     String payload;
     serializeJson(doc, payload);
     
+    Serial.println("[MQTT] Sync request payload: " + payload);
+    
     // Encrypt the sync request
     uint8_t encrypted[256];
     int encryptedLen = encryption->encrypt((uint8_t*)payload.c_str(), payload.length(), encrypted, sizeof(encrypted));
     
     if (encryptedLen <= 0) {
         Serial.println("[MQTT] Sync request encryption failed");
+        logger.error("Sync encryption failed");
         return false;
     }
     
     String topic = "smoltxt/" + myVillageId + "/sync-request/" + String(myMAC, HEX);
+    Serial.println("[MQTT] Publishing sync request to: " + topic);
     bool success = mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
     
     if (success) {
         Serial.println("[MQTT] Sync request sent: timestamp=" + String(lastMessageTimestamp));
+        logger.info("Sync request sent");
     } else {
         Serial.println("[MQTT] Sync request failed");
+        logger.error("Sync request publish failed");
     }
     
     return success;
@@ -567,19 +574,28 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
 }
 
 void MQTTMessenger::handleSyncRequest(const uint8_t* payload, unsigned int length) {
-    if (!encryption) return;
+    Serial.println("[MQTT] Received sync request, decrypting...");
+    
+    if (!encryption) {
+        Serial.println("[MQTT] No encryption set");
+        return;
+    }
     
     String message;
     if (!encryption->decryptString(payload, length, message)) {
         Serial.println("[MQTT] Sync request decryption failed");
+        logger.error("Sync request decrypt failed");
         return;
     }
+    
+    Serial.println("[MQTT] Decrypted sync request: " + message);
     
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, message);
     
     if (error) {
-        Serial.println("[MQTT] Sync request parse error");
+        Serial.println("[MQTT] Sync request parse error: " + String(error.c_str()));
+        logger.error("Sync request JSON error");
         return;
     }
     
@@ -587,27 +603,39 @@ void MQTTMessenger::handleSyncRequest(const uint8_t* payload, unsigned int lengt
     String requestorMAC = doc["mac"] | "";
     
     Serial.println("[MQTT] Sync request from " + requestorMAC + " for messages after timestamp " + String(requestedTimestamp));
+    logger.info("Sync from " + requestorMAC + " ts=" + String(requestedTimestamp));
     
     // Trigger callback to main app to handle sync
     if (onSyncRequest) {
         onSyncRequest(requestorMAC, requestedTimestamp);
+    } else {
+        Serial.println("[MQTT] No sync request callback set!");
     }
 }
 
 void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int length) {
-    if (!encryption) return;
+    Serial.println("[MQTT] Received sync response, decrypting...");
+    
+    if (!encryption) {
+        Serial.println("[MQTT] No encryption set");
+        return;
+    }
     
     String message;
     if (!encryption->decryptString(payload, length, message)) {
         Serial.println("[MQTT] Sync response decryption failed");
+        logger.error("Sync response decrypt failed");
         return;
     }
+    
+    Serial.println("[MQTT] Decrypted sync response: " + message.substring(0, 100) + "...");
     
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, message);
     
     if (error) {
-        Serial.println("[MQTT] Sync response parse error");
+        Serial.println("[MQTT] Sync response parse error: " + String(error.c_str()));
+        logger.error("Sync response JSON error");
         return;
     }
     
@@ -615,8 +643,10 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
     int total = doc["total"] | 0;
     
     Serial.println("[MQTT] Sync response batch " + String(batch) + "/" + String(total));
+    logger.info("Sync batch " + String(batch) + "/" + String(total));
     
     JsonArray msgArray = doc["messages"];
+    int msgCount = 0;
     
     for (JsonObject msgObj : msgArray) {
         Message msg;
@@ -632,8 +662,12 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
         if (onMessageReceived) {
             Serial.println("[MQTT] Synced message: " + msg.messageId + " from " + msg.sender);
             onMessageReceived(msg);
+            msgCount++;
         }
     }
+    
+    Serial.println("[MQTT] Processed " + String(msgCount) + " synced messages");
+    logger.info("Synced " + String(msgCount) + " messages");
 }
 
 String MQTTMessenger::getConnectionStatus() {

@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.29.0"
+#define BUILD_NUMBER "v0.30.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -764,6 +764,21 @@ void handleVillageMenu() {
       lastMessagingActivity = millis();  // Record activity time
       ui.setState(STATE_MESSAGING);
       ui.resetMessageScroll();  // Reset scroll to show latest messages
+      
+      // Request message sync when entering messaging screen
+      std::vector<Message> existingMsgs = village.loadMessages();
+      unsigned long lastMsgTime = 0;
+      for (const auto& msg : existingMsgs) {
+        if (msg.timestamp > lastMsgTime) {
+          lastMsgTime = msg.timestamp;
+        }
+      }
+      if (mqttMessenger.isConnected()) {
+        Serial.println("[Sync] Requesting sync on entering messages: last timestamp=" + String(lastMsgTime));
+        logger.info("Sync: Request sent, last=" + String(lastMsgTime));
+        mqttMessenger.requestSync(lastMsgTime);
+        smartDelay(500);  // Wait for sync responses to arrive
+      }
       
       // If we're the owner, send village name announcement for joiners
       if (village.amOwner()) {
