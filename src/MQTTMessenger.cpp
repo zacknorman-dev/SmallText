@@ -522,9 +522,10 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
     }
     
     Serial.println("[MQTT] Sending sync response with " + String(messages.size()) + " messages to " + targetMAC);
+    logger.info("Sync response: " + String(messages.size()) + " msgs to " + targetMAC);
     
     // Send messages in batches to avoid payload size limits
-    const int BATCH_SIZE = 5;
+    const int BATCH_SIZE = 1;  // Reduced to 1 to ensure delivery
     int totalSent = 0;
     
     for (size_t i = 0; i < messages.size(); i += BATCH_SIZE) {
@@ -564,9 +565,11 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
         if (success) {
             totalSent += min(BATCH_SIZE, (int)(messages.size() - i));
             Serial.println("[MQTT] Sent sync batch " + String((i / BATCH_SIZE) + 1) + " (" + String(totalSent) + "/" + String(messages.size()) + " messages)");
+            logger.info("Sync batch " + String((i / BATCH_SIZE) + 1) + " sent");
             delay(100);  // Brief delay between batches
         } else {
             Serial.println("[MQTT] Sync batch failed");
+            logger.error("Sync batch " + String((i / BATCH_SIZE) + 1) + " failed");
             return false;
         }
     }
