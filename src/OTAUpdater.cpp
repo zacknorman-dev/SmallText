@@ -1,4 +1,6 @@
 #include "OTAUpdater.h"
+#include <Update.h>
+#include <esp_ota_ops.h>
 
 OTAUpdater* OTAUpdater::instance = nullptr;
 
@@ -19,10 +21,29 @@ OTAUpdater::OTAUpdater() {
 bool OTAUpdater::begin(Logger* loggerInstance) {
     logger = loggerInstance;
     
+    // Log partition information for debugging
+    const esp_partition_t* running = esp_ota_get_running_partition();
+    const esp_partition_t* update = esp_ota_get_next_update_partition(NULL);
+    
+    Serial.println("[OTA] ====================================");
+    Serial.println("[OTA] Partition Information:");
+    if (running) {
+        Serial.println("[OTA] Running partition: " + String(running->label));
+        Serial.println("[OTA] Running partition size: " + String(running->size / 1024) + " KB");
+    }
+    if (update) {
+        Serial.println("[OTA] Update partition: " + String(update->label));
+        Serial.println("[OTA] Update partition size: " + String(update->size / 1024) + " KB");
+    } else {
+        Serial.println("[OTA] WARNING: No OTA update partition found!");
+        Serial.println("[OTA] OTA updates may not work correctly.");
+    }
+    Serial.println("[OTA] Firmware version: " + currentVersion);
+    Serial.println("[OTA] ====================================");
+    
     if (logger) {
         logger->info("OTA Updater initialized, version: " + currentVersion);
     }
-    Serial.println("[OTA] Initialized, version: " + currentVersion);
     
     return true;
 }
@@ -184,8 +205,13 @@ bool OTAUpdater::performUpdate() {
     }
     
     status = UPDATE_DOWNLOADING;
-    Serial.println("[OTA] Downloading: " + downloadURL);
-    Serial.println("[OTA] Free heap before download: " + String(ESP.getFreeHeap()));
+    Serial.println("[OTA] ====================================");
+    Serial.println("[OTA] Starting OTA Update");
+    Serial.println("[OTA] Current version: " + currentVersion);
+    Serial.println("[OTA] Target version: " + latestVersion);
+    Serial.println("[OTA] Download URL: " + downloadURL);
+    Serial.println("[OTA] Free heap: " + String(ESP.getFreeHeap()) + " bytes");
+    Serial.println("[OTA] ====================================");
     
     if (logger) logger->info("OTA: Starting update from " + downloadURL);
     
@@ -200,7 +226,7 @@ bool OTAUpdater::performUpdate() {
     
     // Configure HTTPUpdate for better reliability
     httpUpdate.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
-    httpUpdate.rebootOnUpdate(false);  // Manual restart for logging
+    httpUpdate.rebootOnUpdate(true);  // Let HTTPUpdate handle the reboot automatically
     
     // Perform update with better timeout handling
     WiFiClientSecure client;
@@ -210,12 +236,16 @@ bool OTAUpdater::performUpdate() {
     // Set larger buffer for faster download
     client.setNoDelay(true);
     
+    Serial.println("[OTA] Starting update process...");
+    Serial.println("[OTA] This will take a few minutes...");
+    
     t_httpUpdate_return ret = httpUpdate.update(client, downloadURL);
     
     switch (ret) {
         case HTTP_UPDATE_FAILED:
             if (logger) logger->error("OTA failed: " + String(httpUpdate.getLastErrorString()));
             Serial.println("[OTA] Update failed: " + String(httpUpdate.getLastErrorString()));
+            Serial.println("[OTA] Error code: " + String(httpUpdate.getLastError()));
             status = UPDATE_FAILED;
             return false;
             
@@ -226,10 +256,12 @@ bool OTAUpdater::performUpdate() {
             return false;
             
         case HTTP_UPDATE_OK:
+            // This code should never execute because rebootOnUpdate(true) will restart
+            // But if we get here somehow, manually restart
             if (logger) logger->info("OTA: Update successful, restarting...");
-            Serial.println("[OTA] Update successful! Restarting...");
+            Serial.println("[OTA] Update successful! Restarting in 2 seconds...");
             status = UPDATE_SUCCESS;
-            delay(1000);
+            delay(2000);
             ESP.restart();
             return true;
     }
