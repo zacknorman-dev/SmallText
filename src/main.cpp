@@ -220,8 +220,8 @@ void onVillageNameReceived(const String& villageName) {
   ui.setExistingVillageName(villageName);
   ui.update();  // Force full update to show new name
   
-  // Also update messenger with new village name
-  messenger.setVillageInfo(village.getVillageId(), villageName, village.getUsername());
+  // Update MQTT messenger with new village name
+  // messenger.setVillageInfo(village.getVillageId(), villageName, village.getUsername());  // LoRa disabled
   if (mqttMessenger.isConnected()) {
     mqttMessenger.setVillageInfo(village.getVillageId(), villageName, village.getUsername());
   }
@@ -311,11 +311,11 @@ void setup() {
   Serial.println(keyboard.isRightPressed() ? "RIGHT PRESSED!" : "no keys");
   Serial.println("[Keyboard] Buffer cleared and ready");
   
-  // Set up message callbacks
-  messenger.setMessageCallback(onMessageReceived);
-  messenger.setAckCallback(onMessageAcked);
-  messenger.setReadCallback(onMessageReadReceipt);
-  messenger.setVillageNameCallback(onVillageNameReceived);
+  // LoRa callbacks disabled - MQTT only
+  // messenger.setMessageCallback(onMessageReceived);
+  // messenger.setAckCallback(onMessageAcked);
+  // messenger.setReadCallback(onMessageReadReceipt);
+  // messenger.setVillageNameCallback(onVillageNameReceived);
   
   // Initialize messaging screen flag
   inMessagingScreen = false;
@@ -325,7 +325,7 @@ void setup() {
   // Don't auto-load any village - let user select from menu
   
   // Set delay callback for responsive keyboard during LoRa transmissions
-  messenger.setDelayCallback(smartDelay);
+  // messenger.setDelayCallback(smartDelay);  // LoRa disabled
   
   // Set typing check callback to defer display updates during typing
   ui.setTypingCheckCallback(isUserTyping);
@@ -588,8 +588,8 @@ void handleMainMenu() {
         currentVillageSlot = slot;
         ui.setExistingVillageName(village.getVillageName());
         encryption.setKey(village.getEncryptionKey());
-        messenger.setEncryption(&encryption);
-        messenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
+        // messenger.setEncryption(&encryption);  // LoRa disabled
+        // messenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());  // LoRa disabled
         
         // Configure MQTT if connected
         if (mqttMessenger.isConnected()) {
@@ -1075,8 +1075,8 @@ void handleUsernameInput() {
       village.saveToSlot(currentVillageSlot);
       
       encryption.setKey(village.getEncryptionKey());
-      messenger.setEncryption(&encryption);
-      messenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
+      // messenger.setEncryption(&encryption);  // LoRa disabled
+      // messenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());  // LoRa disabled
       
       // Configure MQTT if connected
       if (mqttMessenger.isConnected()) {
@@ -1227,12 +1227,13 @@ void handleMessaging() {
       ui.setInputText("Sending...");
       ui.updatePartial();  // Quick partial update to show sending feedback
       
-      // Send the message via LoRa (encryption already set in setup)
-      messenger.sendMessage(messageText);
+      // Send the message via MQTT only (LoRa disabled)
+      // messenger.sendMessage(messageText);  // LoRa disabled
       
-      // Get the actual messageId that was sent
-      String sentMessageId = messenger.getLastSentMessageId();
-      Serial.println("[App] Sent message with ID: " + sentMessageId);
+      // Generate a message ID for MQTT
+      String sentMessageId = "";  // MQTT generates its own IDs
+      // String sentMessageId = messenger.getLastSentMessageId();  // LoRa disabled
+      Serial.println("[App] Sending message via MQTT");
       
       // Add to local message history
       Message localMsg;
