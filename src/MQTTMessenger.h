@@ -34,6 +34,7 @@ private:
     void (*onMessageAcked)(const String& messageId, const String& fromMAC);
     void (*onMessageRead)(const String& messageId, const String& fromMAC);
     void (*onCommandReceived)(const String& command);
+    void (*onSyncRequest)(const String& requestorMAC, unsigned long timestamp);  // Sync request from peer
     
     // Connection management
     unsigned long lastReconnectAttempt;
@@ -48,6 +49,8 @@ private:
     String generateMessageId();
     String generateTopic(const String& messageType, const String& target = "");
     void handleIncomingMessage(const String& topic, const uint8_t* payload, unsigned int length);
+    void handleSyncRequest(const uint8_t* payload, unsigned int length);
+    void handleSyncResponse(const uint8_t* payload, unsigned int length);
     bool reconnect();
     void cleanupSeenMessages();
     
@@ -71,12 +74,17 @@ public:
     void setAckCallback(void (*callback)(const String& messageId, const String& fromMAC));
     void setReadCallback(void (*callback)(const String& messageId, const String& fromMAC));
     void setCommandCallback(void (*callback)(const String& command));
+    void setSyncRequestCallback(void (*callback)(const String& requestorMAC, unsigned long timestamp));
     
     // Messaging API (matches LoRaMessenger)
     String sendShout(const String& message);
     String sendWhisper(const String& recipientMAC, const String& message);
     bool sendAck(const String& messageId, const String& targetMAC);
     bool sendReadReceipt(const String& messageId, const String& targetMAC);
+    
+    // Message sync for offline devices
+    bool requestSync(unsigned long lastMessageTimestamp);  // Request messages newer than timestamp
+    bool sendSyncResponse(const String& targetMAC, const std::vector<Message>& messages);  // Send messages to peer
     
     // Connection status
     bool isConnected() { return connected && mqttClient.connected(); }

@@ -16,6 +16,7 @@ MQTTMessenger::MQTTMessenger() : mqttClient(wifiClient) {
     onMessageAcked = nullptr;
     onMessageRead = nullptr;
     onCommandReceived = nullptr;
+    onSyncRequest = nullptr;
     lastReconnectAttempt = 0;
     lastPingTime = 0;
     lastSeenCleanup = 0;
@@ -86,6 +87,10 @@ void MQTTMessenger::setCommandCallback(void (*callback)(const String& command)) 
     onCommandReceived = callback;
 }
 
+void MQTTMessenger::setSyncRequestCallback(void (*callback)(const String& requestorMAC, unsigned long timestamp)) {
+    onSyncRequest = callback;
+}
+
 String MQTTMessenger::generateMessageId() {
     static uint32_t counter = 0;
     counter++;
@@ -137,6 +142,11 @@ bool MQTTMessenger::reconnect() {
         String commandTopic = "smoltxt/" + String(macStr) + "/command";
         mqttClient.subscribe(commandTopic.c_str());
         Serial.println("[MQTT] Subscribed to command topic: " + commandTopic);
+        
+        // Subscribe to sync response topic (for receiving synced messages)
+        String syncResponseTopic = "smoltxt/" + String(macStr) + "/sync-response";
+        mqttClient.subscribe(syncResponseTopic.c_str());
+        Serial.println("[MQTT] Subscribed to sync response topic: " + syncResponseTopic);
         
         return true;
     } else {
@@ -201,6 +211,19 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
         if (onCommandReceived) {
             onCommandReceived(command);
         }
+        return;
+    }
+    
+    // Check for sync-response topic (addressed to us)
+    String syncResponseTopic = "smoltxt/" + String(macStr) + "/sync-response";
+    if (topic == syncResponseTopic) {
+        handleSyncResponse(payload, length);
+        return;
+    }
+    
+    // Check for sync-request topics (from other devices in our village)
+    if (topic.startsWith("smoltxt/" + myVillageId + "/sync-request/")) {
+        handleSyncRequest(payload, length);
         return;
     }
     
@@ -439,6 +462,178 @@ bool MQTTMessenger::sendReadReceipt(const String& messageId, const String& targe
     
     String topic = generateTopic("read", targetMAC);
     return mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
+}
+
+bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
+    if (!connected || !mqttClient.connected()) {
+        Serial.println("[MQTT] Cannot request sync - not connected");
+        return false;
+    }
+    
+    // Publish sync request to village topic
+    // Format: sync-request/{deviceMAC}
+    // Payload: {timestamp: lastMessageTimestamp, mac: myMAC}
+    
+    JsonDocument doc;
+    doc["timestamp"] = lastMessageTimestamp;
+    doc["mac"] = String(myMAC, HEX);
+    
+    String payload;
+    serializeJson(doc, payload);
+    
+    // Encrypt the sync request
+    uint8_t encrypted[256];
+    int encryptedLen = encryption->encrypt((uint8_t*)payload.c_str(), payload.length(), encrypted, sizeof(encrypted));
+    
+    if (encryptedLen <= 0) {
+        Serial.println("[MQTT] Sync request encryption failed");
+        return false;
+    }
+    
+    String topic = "smoltxt/" + myVillageId + "/sync-request/" + String(myMAC, HEX);
+    bool success = mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
+    
+    if (success) {
+        Serial.println("[MQTT] Sync request sent: timestamp=" + String(lastMessageTimestamp));
+    } else {
+        Serial.println("[MQTT] Sync request failed");
+    }
+    
+    return success;
+}
+
+bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<Message>& messages) {
+    if (!connected || !mqttClient.connected()) {
+        Serial.println("[MQTT] Cannot send sync response - not connected");
+        return false;
+    }
+    
+    if (messages.empty()) {
+        Serial.println("[MQTT] No messages to sync");
+        return true;
+    }
+    
+    Serial.println("[MQTT] Sending sync response with " + String(messages.size()) + " messages to " + targetMAC);
+    
+    // Send messages in batches to avoid payload size limits
+    const int BATCH_SIZE = 5;
+    int totalSent = 0;
+    
+    for (size_t i = 0; i < messages.size(); i += BATCH_SIZE) {
+        JsonDocument doc;
+        JsonArray msgArray = doc["messages"].to<JsonArray>();
+        
+        // Add up to BATCH_SIZE messages
+        for (size_t j = i; j < messages.size() && j < i + BATCH_SIZE; j++) {
+            JsonObject msgObj = msgArray.add<JsonObject>();
+            msgObj["sender"] = messages[j].sender;
+            msgObj["senderMAC"] = messages[j].senderMAC;
+            msgObj["content"] = messages[j].content;
+            msgObj["timestamp"] = messages[j].timestamp;
+            msgObj["messageId"] = messages[j].messageId;
+            msgObj["received"] = messages[j].received;
+            msgObj["status"] = (int)messages[j].status;
+        }
+        
+        doc["batch"] = (i / BATCH_SIZE) + 1;
+        doc["total"] = (messages.size() + BATCH_SIZE - 1) / BATCH_SIZE;
+        
+        String payload;
+        serializeJson(doc, payload);
+        
+        // Encrypt
+        uint8_t encrypted[512];
+        int encryptedLen = encryption->encrypt((uint8_t*)payload.c_str(), payload.length(), encrypted, sizeof(encrypted));
+        
+        if (encryptedLen <= 0) {
+            Serial.println("[MQTT] Sync response encryption failed");
+            return false;
+        }
+        
+        String topic = "smoltxt/" + targetMAC + "/sync-response";
+        bool success = mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
+        
+        if (success) {
+            totalSent += min(BATCH_SIZE, (int)(messages.size() - i));
+            Serial.println("[MQTT] Sent sync batch " + String((i / BATCH_SIZE) + 1) + " (" + String(totalSent) + "/" + String(messages.size()) + " messages)");
+            delay(100);  // Brief delay between batches
+        } else {
+            Serial.println("[MQTT] Sync batch failed");
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+void MQTTMessenger::handleSyncRequest(const uint8_t* payload, unsigned int length) {
+    if (!encryption) return;
+    
+    String message;
+    if (!encryption->decryptString(payload, length, message)) {
+        Serial.println("[MQTT] Sync request decryption failed");
+        return;
+    }
+    
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, message);
+    
+    if (error) {
+        Serial.println("[MQTT] Sync request parse error");
+        return;
+    }
+    
+    unsigned long requestedTimestamp = doc["timestamp"] | 0;
+    String requestorMAC = doc["mac"] | "";
+    
+    Serial.println("[MQTT] Sync request from " + requestorMAC + " for messages after timestamp " + String(requestedTimestamp));
+    
+    // Trigger callback to main app to handle sync
+    if (onSyncRequest) {
+        onSyncRequest(requestorMAC, requestedTimestamp);
+    }
+}
+
+void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int length) {
+    if (!encryption) return;
+    
+    String message;
+    if (!encryption->decryptString(payload, length, message)) {
+        Serial.println("[MQTT] Sync response decryption failed");
+        return;
+    }
+    
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, message);
+    
+    if (error) {
+        Serial.println("[MQTT] Sync response parse error");
+        return;
+    }
+    
+    int batch = doc["batch"] | 0;
+    int total = doc["total"] | 0;
+    
+    Serial.println("[MQTT] Sync response batch " + String(batch) + "/" + String(total));
+    
+    JsonArray msgArray = doc["messages"];
+    
+    for (JsonObject msgObj : msgArray) {
+        Message msg;
+        msg.sender = msgObj["sender"] | "";
+        msg.senderMAC = msgObj["senderMAC"] | "";
+        msg.content = msgObj["content"] | "";
+        msg.timestamp = msgObj["timestamp"] | 0;
+        msg.messageId = msgObj["messageId"] | "";
+        msg.received = msgObj["received"] | true;
+        msg.status = (MessageStatus)(msgObj["status"] | MSG_RECEIVED);
+        
+        // Deliver to app via message callback (deduplication happens in Village::saveMessage)
+        if (onMessageReceived) {
+            Serial.println("[MQTT] Synced message: " + msg.messageId + " from " + msg.sender);
+            onMessageReceived(msg);
+        }
+    }
 }
 
 String MQTTMessenger::getConnectionStatus() {

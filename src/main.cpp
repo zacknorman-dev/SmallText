@@ -11,7 +11,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.28.0"
+#define BUILD_NUMBER "v0.29.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define LORA_CS 8
@@ -234,6 +234,30 @@ void onCommandReceived(const String& command) {
   }
 }
 
+// Handle sync request from other device
+void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp) {
+  Serial.println("[Sync] Request from " + requestorMAC + " for messages after " + String(requestedTimestamp));
+  logger.info("Sync request from " + requestorMAC);
+  
+  // Load our messages and filter for ones newer than requested timestamp
+  std::vector<Message> allMessages = village.loadMessages();
+  std::vector<Message> newMessages;
+  
+  for (const Message& msg : allMessages) {
+    if (msg.timestamp > requestedTimestamp) {
+      newMessages.push_back(msg);
+    }
+  }
+  
+  if (newMessages.empty()) {
+    Serial.println("[Sync] No new messages to send");
+    return;
+  }
+  
+  Serial.println("[Sync] Sending " + String(newMessages.size()) + " messages to " + requestorMAC);
+  mqttMessenger.sendSyncResponse(requestorMAC, newMessages);
+}
+
 void onVillageNameReceived(const String& villageName) {
   // Check if this is a REQUEST signal (owner should respond)
   if (villageName == "REQUEST") {
@@ -405,6 +429,7 @@ void setup() {
         mqttMessenger.setAckCallback(onMessageAcked);
         mqttMessenger.setReadCallback(onMessageReadReceipt);
         mqttMessenger.setCommandCallback(onCommandReceived);
+        mqttMessenger.setSyncRequestCallback(onSyncRequest);
         
         // Set encryption
         mqttMessenger.setEncryption(&encryption);
@@ -421,13 +446,27 @@ void setup() {
   
   // Initialize timestamp baseline from existing messages in storage
   std::vector<Message> existingMessages = village.loadMessages();
+  unsigned long lastMessageTimestamp = 0;
+  
   for (const auto& msg : existingMessages) {
     if (msg.timestamp > timestampBaseline) {
       timestampBaseline = msg.timestamp;
     }
+    if (msg.timestamp > lastMessageTimestamp) {
+      lastMessageTimestamp = msg.timestamp;
+    }
   }
   Serial.print("[Setup] Timestamp baseline initialized: ");
   Serial.println(timestampBaseline);
+  
+  // Rebuild message ID cache for deduplication
+  village.rebuildMessageIdCache();
+  
+  // Request message sync if we have MQTT connection (in case we missed messages while offline)
+  if (mqttMessenger.isConnected() && lastMessageTimestamp > 0) {
+    Serial.println("[Sync] Requesting messages newer than " + String(lastMessageTimestamp));
+    mqttMessenger.requestSync(lastMessageTimestamp);
+  }
   
   // Check for OTA updates on boot (if WiFi connected)
   if (wifiManager.isConnected()) {

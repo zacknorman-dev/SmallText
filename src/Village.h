@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <vector>
+#include <set>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
 
@@ -95,8 +96,13 @@ public:
     std::vector<Message> loadMessages();
     bool clearMessages();  // Clear all stored messages
     bool updateMessageStatus(const String& messageId, int newStatus);  // Update status of existing message
+    bool messageIdExists(const String& messageId);  // Check if message already saved
+    void rebuildMessageIdCache();  // Rebuild in-memory cache of message IDs
     
     int getMemberCount() { return members.size(); }
+    
+private:
+    std::set<String> messageIdCache;  // In-memory cache of message IDs for deduplication
 };
 
 #endif

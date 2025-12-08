@@ -591,6 +591,12 @@ bool Village::saveMessage(const Message& msg) {
         return false;
     }
     
+    // Check for duplicate message ID (skip empty IDs from old messages)
+    if (!msg.messageId.isEmpty() && messageIdExists(msg.messageId)) {
+        logger.info("Duplicate message skipped: id=" + msg.messageId);
+        return true;  // Return true as it's not an error, message already exists
+    }
+    
     File file = LittleFS.open("/messages.dat", "a");
     if (!file) {
         logger.critical("Failed to open messages.dat for writing");
@@ -611,6 +617,11 @@ bool Village::saveMessage(const Message& msg) {
     serializeJson(doc, file);
     file.println();
     file.close();
+    
+    // Add to cache for deduplication
+    if (!msg.messageId.isEmpty()) {
+        messageIdCache.insert(msg.messageId);
+    }
     
     logger.info("Message saved: id=" + msg.messageId + " from=" + msg.sender + " village=" + String(villageId));
     return true;
@@ -781,4 +792,43 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
     writeFile.close();
     logger.info("Saved " + String(allLines.size()) + " total lines (all villages preserved)");
     return true;
+}
+
+bool Village::messageIdExists(const String& messageId) {
+    if (messageId.isEmpty()) return false;
+    return messageIdCache.find(messageId) != messageIdCache.end();
+}
+
+void Village::rebuildMessageIdCache() {
+    messageIdCache.clear();
+    
+    if (!initialized) return;
+    
+    File file = LittleFS.open("/messages.dat", "r");
+    if (!file) return;
+    
+    String currentVillageId = String(villageId);
+    
+    while (file.available()) {
+        String line = file.readStringUntil('\n');
+        line.trim();
+        
+        if (line.length() == 0) continue;
+        
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, line);
+        
+        if (error) continue;
+        
+        String msgVillage = doc["village"] | "";
+        if (msgVillage != currentVillageId) continue;
+        
+        String messageId = doc["messageId"] | "";
+        if (!messageId.isEmpty()) {
+            messageIdCache.insert(messageId);
+        }
+    }
+    
+    file.close();
+    logger.info("Rebuilt message ID cache: " + String(messageIdCache.size()) + " messages");
 }
