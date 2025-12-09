@@ -1093,13 +1093,13 @@ void handleVillageJoinPassword() {
       passphrase.toLowerCase();
       tempVillagePassword = passphrase;
       
-      // Derive village name from passphrase (same deterministic name for all members)
-      tempVillageName = Village::deriveVillageNameFromPassword(passphrase);
+      // Don't derive a name - let it be set via MQTT announcement from creator
+      tempVillageName = "";  // Will be updated via MQTT retained message
       Serial.println("[Join] Passphrase entered: " + passphrase);
-      Serial.println("[Join] Derived village name: " + tempVillageName);
+      Serial.println("[Join] Village name will be received via MQTT");
       
-      // Go straight to username with derived village name
-      ui.setExistingVillageName(tempVillageName);
+      // Go straight to username - village name will update in background
+      ui.setExistingVillageName("Joining...");
       appState = APP_USERNAME_INPUT;
       ui.setState(STATE_INPUT_USERNAME);
       ui.setInputText("");
