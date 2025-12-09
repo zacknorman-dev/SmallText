@@ -321,6 +321,14 @@ void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp)
   Serial.println("[Sync] Request from " + requestorMAC + " for messages after timestamp: " + String(requestedTimestamp));
   logger.info("Sync from " + requestorMAC + " (after t=" + String(requestedTimestamp) + ")");
   
+  // Ignore sync requests from ourselves
+  char myMACStr[13];
+  sprintf(myMACStr, "%012llx", ESP.getEfuseMac());
+  if (requestorMAC.equalsIgnoreCase(String(myMACStr))) {
+    Serial.println("[Sync] Ignoring sync request from self");
+    return;
+  }
+  
   // Load messages newer than requested timestamp
   std::vector<Message> allMessages = village.loadMessages();
   std::vector<Message> newMessages;
@@ -1344,8 +1352,8 @@ void handleUsernameInput() {
         // Reload village to get updated name
         village.loadFromSlot(currentVillageSlot);
         
-        // For joiners, show that they're in
-        String infoMsg = "Welcome to " + village.getVillageName() + "!\n\n";
+        // For joiners, show generic welcome (name updates in background)
+        String infoMsg = "Welcome to the village!\n\n";
         infoMsg += "You can now chat with\nother members.\n\n";
         infoMsg += "Press ENTER to continue";
         
