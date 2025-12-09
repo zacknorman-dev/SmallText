@@ -10,7 +10,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.34.2"
+#define BUILD_NUMBER "v0.34.3"
 
 // Pin definitions for Heltec Vision Master E290
 #define I2C_SDA 39
@@ -573,6 +573,23 @@ void loop() {
     inMessagingScreen = false;
   }
   
+  // Ensure MQTT is subscribed to current village (if one is loaded)
+  // This allows receiving messages even when navigating back to main menu
+  static String lastConfiguredVillageId = "";
+  if (village.isInitialized()) {
+    String currentVillageId = village.getVillageId();
+    if (currentVillageId != lastConfiguredVillageId) {
+      // Village changed - reconfigure MQTT
+      mqttMessenger.setEncryption(&encryption);
+      mqttMessenger.setVillageInfo(currentVillageId, village.getVillageName(), village.getUsername());
+      lastConfiguredVillageId = currentVillageId;
+      Serial.println("[Loop] MQTT configured for village: " + village.getVillageName());
+    }
+  } else if (!lastConfiguredVillageId.isEmpty()) {
+    // Village was cleared - reset tracking
+    lastConfiguredVillageId = "";
+  }
+  
   // Process incoming MQTT messages
   mqttMessenger.loop();
   
@@ -729,11 +746,7 @@ void handleMainMenu() {
         currentVillageSlot = slot;
         ui.setExistingVillageName(village.getVillageName());
         encryption.setKey(village.getEncryptionKey());
-
-        
-        // Configure MQTT (set even if not connected yet)
-        mqttMessenger.setEncryption(&encryption);
-        mqttMessenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
+        // MQTT subscription will be configured automatically in main loop
         
         // Go to village menu
         keyboard.clearInput();
@@ -1235,11 +1248,7 @@ void handleUsernameInput() {
       village.saveToSlot(currentVillageSlot);
       
       encryption.setKey(village.getEncryptionKey());
-
-      
-      // Configure MQTT (set even if not connected yet)
-      mqttMessenger.setEncryption(&encryption);
-      mqttMessenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());
+      // MQTT subscription will be configured automatically in main loop
       
       if (isCreatingVillage) {
         // Show passphrase for creators
