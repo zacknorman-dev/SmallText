@@ -208,8 +208,9 @@ bool Village::createVillage(const String& name, const String& password) {
 }
 
 bool Village::joinVillageAsMember(const String& name, const String& password) {
-    if (name.length() == 0 || name.length() >= MAX_VILLAGE_NAME) {
-        logger.error("Village join failed: invalid name length");
+    // NOTE: When joining with just password, name can be empty - will be received via announcement
+    if (name.length() >= MAX_VILLAGE_NAME) {
+        logger.error("Village join failed: name too long");
         return false;
     }
     
@@ -223,11 +224,16 @@ bool Village::joinVillageAsMember(const String& name, const String& password) {
     strncpy(villageId, uuid.c_str(), 36);
     villageId[36] = '\0';
     
-    logger.info("Village joined: " + name + " (ID: " + String(villageId) + ")");
-    Serial.println("[Village] Joining with ID: " + String(villageId));
-    
-    strncpy(villageName, name.c_str(), MAX_VILLAGE_NAME - 1);
+    // Use provided name or placeholder if empty (will be updated via announcement)
+    if (name.length() > 0) {
+        strncpy(villageName, name.c_str(), MAX_VILLAGE_NAME - 1);
+    } else {
+        strncpy(villageName, "Pending...", MAX_VILLAGE_NAME - 1);
+    }
     villageName[MAX_VILLAGE_NAME - 1] = '\0';
+    
+    logger.info("Village joined: " + String(villageName) + " (ID: " + String(villageId) + ")");
+    Serial.println("[Village] Joining with ID: " + String(villageId));
     
     strncpy(villagePassword, password.c_str(), MAX_PASSWORD - 1);
     villagePassword[MAX_PASSWORD - 1] = '\0';
@@ -705,7 +711,10 @@ std::vector<Message> Village::loadMessages() {
         }
         
         String msgVillage = doc["village"] | "";
-        if (msgVillage != currentVillageId) {
+        
+        // SECURITY: Discard messages without villageId (malformed/corrupted data)
+        // Never assume which village they belong to - could mix private/group messages
+        if (msgVillage.isEmpty() || msgVillage != currentVillageId) {
             wrongVillage++;
             continue;  // Filter by UUID
         }

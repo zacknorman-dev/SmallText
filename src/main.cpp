@@ -360,22 +360,37 @@ void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp)
   mqttMessenger.sendSyncResponse(requestorMAC, newMessages, 1);
 }
 
-void onVillageNameReceived(const String& villageName) {
-  Serial.println("[Village] Received village name: " + villageName);
+void onVillageNameReceived(const String& villageId, const String& villageName) {
+  Serial.println("[Village] Received village name announcement for " + villageId + ": " + villageName);
   
-  // Update the village name and save to current slot
-  village.setVillageName(villageName);
-  if (currentVillageSlot >= 0 && currentVillageSlot < 10) {
-    village.saveToSlot(currentVillageSlot);
-    Serial.println("[Village] Updated name in slot " + String(currentVillageSlot));
+  // Find which slot has this village ID
+  int slot = Village::findVillageSlotById(villageId);
+  if (slot < 0) {
+    Serial.println("[Village] WARNING: No slot found for village ID " + villageId);
+    return;
   }
   
-  // Update UI with new village name
-  ui.setExistingVillageName(villageName);
-  ui.update();  // Force full update to show new name
+  // Load the village, update name, and save back
+  Village tempVillage;
+  if (!tempVillage.loadFromSlot(slot)) {
+    Serial.println("[Village] WARNING: Failed to load village from slot " + String(slot));
+    return;
+  }
   
-  // Update MQTT messenger with new village name
-  mqttMessenger.setVillageInfo(village.getVillageId(), villageName, village.getUsername());
+  tempVillage.setVillageName(villageName);
+  if (tempVillage.saveToSlot(slot)) {
+    Serial.println("[Village] Updated name in slot " + String(slot) + " to: " + villageName);
+    
+    // If this is the current village, update UI and MQTT
+    if (slot == currentVillageSlot) {
+      village.setVillageName(villageName);
+      ui.setExistingVillageName(villageName);
+      ui.update();  // Force full update to show new name
+      mqttMessenger.setVillageInfo(villageId, villageName, village.getUsername());
+    }
+  } else {
+    Serial.println("[Village] WARNING: Failed to save updated name to slot " + String(slot));
+  }
 }
 
 void setup() {
@@ -500,6 +515,7 @@ void setup() {
         mqttMessenger.setReadCallback(onMessageReadReceipt);
         mqttMessenger.setCommandCallback(onCommandReceived);
         mqttMessenger.setSyncRequestCallback(onSyncRequest);
+        mqttMessenger.setVillageNameCallback(onVillageNameReceived);
         
         // Set encryption
         mqttMessenger.setEncryption(&encryption);
@@ -1304,6 +1320,12 @@ void handleUsernameInput() {
       Serial.println("[Username] Village added to MQTT subscriptions: " + village.getVillageName());
       
       if (isCreatingVillage) {
+        // Creator: Announce village name immediately after creating
+        if (mqttMessenger.isConnected()) {
+          mqttMessenger.announceVillageName(village.getVillageName());
+          Serial.println("[Village] Announced village name: " + village.getVillageName());
+        }
+        
         // Show passphrase for creators
         String infoMsg = "The secret passphrase for\nthis village is:\n\n";
         infoMsg += tempVillagePassword + "\n\n";
@@ -1311,6 +1333,17 @@ void handleUsernameInput() {
         
         ui.showMessage("Village Created!", infoMsg, 0);
       } else {
+        // Joiner: Wait briefly for village name announcement
+        Serial.println("[Village] Waiting for village name announcement...");
+        unsigned long startWait = millis();
+        while (millis() - startWait < 1000) {  // Wait up to 1 second
+          mqttMessenger.loop();  // Process incoming messages
+          smartDelay(50);
+        }
+        
+        // Reload village to get updated name
+        village.loadFromSlot(currentVillageSlot);
+        
         // For joiners, show that they're in
         String infoMsg = "Welcome to " + village.getVillageName() + "!\n\n";
         infoMsg += "You can now chat with\nother members.\n\n";

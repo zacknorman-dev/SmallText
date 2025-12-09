@@ -95,6 +95,10 @@ void MQTTMessenger::setSyncRequestCallback(void (*callback)(const String& reques
     onSyncRequest = callback;
 }
 
+void MQTTMessenger::setVillageNameCallback(void (*callback)(const String& villageId, const String& villageName)) {
+    onVillageNameReceived = callback;
+}
+
 String MQTTMessenger::generateMessageId() {
     static uint32_t counter = 0;
     counter++;
@@ -257,6 +261,21 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
     String villageId = topic.substring(firstSlash + 1, secondSlash);
     Serial.println("[MQTT] Message for village: " + villageId);
     
+    // Check for village name announcement (unencrypted, just the name)
+    if (topic.endsWith("/villagename")) {
+        String villageName = "";
+        for (unsigned int i = 0; i < length; i++) {
+            villageName += (char)payload[i];
+        }
+        Serial.println("[MQTT] Received village name announcement: " + villageName + " for village: " + villageId);
+        logger.info("Village name received: " + villageName + " (ID: " + villageId + ")");
+        
+        if (onVillageNameReceived) {
+            onVillageNameReceived(villageId, villageName);
+        }
+        return;
+    }
+    
     // Check for sync-request topics (from other devices)
     if (topic.startsWith("smoltxt/" + villageId + "/sync-request/")) {
         handleSyncRequest(payload, length);
@@ -405,6 +424,25 @@ ParsedMessage MQTTMessenger::parseMessage(const String& decrypted) {
     msg.maxHop = parts[8].toInt();
     
     return msg;
+}
+
+bool MQTTMessenger::announceVillageName(const String& villageName) {
+    if (!isConnected() || currentVillageId.isEmpty()) {
+        Serial.println("[MQTT] Cannot announce: not connected or no active village");
+        return false;
+    }
+    
+    // Topic: smoltxt/{villageId}/villagename
+    String topic = "smoltxt/" + currentVillageId + "/villagename";
+    
+    // Payload is just the village name (no encryption needed - derived from same password)
+    if (mqttClient.publish(topic.c_str(), villageName.c_str())) {
+        Serial.println("[MQTT] Village name announced: " + villageName);
+        return true;
+    }
+    
+    Serial.println("[MQTT] Failed to announce village name");
+    return false;
 }
 
 String MQTTMessenger::sendShout(const String& message) {

@@ -46,6 +46,7 @@ private:
     void (*onMessageRead)(const String& messageId, const String& fromMAC);
     void (*onCommandReceived)(const String& command);
     void (*onSyncRequest)(const String& requestorMAC, unsigned long timestamp);  // Sync request from peer
+    void (*onVillageNameReceived)(const String& villageId, const String& villageName);  // Village name announcement
     
     // Connection management
     unsigned long lastReconnectAttempt;
@@ -100,6 +101,10 @@ public:
     void setReadCallback(void (*callback)(const String& messageId, const String& fromMAC));
     void setCommandCallback(void (*callback)(const String& command));
     void setSyncRequestCallback(void (*callback)(const String& requestorMAC, unsigned long timestamp));
+    void setVillageNameCallback(void (*callback)(const String& villageId, const String& villageName));
+    
+    // Village coordination
+    bool announceVillageName(const String& villageName);  // Creator broadcasts village name
     
     // Messaging API (matches LoRaMessenger)
     String sendShout(const String& message);
