@@ -337,13 +337,30 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
         // Deliver message to app
         if (onMessageReceived) {
             extern unsigned long getCurrentTime();
+            
+            // Find which village this message is for
+            VillageSubscription* msgVillage = findVillageSubscription(msg.villageId);
+            
             Message m;
             m.sender = msg.senderName;
             m.senderMAC = msg.senderMAC;
             m.content = msg.content;
             m.timestamp = getCurrentTime();
-            m.received = true;
-            m.status = MSG_RECEIVED;
+            
+            // Determine if this is a received message or our own sent message
+            // Compare sender username with this village's username
+            if (msgVillage && msg.senderName == msgVillage->username) {
+                // This is OUR message (synced back from another device)
+                m.received = false;
+                m.status = MSG_SENT;  // Our sent messages start as MSG_SENT
+                Serial.println("[MQTT] Received our own sent message: " + msg.messageId);
+            } else {
+                // This is someone else's message
+                m.received = true;
+                m.status = MSG_RECEIVED;
+                Serial.println("[MQTT] Received message from " + msg.senderName);
+            }
+            
             m.messageId = msg.messageId;
             onMessageReceived(m);
         }
