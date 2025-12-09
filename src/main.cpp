@@ -2,7 +2,6 @@
 #include <Wire.h>
 #include "Village.h"
 #include "Encryption.h"
-#include "LoRaMessenger.h"
 #include "MQTTMessenger.h"
 #include "Keyboard.h"
 #include "UI.h"
@@ -11,14 +10,9 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.33.9"
+#define BUILD_NUMBER "v0.34.0"
 
 // Pin definitions for Heltec Vision Master E290
-#define LORA_CS 8
-#define LORA_DIO1 14
-#define LORA_RST 12
-#define LORA_BUSY 13
-
 #define I2C_SDA 39
 #define I2C_SCL 38
 
@@ -34,7 +28,6 @@
 // Global objects
 Village village;
 Encryption encryption;
-LoRaMessenger messenger;
 MQTTMessenger mqttMessenger;
 Keyboard keyboard;
 UI ui;
@@ -108,12 +101,9 @@ struct ReadReceiptQueueItem {
 std::vector<ReadReceiptQueueItem> readReceiptQueue;
 const int MAX_MESSAGES_TO_LOAD = 30;  // Only load most recent 30 messages
 const int MAX_READ_RECEIPTS = 10;  // Only send read receipts for last 10 unread messages
-unsigned long lastRadioTransmission = 0;  // Track when radio last transmitted (for timing read receipts)
+unsigned long lastTransmission = 0;  // Track when last transmitted (for timing read receipts)
 unsigned long lastVillageNameRequest = 0;  // Track pending village name requests (retry every 30s)
 unsigned long lastOTACheck = 0;  // Track automatic OTA update checks
-
-// Timestamp baseline to ensure new messages after reboot sort correctly
-unsigned long timestampBaseline = 0;
 
 // Get current Unix timestamp (seconds since epoch)
 unsigned long getCurrentTime() {
@@ -203,10 +193,10 @@ void onMessageReceived(const Message& msg) {
     ui.updateMessageStatus(msg.messageId, MSG_READ);
     village.updateMessageStatus(msg.messageId, MSG_READ);
     
-    // Mark that radio just transmitted (the ACK)
-    lastRadioTransmission = millis();
+    // Mark that we just transmitted (the ACK)
+    lastTransmission = millis();
     
-    // Queue read receipt for background sending (don't send immediately - radio may be busy)
+    // Queue read receipt for background sending
     if (!msg.senderMAC.isEmpty()) {
       ReadReceiptQueueItem item;
       item.messageId = msg.messageId;
@@ -319,70 +309,50 @@ void dumpMessageStoreDebug(int completedPhase) {
 
 // Handle sync request from other device
 void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp) {
-  // HACK: requestedTimestamp is overloaded to carry phase number for background sync
-  // Phase numbers are small (1-20), real timestamps are large (milliseconds since epoch)
-  int phase = 1;
-  if (requestedTimestamp > 0 && requestedTimestamp < 100) {
-    phase = (int)requestedTimestamp;
-    Serial.println("[Sync] Background phase " + String(phase) + " request from " + requestorMAC);
-  } else {
-    Serial.println("[Sync] Initial sync request from " + requestorMAC);
-  }
+  Serial.println("[Sync] Request from " + requestorMAC + " for messages after timestamp: " + String(requestedTimestamp));
+  logger.info("Sync from " + requestorMAC + " (after t=" + String(requestedTimestamp) + ")");
   
-  logger.info("Sync phase " + String(phase) + " from " + requestorMAC);
-  
-  // Load ALL our messages - deduplication will happen on receiving device
-  // Can't use timestamp comparison because millis() is device-specific
+  // Load messages newer than requested timestamp
   std::vector<Message> allMessages = village.loadMessages();
+  std::vector<Message> newMessages;
   
-  // Filter out messages without IDs (from old builds) - can't be deduplicated
-  std::vector<Message> validMessages;
   for (const Message& msg : allMessages) {
-    if (!msg.messageId.isEmpty()) {
-      validMessages.push_back(msg);
+    // Filter: Must have message ID AND be newer than requested timestamp
+    if (!msg.messageId.isEmpty() && msg.timestamp > requestedTimestamp) {
+      newMessages.push_back(msg);
     }
   }
   
-  if (validMessages.empty()) {
-    Serial.println("[Sync] No valid messages to send");
-    logger.info("Sync: No messages with IDs");
+  if (newMessages.empty()) {
+    Serial.println("[Sync] No new messages to send (all messages <= " + String(requestedTimestamp) + ")");
+    logger.info("Sync: No new messages for " + requestorMAC);
     return;
   }
   
-  // ===== DETAILED SYNC DEBUG: Dump our message store state =====
+  // Debug output
   char myMAC[13];
   sprintf(myMAC, "%012llx", ESP.getEfuseMac());
   Serial.println("========================================");
-  Serial.println("[SYNC DEBUG] Device " + String(myMAC) + " preparing to send Phase " + String(phase) + " to " + requestorMAC);
-  Serial.println("[SYNC DEBUG] Total messages in storage: " + String(validMessages.size()));
-  Serial.println("[SYNC DEBUG] Message IDs in our store (chronological order):");
-  for (int i = 0; i < validMessages.size(); i++) {
-    Serial.println("  [" + String(i) + "] ID=" + validMessages[i].messageId + 
-                   " from=" + validMessages[i].sender + 
-                   " time=" + String(validMessages[i].timestamp) + 
-                   " status=" + String((int)validMessages[i].status));
+  Serial.println("[SYNC] Device " + String(myMAC) + " sending to " + requestorMAC);
+  Serial.println("[SYNC] Total messages in storage: " + String(allMessages.size()));
+  Serial.println("[SYNC] Messages after t=" + String(requestedTimestamp) + ": " + String(newMessages.size()));
+  Serial.println("[SYNC] Sending message IDs:");
+  for (int i = 0; i < newMessages.size(); i++) {
+    Serial.println("  [" + String(i) + "] ID=" + newMessages[i].messageId + 
+                   " from=" + newMessages[i].sender + 
+                   " time=" + String(newMessages[i].timestamp) + 
+                   " status=" + String((int)newMessages[i].status));
   }
   Serial.println("========================================");
   
-  Serial.println("[Sync] Phase " + String(phase) + ": Sending from " + String(validMessages.size()) + " total messages (filtered " + String(allMessages.size() - validMessages.size()) + " without IDs) to " + requestorMAC);
-  logger.info("Sync phase " + String(phase) + ": " + String(validMessages.size()) + " msgs");
+  logger.info("Sync: Sending " + String(newMessages.size()) + " msgs to " + requestorMAC);
   
-  // Send the appropriate phase
-  mqttMessenger.sendSyncResponse(requestorMAC, validMessages, phase);
+  // Send response with phase=1 (simplified, no multi-phase sync)
+  mqttMessenger.sendSyncResponse(requestorMAC, newMessages, 1);
 }
 
 void onVillageNameReceived(const String& villageName) {
-  // Check if this is a REQUEST signal (owner should respond)
-  if (villageName == "REQUEST") {
-    Serial.println("[Village] Received name request");
-    if (village.amOwner()) {
-      Serial.println("[Village] We are owner, sending announcement");
-      messenger.sendVillageNameAnnouncement();
-    }
-    return;
-  }
-  
-  Serial.println("[Village] Received village name announcement: " + villageName);
+  Serial.println("[Village] Received village name: " + villageName);
   
   // Update the village name and save to current slot
   village.setVillageName(villageName);
@@ -396,7 +366,6 @@ void onVillageNameReceived(const String& villageName) {
   ui.update();  // Force full update to show new name
   
   // Update MQTT messenger with new village name
-  // messenger.setVillageInfo(village.getVillageId(), villageName, village.getUsername());  // LoRa disabled
   mqttMessenger.setVillageInfo(village.getVillageId(), villageName, village.getUsername());
 }
 
@@ -428,20 +397,10 @@ void setup() {
   Serial.flush();
   smartDelay(100);
   
-  // LoRa disabled - using MQTT only for faster messaging
-  Serial.println("[LoRa] LoRa disabled - MQTT-only mode");
-  // if (!messenger.begin(LORA_CS, LORA_DIO1, LORA_RST, LORA_BUSY)) {
-  //   logger.critical("LoRa radio initialization failed");
-  //   Serial.println("[LoRa] WARNING - Failed to initialize!");
-  //   Serial.println("[LoRa] Continuing without radio...");
-  // } else {
-  //   logger.info("LoRa radio initialized successfully");
-  //   Serial.println("[LoRa] Success! Radio ready");
-  // }
   Serial.flush();
   smartDelay(100);
   
-  // Initialize display AFTER LoRa (will reconfigure SPI for e-paper)
+  // Initialize display
   Serial.println("[Display] Initializing e-paper...");
   Serial.flush();
   if (!ui.begin(EPD_SCK, EPD_MISO, EPD_MOSI, EPD_CS, EPD_DC, EPD_RST, EPD_BUSY)) {
@@ -484,21 +443,10 @@ void setup() {
   Serial.println(keyboard.isRightPressed() ? "RIGHT PRESSED!" : "no keys");
   Serial.println("[Keyboard] Buffer cleared and ready");
   
-  // LoRa callbacks disabled - MQTT only
-  // messenger.setMessageCallback(onMessageReceived);
-  // messenger.setAckCallback(onMessageAcked);
-  // messenger.setReadCallback(onMessageReadReceipt);
-  // messenger.setVillageNameCallback(onVillageNameReceived);
-  
   // Initialize messaging screen flag
   inMessagingScreen = false;
   lastMessagingActivity = 0;
   currentVillageSlot = -1;  // No village loaded yet
-  
-  // Don't auto-load any village - let user select from menu
-  
-  // Set delay callback for responsive keyboard during LoRa transmissions
-  // messenger.setDelayCallback(smartDelay);  // LoRa disabled
   
   // Set typing check callback to defer display updates during typing
   ui.setTypingCheckCallback(isUserTyping);
@@ -537,7 +485,7 @@ void setup() {
         Serial.println("[MQTT] MQTT messenger ready");
         logger.info("MQTT messenger initialized");
         
-        // Set up MQTT callbacks (same as LoRa)
+        // Set up MQTT callbacks
         mqttMessenger.setMessageCallback(onMessageReceived);
         mqttMessenger.setAckCallback(onMessageAcked);
         mqttMessenger.setReadCallback(onMessageReadReceipt);
@@ -625,10 +573,7 @@ void loop() {
     inMessagingScreen = false;
   }
   
-  // Process incoming messages via MQTT only
-  // messenger.loop();  // LoRa disabled
-  
-  // Process MQTT messages if connected
+  // Process incoming MQTT messages
   mqttMessenger.loop();
   
   // Update battery readings (rate-limited internally)
@@ -637,18 +582,15 @@ void loop() {
   
   // Process read receipt queue in background (send one per loop iteration)
   static unsigned long lastReadReceiptSent = 0;
-  if (!readReceiptQueue.empty() && (millis() - lastRadioTransmission > 150) && (millis() - lastReadReceiptSent > 150)) {
+  if (!readReceiptQueue.empty() && (millis() - lastTransmission > 150) && (millis() - lastReadReceiptSent > 150)) {
     ReadReceiptQueueItem item = readReceiptQueue.front();
     readReceiptQueue.erase(readReceiptQueue.begin());
-    
-    // Send read receipt via MQTT only
-    // LoRaMessenger::clearReceivedFlag();  // LoRa disabled
     
     Serial.println("[App] Sending queued read receipt for: " + item.messageId);
     mqttMessenger.sendReadReceipt(item.messageId, item.recipientMAC);
     
     lastReadReceiptSent = millis();
-    lastRadioTransmission = millis();
+    lastTransmission = millis();
   }
   
   switch (appState) {
@@ -787,8 +729,7 @@ void handleMainMenu() {
         currentVillageSlot = slot;
         ui.setExistingVillageName(village.getVillageName());
         encryption.setKey(village.getEncryptionKey());
-        // messenger.setEncryption(&encryption);  // LoRa disabled
-        // messenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());  // LoRa disabled
+
         
         // Configure MQTT (set even if not connected yet)
         mqttMessenger.setEncryption(&encryption);
@@ -878,17 +819,6 @@ void handleVillageMenu() {
         logger.info("Sync: Request sent, last=" + String(lastMsgTime));
         mqttMessenger.requestSync(lastMsgTime);
         smartDelay(500);  // Wait for sync responses to arrive
-      }
-      
-      // If we're the owner, send village name announcement for joiners
-      if (village.amOwner()) {
-        messenger.sendVillageNameAnnouncement();
-        Serial.println("[Village] Sent village name announcement");
-      }
-      // If we're a joiner with "Pending..." name, request the real name
-      else if (village.getVillageName() == "Pending...") {
-        messenger.sendVillageNameRequest();
-        Serial.println("[Village] Requested village name from owner");
       }
       
       // Load messages with pagination - show last N messages (same window for both devices)
@@ -1287,8 +1217,7 @@ void handleUsernameInput() {
       village.saveToSlot(currentVillageSlot);
       
       encryption.setKey(village.getEncryptionKey());
-      // messenger.setEncryption(&encryption);  // LoRa disabled
-      // messenger.setVillageInfo(village.getVillageId(), village.getVillageName(), village.getUsername());  // LoRa disabled
+
       
       // Configure MQTT (set even if not connected yet)
       mqttMessenger.setEncryption(&encryption);
@@ -1324,17 +1253,6 @@ void handleUsernameInput() {
       lastMessagingActivity = millis();  // Record activity time
       ui.setState(STATE_MESSAGING);
       ui.resetMessageScroll();  // Reset scroll to show latest messages
-      
-      // If we're the owner, send village name announcement for joiners
-      if (village.amOwner()) {
-        messenger.sendVillageNameAnnouncement();
-        Serial.println("[Village] Sent village name announcement");
-      }
-      // If we're a joiner with "Pending..." name, request the real name
-      else if (village.getVillageName() == "Pending...") {
-        messenger.sendVillageNameRequest();
-        Serial.println("[Village] Requested village name from owner");
-      }
       
       // Load messages with pagination - show last N messages (same window for both devices)
       ui.clearMessages();  // Clear any old messages from UI
@@ -1437,8 +1355,7 @@ void handleMessaging() {
       ui.setInputText("Sending...");
       ui.updatePartial();  // Quick partial update to show sending feedback
       
-      // Send the message via MQTT only (LoRa disabled)
-      // messenger.sendMessage(messageText);  // LoRa disabled
+      // Send the message via MQTT
       
       // Generate a message ID by sending via MQTT
       String sentMessageId = "";
@@ -1454,11 +1371,10 @@ void handleMessaging() {
       Message localMsg;
       localMsg.sender = village.getUsername();
       localMsg.content = messageText;
-      localMsg.timestamp = max(millis(), timestampBaseline + 1);
-      timestampBaseline = localMsg.timestamp;  // Update baseline
+      localMsg.timestamp = getCurrentTime();
       localMsg.received = false;
       localMsg.status = MSG_SENT;
-      localMsg.messageId = sentMessageId;  // Use the actual ID from LoRa
+      localMsg.messageId = sentMessageId;  // Use the actual ID from MQTT
       ui.addMessage(localMsg);
       
       // Save to storage
@@ -1525,8 +1441,7 @@ void handleMessageCompose() {
       ui.setInputText("Sending...");
       ui.updatePartial();  // Quick partial update to show sending feedback
       
-      // Send via MQTT only (LoRa disabled for speed)
-      // messenger.sendShout(currentText);  // LoRa disabled
+      // Send shout via MQTT
       String messageId = "";
       bool mqttConn = mqttMessenger.isConnected();
       logger.info("MQTT send attempt: connected=" + String(mqttConn ? "YES" : "NO"));

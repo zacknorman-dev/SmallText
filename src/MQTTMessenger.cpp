@@ -195,7 +195,7 @@ void MQTTMessenger::loop() {
 }
 
 void MQTTMessenger::cleanupSeenMessages() {
-    // MQTT is more reliable than LoRa, keep seen messages for shorter time
+    // Keep seen messages for deduplication
     // For now, just clear all (in production, could use timestamp-based cleanup)
     if (seenMessageIds.size() > 100) {
         Serial.println("[MQTT] Clearing old seen message IDs (" + String(seenMessageIds.size()) + " entries)");
@@ -262,7 +262,7 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
     
     Serial.println("[MQTT] Decrypted: " + message);
     
-    // Parse message (reuse LoRa format: TYPE:villageId:target:sender:senderMAC:msgId:content:hop:maxHop)
+    // Parse message format: TYPE:villageId:target:sender:senderMAC:msgId:content:hop:maxHop
     ParsedMessage msg = parseMessage(message);
     
     if (msg.type == MSG_UNKNOWN) {

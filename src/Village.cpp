@@ -1,5 +1,4 @@
 #include "Village.h"
-#include "LoRaMessenger.h"  // For Message struct
 #include "Logger.h"
 #include <Crypto.h>
 #include <SHA256.h>

@@ -8,7 +8,7 @@
 #include <map>
 #include "Encryption.h"
 #include "Village.h"
-#include "LoRaMessenger.h"  // Reuse Message struct and enums
+#include "Messages.h"  // Message struct and enums
 
 // MQTT Configuration
 #define MQTT_BROKER "test.mosquitto.org"  // Public broker for testing

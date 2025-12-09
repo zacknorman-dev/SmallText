@@ -6,9 +6,7 @@
 #include <set>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
-
-// Forward declaration
-struct Message;
+#include "Messages.h"
 
 #define MAX_VILLAGE_NAME 32
 #define MAX_USERNAME 32

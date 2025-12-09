@@ -1,31 +1,28 @@
-# v0.33.8 - NTP Time Sync and Timestamp Preservation
+# v0.33.9 - Read Receipt Fix
 
-## Fixed Message Chronological Order Corruption
+## Fixed Read Receipts Not Being Sent
 
 **The Problem:**
-- Messages were getting out of order during sync
-- Each device used `millis()` (device-specific boot time) as timestamps
-- Receiving device would overwrite original timestamps, destroying chronological order
-- Made messages appear with wrong usernames or in wrong order
+- Read receipts were never being queued or sent when viewing messages
+- Condition checked `msg.status != MSG_RECEIVED` to determine if message was new
+- But all incoming MQTT messages have `MSG_RECEIVED` status by default
+- So the condition always failed and read receipts were never queued
 
 **The Solution:**
-- **NTP Time Sync**: Syncs real world time on WiFi connect and every 24 hours
-- **Unix Timestamps**: All messages now use real Unix timestamps (seconds since 1970)
-- **Preserve Original Timestamps**: No more overwriting during sync
-- **Cross-Device Compatibility**: All devices share same time baseline
+- Removed the incorrect status check from the condition
+- Now read receipts queue whenever you're viewing the messaging screen
+- Background task sends them via MQTT to the sender
+- Messages will now properly show as READ on the sender's device
 
 ## Changes
-- Added NTP sync to WiFiManager (syncs on connect + every 24 hours)
-- New `getCurrentTime()` helper returns Unix timestamp
-- Updated message creation to use real timestamps
-- Removed timestamp adjustment logic that was corrupting order
-- Removed millis()-based timestamp baseline
+- Simplified `onMessageReceived` condition (removed `msg.status != MSG_RECEIVED` check)
+- Read receipts now work correctly for all incoming messages
+- Messages show as "READ" (status 2) after being viewed by recipient
 
-## Important Note
-**Requires new village for clean testing** - old messages have millis()-based timestamps that won't sort correctly with new Unix timestamps. Create a fresh village to test this release.
-
-## What's Next
-Test with new village, verify:
-- Messages stay in correct chronological order after sync
-- Timestamps are preserved from original sender
-- No more "same username on both sides" corruption
+## Testing
+Flash v0.33.9 and verify:
+- Send a message from device A
+- View it on device B (open messaging screen)
+- Check device A - message should update to READ status
+- Check logs for `[App] Sending queued read receipt for: ...`
+- Check logs for `[MQTT] Received read receipt for message: ...`

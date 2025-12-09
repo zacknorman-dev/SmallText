@@ -8,7 +8,8 @@
 #include <epd/GxEPD2_290_BS.h>
 #include <Fonts/FreeSans9pt7b.h>
 #include <Fonts/FreeSansBold12pt7b.h>
-#include "LoRaMessenger.h"
+#include "Messages.h"
+#include "Village.h"
 
 #define SCREEN_WIDTH 296
 #define SCREEN_HEIGHT 128
