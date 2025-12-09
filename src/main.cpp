@@ -10,7 +10,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.34.0"
+#define BUILD_NUMBER "v0.34.2"
 
 // Pin definitions for Heltec Vision Master E290
 #define I2C_SDA 39
@@ -839,13 +839,30 @@ void handleVillageMenu() {
       }
       Serial.println("[App] Displaying last " + String(displayCount) + " of " + String(messages.size()) + " messages (paginated, consistent across devices)");
       
-      // DON'T queue read receipts for old messages - they were already read in previous session
-      // Read receipts only get sent when NEW messages arrive while in messaging screen
-      // DON'T queue read receipts for old messages - they were already read in previous session
-      // Read receipts only get sent when NEW messages arrive while in messaging screen
-      // This prevents blocking on startup when loading historical messages
+      // Mark all received (but not yet read) messages as read and queue read receipts
       readReceiptQueue.clear();  // Clear any old queue items
-      Serial.println("[App] Not queuing read receipts for historical messages");
+      int unreadCount = 0;
+      for (int i = startIndex; i < messages.size(); i++) {
+        const Message& msg = messages[i];
+        // Only process received messages that aren't already read
+        if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
+          // Mark as read in UI and storage
+          ui.updateMessageStatus(msg.messageId, MSG_READ);
+          village.updateMessageStatus(msg.messageId, MSG_READ);
+          
+          // Queue read receipt to sender
+          if (!msg.senderMAC.isEmpty()) {
+            ReadReceiptQueueItem item;
+            item.messageId = msg.messageId;
+            item.recipientMAC = msg.senderMAC;
+            readReceiptQueue.push_back(item);
+            unreadCount++;
+          }
+        }
+      }
+      if (unreadCount > 0) {
+        Serial.println("[App] Marked " + String(unreadCount) + " unread messages as read, queued receipts");
+      }
       
       ui.update();  // Always refresh to show any messages received
     } else if (selection == 1) {
@@ -1273,10 +1290,30 @@ void handleUsernameInput() {
       }
       Serial.println("[App] Displaying last " + String(displayCount) + " of " + String(messages.size()) + " messages (paginated, consistent across devices)");
       
-      // DON'T queue read receipts for old messages - they were already read in previous session
-      // Read receipts only get sent when NEW messages arrive while in messaging screen
+      // Mark all received (but not yet read) messages as read and queue read receipts
       readReceiptQueue.clear();  // Clear any old queue items
-      Serial.println("[App] Not queuing read receipts for historical messages");
+      int unreadCount = 0;
+      for (int i = startIndex; i < messages.size(); i++) {
+        const Message& msg = messages[i];
+        // Only process received messages that aren't already read
+        if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
+          // Mark as read in UI and storage
+          ui.updateMessageStatus(msg.messageId, MSG_READ);
+          village.updateMessageStatus(msg.messageId, MSG_READ);
+          
+          // Queue read receipt to sender
+          if (!msg.senderMAC.isEmpty()) {
+            ReadReceiptQueueItem item;
+            item.messageId = msg.messageId;
+            item.recipientMAC = msg.senderMAC;
+            readReceiptQueue.push_back(item);
+            unreadCount++;
+          }
+        }
+      }
+      if (unreadCount > 0) {
+        Serial.println("[App] Marked " + String(unreadCount) + " unread messages as read, queued receipts");
+      }
       
       ui.setInputText("");  // Clear input field before entering messaging
       ui.update();
