@@ -196,6 +196,13 @@ void onMessageReceived(const Message& msg) {
     } else {
       Serial.println("[Message] Silently cached (not added to UI)");
     }
+    
+    // For incoming messages (not our own), ensure status is persisted as MSG_RECEIVED (status 2)
+    // This happens for all received messages, regardless of which screen we're on
+    if (!isSyncing && msg.received && msg.status == MSG_RECEIVED) {
+      village.updateMessageStatus(msg.messageId, MSG_RECEIVED);
+      Serial.println("[Message] Marked incoming message as received (status 2)");
+    }
   } else {
     // Message is for a different village - save to messages.dat without updating UI
     Serial.println("[Message] Message for different village (" + msg.villageId + ") - saving to storage only");
@@ -203,10 +210,10 @@ void onMessageReceived(const Message& msg) {
   }
   
   // Only mark as read if this is a NEW message (not a synced historical message)
-  // Skip status updates during sync to avoid watchdog timeout
-  // All incoming messages already have MSG_RECEIVED status, so we just check we're viewing messages
-  if (!isSyncing && appState == APP_MESSAGING && inMessagingScreen) {
-    Serial.println("[App] Already in messaging screen, marking NEW message as read");
+  // AND if we're actively viewing the messaging screen
+  // This upgrades the message from MSG_RECEIVED (status 2) to MSG_READ (status 3)
+  if (!isSyncing && msg.received && appState == APP_MESSAGING && inMessagingScreen) {
+    Serial.println("[App] Already in messaging screen, marking NEW message as read (status 3)");
     
     // Mark message as read locally
     ui.updateMessageStatus(msg.messageId, MSG_READ);
@@ -235,10 +242,14 @@ void onMessageReceived(const Message& msg) {
 
 void onMessageAcked(const String& messageId, const String& fromMAC) {
   Serial.println("[Message] ACK received for: " + messageId + " from " + fromMAC);
-  ui.updateMessageStatus(messageId, MSG_RECEIVED);
+  
+  // Update storage FIRST - this is the source of truth and always works
   if (!isSyncing) {
     village.updateMessageStatus(messageId, MSG_RECEIVED);  // Persist to storage (skip during sync)
   }
+  
+  // Then try to update UI - this may fail if message not in UI yet (race condition with message save)
+  ui.updateMessageStatus(messageId, MSG_RECEIVED);
   
   // Update display if we're actively viewing messaging screen
   if (inMessagingScreen) {
@@ -248,10 +259,14 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
 
 void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
   Serial.println("[Message] Read receipt for: " + messageId + " from " + fromMAC);
-  ui.updateMessageStatus(messageId, MSG_READ);
+  
+  // Update storage FIRST - this is the source of truth and always works
   if (!isSyncing) {
     village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage (skip during sync)
   }
+  
+  // Then try to update UI - this may fail if message not in UI yet (race condition with message save)
+  ui.updateMessageStatus(messageId, MSG_READ);
   
   // Update display if we're actively viewing messaging screen
   if (inMessagingScreen) {

@@ -10,11 +10,9 @@
 #include "Village.h"
 #include "Messages.h"  // Message struct and enums
 
-// MQTT Configuration - HiveMQ Cloud
-#define MQTT_BROKER "83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud"
-#define MQTT_PORT 8883
-#define MQTT_USERNAME "smoltok"
-#define MQTT_PASSWORD "QdgMc7VnQ2D8dhT"
+// MQTT Configuration - test.mosquitto.org with QoS 1
+#define MQTT_BROKER "test.mosquitto.org"
+#define MQTT_PORT 1883
 
 // Topic structure: smoltxt/{villageId}/{messageType}
 // messageType: shout, whisper/{recipientMAC}, ack/{targetMAC}, read/{targetMAC}

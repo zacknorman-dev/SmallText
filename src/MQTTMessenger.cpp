@@ -33,13 +33,11 @@ MQTTMessenger::MQTTMessenger() {
     // Set static instance for callbacks
     instance = this;
     
-    // Configure AsyncMqttClient
+    // Configure AsyncMqttClient for test.mosquitto.org
     mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
-    mqttClient.setCredentials(MQTT_USERNAME, MQTT_PASSWORD);
     mqttClient.setClientId(clientId.c_str());
     mqttClient.setCleanSession(false);  // Persistent session for offline message queuing
     mqttClient.setKeepAlive(60);
-    // Note: TLS is automatically enabled when connecting to port 8883
     
     // Set callbacks
     mqttClient.onConnect(onMqttConnect);
@@ -137,7 +135,7 @@ bool MQTTMessenger::reconnect() {
     }
     lastReconnectAttempt = now;
     
-    Serial.println("[MQTT] Connecting to HiveMQ Cloud...");
+    Serial.println("[MQTT] Connecting to broker...");
     
     // AsyncMqttClient connects asynchronously - onMqttConnect callback handles subscriptions
     mqttClient.connect();
@@ -192,7 +190,7 @@ void MQTTMessenger::cleanupSeenMessages() {
 void MQTTMessenger::onMqttConnect(bool sessionPresent) {
     if (!instance) return;
     
-    Serial.println("[MQTT] Connected to HiveMQ Cloud!");
+    Serial.println("[MQTT] Connected to broker!");
     Serial.println("[MQTT] Session present: " + String(sessionPresent ? "yes" : "no"));
     instance->connected = true;
     
@@ -224,7 +222,7 @@ void MQTTMessenger::onMqttConnect(bool sessionPresent) {
 void MQTTMessenger::onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
     if (!instance) return;
     
-    Serial.print("[MQTT] Disconnected from HiveMQ Cloud. Reason: ");
+    Serial.print("[MQTT] Disconnected from broker. Reason: ");
     Serial.println((int)reason);
     instance->connected = false;
 }
