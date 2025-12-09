@@ -8,9 +8,9 @@ MQTTMessenger* MQTTMessenger::instance = nullptr;
 
 MQTTMessenger::MQTTMessenger() : mqttClient(wifiClient) {
     encryption = nullptr;
-    myVillageId = "";
-    myVillageName = "";
-    myUsername = "";
+    currentVillageId = "";
+    currentVillageName = "";
+    currentUsername = "";
     myMAC = ESP.getEfuseMac();
     onMessageReceived = nullptr;
     onMessageAcked = nullptr;
@@ -58,19 +58,20 @@ void MQTTMessenger::setEncryption(Encryption* enc) {
 }
 
 void MQTTMessenger::setVillageInfo(const String& villageId, const String& villageName, const String& username) {
-    myVillageId = villageId;
-    myVillageName = villageName;
-    myUsername = username;
-    Serial.println("[MQTT] Village Info Set:");
-    Serial.println("  ID: " + myVillageId);
-    Serial.println("  Name: " + myVillageName);
-    Serial.println("  User: " + myUsername);
+    currentVillageId = villageId;
+    currentVillageName = villageName;
+    currentUsername = username;
+    Serial.println("[MQTT] Active Village Set:");
+    Serial.println("  ID: " + currentVillageId);
+    Serial.println("  Name: " + currentVillageName);
+    Serial.println("  User: " + currentUsername);
     
-    // If already connected, resubscribe to new village topics
-    if (isConnected()) {
-        String baseTopic = "smoltxt/" + myVillageId + "/#";
-        mqttClient.subscribe(baseTopic.c_str());
-        Serial.println("[MQTT] Subscribed to: " + baseTopic);
+    // For backwards compatibility: if this village isn't in subscriptions, add it
+    if (!findVillageSubscription(villageId) && encryption) {
+        addVillageSubscription(villageId, villageName, username, encryption->getKey());
+    } else {
+        // Just set it as active
+        setActiveVillage(villageId);
     }
 }
 
@@ -104,7 +105,7 @@ String MQTTMessenger::generateMessageId() {
 
 String MQTTMessenger::generateTopic(const String& messageType, const String& target) {
     // Topic structure: smoltxt/{villageId}/{messageType}[/{target}]
-    String topic = "smoltxt/" + myVillageId + "/" + messageType;
+    String topic = "smoltxt/" + currentVillageId + "/" + messageType;
     if (!target.isEmpty()) {
         topic += "/" + target;
     }
@@ -127,16 +128,21 @@ bool MQTTMessenger::reconnect() {
     
     Serial.print("[MQTT] Connecting to broker... ");
     
-    if (mqttClient.connect(clientId.c_str())) {
-        Serial.println("connected!");
+    // Connect with persistent session (cleanSession=false) to enable message queueing while offline
+    if (mqttClient.connect(clientId.c_str(), NULL, NULL, NULL, 0, false, NULL, false)) {
+        Serial.println("connected with persistent session!");
         connected = true;
         
-        // Subscribe to village topics
-        if (!myVillageId.isEmpty()) {
-            String baseTopic = "smoltxt/" + myVillageId + "/#";
-            mqttClient.subscribe(baseTopic.c_str());
-            Serial.println("[MQTT] Subscribed to: " + baseTopic);
-            logger.info("MQTT: Connected and subscribed to " + myVillageName);
+        // Subscribe to all saved villages
+        if (subscribedVillages.size() > 0) {
+            for (const auto& village : subscribedVillages) {
+                String baseTopic = "smoltxt/" + village.villageId + "/#";
+                mqttClient.subscribe(baseTopic.c_str());
+                Serial.println("[MQTT] Subscribed to: " + baseTopic + " (" + village.villageName + ")");
+            }
+            logger.info("MQTT: Connected - subscribed to " + String(subscribedVillages.size()) + " villages");
+        } else {
+            Serial.println("[MQTT] Warning: No villages to subscribe to");
         }
         
         // Subscribe to device command topic (for remote control)
@@ -240,27 +246,44 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
         return;
     }
     
-    // Check for sync-request topics (from other devices in our village)
-    if (topic.startsWith("smoltxt/" + myVillageId + "/sync-request/")) {
+    // Extract villageId from topic: smoltxt/{villageId}/...
+    int firstSlash = topic.indexOf('/');
+    int secondSlash = topic.indexOf('/', firstSlash + 1);
+    if (firstSlash == -1 || secondSlash == -1) {
+        Serial.println("[MQTT] Invalid topic format");
+        return;
+    }
+    
+    String villageId = topic.substring(firstSlash + 1, secondSlash);
+    Serial.println("[MQTT] Message for village: " + villageId);
+    
+    // Check for sync-request topics (from other devices)
+    if (topic.startsWith("smoltxt/" + villageId + "/sync-request/")) {
         handleSyncRequest(payload, length);
         return;
     }
     
-    if (!encryption) {
-        Serial.println("[MQTT] No encryption set, ignoring message");
+    // Find the village subscription to get the encryption key
+    VillageSubscription* village = findVillageSubscription(villageId);
+    if (!village) {
+        Serial.println("[MQTT] Village not found in subscriptions: " + villageId);
         return;
     }
+    
+    // Create temporary encryption object with this village's key
+    Encryption tempEncryption;
+    tempEncryption.setKey(village->encryptionKey);
     
     // Decrypt payload
     String message;
     
-    if (!encryption->decryptString(payload, length, message)) {
-        Serial.println("[MQTT] Decryption failed");
-        logger.error("MQTT: Decryption failed, len=" + String(length));
+    if (!tempEncryption.decryptString(payload, length, message)) {
+        Serial.println("[MQTT] Decryption failed for village: " + village->villageName);
+        logger.error("MQTT: Decryption failed for " + village->villageName);
         return;
     }
     
-    Serial.println("[MQTT] Decrypted: " + message);
+    Serial.println("[MQTT] Decrypted message from " + village->villageName + ": " + message);
     
     // Parse message format: TYPE:villageId:target:sender:senderMAC:msgId:content:hop:maxHop
     ParsedMessage msg = parseMessage(message);
@@ -377,7 +400,7 @@ String MQTTMessenger::sendShout(const String& message) {
     myMacStr.toLowerCase();
     
     // Format: SHOUT:villageId:*:sender:senderMAC:msgId:content:0:0
-    String formatted = "SHOUT:" + myVillageId + ":*:" + myUsername + ":" + 
+    String formatted = "SHOUT:" + currentVillageId + ":*:" + currentUsername + ":" + 
                       myMacStr + ":" + msgId + ":" + message + ":0:0";
     
     // Encrypt
@@ -413,10 +436,8 @@ String MQTTMessenger::sendWhisper(const String& recipientMAC, const String& mess
     myMacStr.toLowerCase();
     
     // Format: WHISPER:villageId:recipientMAC:sender:senderMAC:msgId:content:0:0
-    String formatted = "WHISPER:" + myVillageId + ":" + recipientMAC + ":" + 
-                      myUsername + ":" + myMacStr + ":" + msgId + ":" + message + ":0:0";
-    
-    // Encrypt
+    String formatted = "WHISPER:" + currentVillageId + ":" + recipientMAC + ":" +
+                      currentUsername + ":" + myMacStr + ":" + msgId + ":" + message + ":0:0";    // Encrypt
     uint8_t encrypted[MAX_CIPHERTEXT];
     size_t encryptedLen;
     if (!encryption->encryptString(formatted, encrypted, MAX_CIPHERTEXT, &encryptedLen)) {
@@ -448,10 +469,8 @@ bool MQTTMessenger::sendAck(const String& messageId, const String& targetMAC) {
     myMacStr.toLowerCase();
     
     // Format: ACK:villageId:targetMAC:sender:senderMAC:ackId:originalMessageId:0:0
-    String formatted = "ACK:" + myVillageId + ":" + targetMAC + ":" + 
-                      myUsername + ":" + myMacStr + ":" + ackId + ":" + messageId + ":0:0";
-    
-    uint8_t encrypted[MAX_CIPHERTEXT];
+    String formatted = "ACK:" + currentVillageId + ":" + targetMAC + ":" +
+                      currentUsername + ":" + myMacStr + ":" + ackId + ":" + messageId + ":0:0";    uint8_t encrypted[MAX_CIPHERTEXT];
     size_t encryptedLen;
     if (!encryption->encryptString(formatted, encrypted, MAX_CIPHERTEXT, &encryptedLen)) {
         return false;
@@ -471,10 +490,8 @@ bool MQTTMessenger::sendReadReceipt(const String& messageId, const String& targe
     myMacStr.toLowerCase();
     
     // Format: READ_RECEIPT:villageId:targetMAC:sender:senderMAC:readId:originalMessageId:0:0
-    String formatted = "READ_RECEIPT:" + myVillageId + ":" + targetMAC + ":" + 
-                      myUsername + ":" + myMacStr + ":" + readId + ":" + messageId + ":0:0";
-    
-    uint8_t encrypted[MAX_CIPHERTEXT];
+    String formatted = "READ_RECEIPT:" + currentVillageId + ":" + targetMAC + ":" +
+                      currentUsername + ":" + myMacStr + ":" + readId + ":" + messageId + ":0:0";    uint8_t encrypted[MAX_CIPHERTEXT];
     size_t encryptedLen;
     if (!encryption->encryptString(formatted, encrypted, MAX_CIPHERTEXT, &encryptedLen)) {
         return false;
@@ -515,7 +532,7 @@ bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
         return false;
     }
     
-    String topic = "smoltxt/" + myVillageId + "/sync-request/" + String(myMAC, HEX);
+    String topic = "smoltxt/" + currentVillageId + "/sync-request/" + String(myMAC, HEX);
     Serial.println("[MQTT] Publishing sync request to: " + topic);
     bool success = mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
     
@@ -786,3 +803,103 @@ String MQTTMessenger::getConnectionStatus() {
     
     return "Connected";
 }
+
+// Multi-village subscription management
+
+void MQTTMessenger::addVillageSubscription(const String& villageId, const String& villageName, const String& username, const uint8_t* encKey) {
+    // Check if already subscribed
+    for (auto& village : subscribedVillages) {
+        if (village.villageId == villageId) {
+            Serial.println("[MQTT] Village already subscribed: " + villageName);
+            return;
+        }
+    }
+    
+    // Add new subscription
+    VillageSubscription sub;
+    sub.villageId = villageId;
+    sub.villageName = villageName;
+    sub.username = username;
+    memcpy(sub.encryptionKey, encKey, 32);
+    subscribedVillages.push_back(sub);
+    
+    Serial.println("[MQTT] Added village subscription: " + villageName + " (" + villageId + ")");
+    
+    // Subscribe to MQTT topic if already connected
+    if (isConnected()) {
+        String baseTopic = "smoltxt/" + villageId + "/#";
+        mqttClient.subscribe(baseTopic.c_str());
+        Serial.println("[MQTT] Subscribed to topic: " + baseTopic);
+    }
+}
+
+void MQTTMessenger::removeVillageSubscription(const String& villageId) {
+    for (auto it = subscribedVillages.begin(); it != subscribedVillages.end(); ++it) {
+        if (it->villageId == villageId) {
+            Serial.println("[MQTT] Removing village subscription: " + it->villageName);
+            
+            // Unsubscribe from MQTT topic if connected
+            if (isConnected()) {
+                String baseTopic = "smoltxt/" + villageId + "/#";
+                mqttClient.unsubscribe(baseTopic.c_str());
+                Serial.println("[MQTT] Unsubscribed from topic: " + baseTopic);
+            }
+            
+            subscribedVillages.erase(it);
+            return;
+        }
+    }
+}
+
+void MQTTMessenger::setActiveVillage(const String& villageId) {
+    VillageSubscription* village = findVillageSubscription(villageId);
+    if (village) {
+        currentVillageId = village->villageId;
+        currentVillageName = village->villageName;
+        currentUsername = village->username;
+        
+        // Update encryption key for sending
+        if (encryption) {
+            encryption->setKey(village->encryptionKey);
+        }
+        
+        Serial.println("[MQTT] Active village set to: " + currentVillageName);
+    } else {
+        Serial.println("[MQTT] Warning: Village not found: " + villageId);
+    }
+}
+
+void MQTTMessenger::subscribeToAllVillages() {
+    Serial.println("[MQTT] Scanning for saved villages...");
+    
+    // Clear existing subscriptions
+    subscribedVillages.clear();
+    
+    // Scan all village slots (0-9)
+    for (int slot = 0; slot < 10; slot++) {
+        if (Village::hasVillageInSlot(slot)) {
+            Village tempVillage;
+            if (tempVillage.loadFromSlot(slot)) {
+                addVillageSubscription(
+                    tempVillage.getVillageId(),
+                    tempVillage.getVillageName(),
+                    tempVillage.getUsername(),
+                    tempVillage.getEncryptionKey()
+                );
+            }
+        }
+    }
+    
+    Serial.println("[MQTT] Subscribed to " + String(subscribedVillages.size()) + " villages");
+    logger.info("MQTT: Subscribed to " + String(subscribedVillages.size()) + " villages");
+}
+
+VillageSubscription* MQTTMessenger::findVillageSubscription(const String& villageId) {
+    for (auto& village : subscribedVillages) {
+        if (village.villageId == villageId) {
+            return &village;
+        }
+    }
+    return nullptr;
+}
+

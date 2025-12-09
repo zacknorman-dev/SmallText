@@ -10,7 +10,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.34.4"
+#define BUILD_NUMBER "v0.35.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define I2C_SDA 39
@@ -494,6 +494,10 @@ void setup() {
         // Set encryption
         mqttMessenger.setEncryption(&encryption);
         
+        // Subscribe to all saved villages for multi-village support
+        mqttMessenger.subscribeToAllVillages();
+        Serial.println("[MQTT] Subscribed to all saved villages");
+        
         // Enable MQTT debug logging
         logger.setMQTTClient(mqttMessenger.getClient());
       } else {
@@ -539,6 +543,21 @@ void setup() {
   Serial.println("[System] Going to village select");
   keyboard.clearInput();  // Clear any stray keys that might trigger typing detection
   Serial.println("[System] Keyboard cleared before village select");
+  
+  // Auto-load the most recently used village so MQTT is subscribed immediately
+  // This allows receiving messages even when sitting at main menu
+  if (currentVillageSlot >= 0 && Village::hasVillageInSlot(currentVillageSlot)) {
+    Serial.println("[System] Auto-loading last village from slot " + String(currentVillageSlot));
+    if (village.loadFromSlot(currentVillageSlot)) {
+      encryption.setKey(village.getEncryptionKey());
+      Serial.println("[System] Village auto-loaded: " + village.getVillageName());
+      logger.info("Auto-loaded village: " + village.getVillageName());
+      // MQTT subscription will be configured automatically in main loop
+    }
+  } else {
+    Serial.println("[System] No previous village to auto-load");
+  }
+  
   appState = APP_MAIN_MENU;
   ui.setState(STATE_VILLAGE_SELECT);
   ui.resetMenuSelection();
@@ -572,21 +591,19 @@ void loop() {
     inMessagingScreen = false;
   }
   
-  // Ensure MQTT is subscribed to current village (if one is loaded)
-  // This allows receiving messages even when navigating back to main menu
-  static String lastConfiguredVillageId = "";
+  // Set active village for sending messages (all villages remain subscribed for receiving)
+  static String lastActiveVillageId = "";
   if (village.isInitialized()) {
     String currentVillageId = village.getVillageId();
-    if (currentVillageId != lastConfiguredVillageId) {
-      // Village changed - reconfigure MQTT
-      mqttMessenger.setEncryption(&encryption);
-      mqttMessenger.setVillageInfo(currentVillageId, village.getVillageName(), village.getUsername());
-      lastConfiguredVillageId = currentVillageId;
-      Serial.println("[Loop] MQTT configured for village: " + village.getVillageName());
+    if (currentVillageId != lastActiveVillageId) {
+      // Village changed - set as active for sending
+      mqttMessenger.setActiveVillage(currentVillageId);
+      lastActiveVillageId = currentVillageId;
+      Serial.println("[Loop] Active village set to: " + village.getVillageName());
     }
-  } else if (!lastConfiguredVillageId.isEmpty()) {
+  } else if (!lastActiveVillageId.isEmpty()) {
     // Village was cleared - reset tracking
-    lastConfiguredVillageId = "";
+    lastActiveVillageId = "";
   }
   
   // Process incoming MQTT messages
@@ -703,9 +720,16 @@ void handleMainMenu() {
     if (selection < villageCount) {
       int slot = villageSlots[selection];
       String villageName = Village::getVillageNameFromSlot(slot);
+      String villageId = Village::getVillageIdFromSlot(slot);
       
       Serial.println("[MainMenu] Deleting village from slot " + String(slot));
       Village::deleteSlot(slot);
+      
+      // Remove from MQTT subscriptions
+      if (!villageId.isEmpty()) {
+        mqttMessenger.removeVillageSubscription(villageId);
+        Serial.println("[MainMenu] Removed village from MQTT subscriptions");
+      }
       
       // Show confirmation
       ui.showMessage("Village Deleted", villageName + " removed", 1000);
@@ -745,7 +769,10 @@ void handleMainMenu() {
         currentVillageSlot = slot;
         ui.setExistingVillageName(village.getVillageName());
         encryption.setKey(village.getEncryptionKey());
-        // MQTT subscription will be configured automatically in main loop
+        
+        // Set as active village for sending (already subscribed at boot)
+        mqttMessenger.setActiveVillage(village.getVillageId());
+        Serial.println("[MainMenu] Active village: " + village.getVillageName());
         
         // Go to village menu
         keyboard.clearInput();
@@ -895,7 +922,14 @@ void handleVillageMenu() {
         if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
           // Confirmed - delete village slot
           if (currentVillageSlot >= 0) {
+            String villageId = village.getVillageId();
             Village::deleteSlot(currentVillageSlot);
+            
+            // Remove from MQTT subscriptions
+            if (!villageId.isEmpty()) {
+              mqttMessenger.removeVillageSubscription(villageId);
+              Serial.println("[VillageMenu] Removed village from MQTT subscriptions");
+            }
           }
           village.clearVillage();
           currentVillageSlot = -1;
@@ -1248,7 +1282,16 @@ void handleUsernameInput() {
       village.saveToSlot(currentVillageSlot);
       
       encryption.setKey(village.getEncryptionKey());
-      // MQTT subscription will be configured automatically in main loop
+      
+      // Add new village to MQTT subscriptions and set as active
+      mqttMessenger.addVillageSubscription(
+        village.getVillageId(),
+        village.getVillageName(),
+        village.getUsername(),
+        village.getEncryptionKey()
+      );
+      mqttMessenger.setActiveVillage(village.getVillageId());
+      Serial.println("[Username] Village added to MQTT subscriptions: " + village.getVillageName());
       
       if (isCreatingVillage) {
         // Show passphrase for creators

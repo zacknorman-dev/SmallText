@@ -17,15 +17,26 @@
 // Topic structure: smoltxt/{villageId}/{messageType}
 // messageType: shout, whisper/{recipientMAC}, ack/{targetMAC}, read/{targetMAC}
 
+// Village subscription info for multi-village support
+struct VillageSubscription {
+    String villageId;
+    String villageName;
+    String username;
+    uint8_t encryptionKey[32];  // ChaCha20 key
+};
+
 class MQTTMessenger {
 private:
     WiFiClient wifiClient;
     PubSubClient mqttClient;
     Encryption* encryption;
     
-    String myVillageId;
-    String myVillageName;
-    String myUsername;
+    // Multi-village support
+    std::vector<VillageSubscription> subscribedVillages;
+    String currentVillageId;  // Currently active village for sending
+    String currentVillageName;
+    String currentUsername;
+    
     uint64_t myMAC;
     String clientId;  // Unique MQTT client ID
     
@@ -58,6 +69,7 @@ private:
     void handleSyncResponse(const uint8_t* payload, unsigned int length);
     bool reconnect();
     void cleanupSeenMessages();
+    VillageSubscription* findVillageSubscription(const String& villageId);  // Find village by ID
     
     // Message parsing (similar to LoRa)
     ParsedMessage parseMessage(const String& decrypted);
@@ -74,7 +86,15 @@ public:
     
     // Configuration
     void setEncryption(Encryption* enc);
-    void setVillageInfo(const String& villageId, const String& villageName, const String& username);
+    void setVillageInfo(const String& villageId, const String& villageName, const String& username);  // For backwards compatibility - sets active village
+    
+    // Multi-village subscription management
+    void subscribeToAllVillages();  // Scan all village slots and subscribe
+    void addVillageSubscription(const String& villageId, const String& villageName, const String& username, const uint8_t* encKey);
+    void removeVillageSubscription(const String& villageId);
+    void setActiveVillage(const String& villageId);  // Set which village to use for sending messages
+    int getSubscribedVillageCount() const { return subscribedVillages.size(); }
+    
     void setMessageCallback(void (*callback)(const Message& msg));
     void setAckCallback(void (*callback)(const String& messageId, const String& fromMAC));
     void setReadCallback(void (*callback)(const String& messageId, const String& fromMAC));

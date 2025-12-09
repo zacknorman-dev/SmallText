@@ -22,6 +22,7 @@ public:
     Encryption();
     
     void setKey(const uint8_t* newKey);
+    const uint8_t* getKey() const { return key; }  // Get current encryption key
     
     // Returns encrypted message length, or 0 on error
     // Output format: [nonce(12)][ciphertext][tag(16)]
