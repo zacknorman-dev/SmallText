@@ -137,7 +137,10 @@ void dumpMessageStoreDebug(int completedPhase);
 
 // Message callback
 void onMessageReceived(const Message& msg) {
-  Serial.println("[Message] From " + msg.sender + ": " + msg.content);
+  Serial.println("[Message] From " + msg.sender + ": " + msg.content + " (village: " + msg.villageId + ")");
+  
+  // Check if this message is for the currently loaded village
+  bool isForCurrentVillage = village.isInitialized() && (String(village.getVillageId()) == msg.villageId);
   
   // Check if this message already exists in storage to determine if it's truly new
   bool isNewMessage = !village.messageIdExists(msg.messageId);
@@ -171,15 +174,22 @@ void onMessageReceived(const Message& msg) {
     Serial.println("[Message] Background sync or duplicate - silent save only (no UI update)");
   }
   
-  // Always persist to storage (with duplicate detection)
-  village.saveMessage(msg);
-  
-  // Conditionally update UI
-  if (shouldUpdateUI) {
-    ui.addMessage(msg);
-    Serial.println("[Message] Added to UI. Total messages in history: " + String(ui.getMessageCount()));
+  // Save message - only save to active village if it matches, otherwise skip UI update
+  if (isForCurrentVillage) {
+    // Message is for current village - save and optionally update UI
+    village.saveMessage(msg);
+    
+    // Conditionally update UI
+    if (shouldUpdateUI) {
+      ui.addMessage(msg);
+      Serial.println("[Message] Added to UI. Total messages in history: " + String(ui.getMessageCount()));
+    } else {
+      Serial.println("[Message] Silently cached (not added to UI)");
+    }
   } else {
-    Serial.println("[Message] Silently cached (not added to UI)");
+    // Message is for a different village - save to messages.dat without updating UI
+    Serial.println("[Message] Message for different village (" + msg.villageId + ") - saving to storage only");
+    Village::saveMessageToFile(msg);  // Use static method to save without loading village
   }
   
   // Only mark as read if this is a NEW message (not a synced historical message)
@@ -1466,6 +1476,7 @@ void handleMessaging() {
       localMsg.received = false;
       localMsg.status = MSG_SENT;
       localMsg.messageId = sentMessageId;  // Use the actual ID from MQTT
+      localMsg.villageId = String(village.getVillageId());  // Set village ID
       ui.addMessage(localMsg);
       
       // Save to storage
@@ -1559,6 +1570,7 @@ void handleMessageCompose() {
       sentMsg.received = false;
       sentMsg.messageId = messageId;
       sentMsg.status = messageId.isEmpty() ? MSG_SENT : MSG_SENT;
+      sentMsg.villageId = String(village.getVillageId());  // Set village ID
       ui.addMessage(sentMsg);
       
       // Save message to disk

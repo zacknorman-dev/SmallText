@@ -627,6 +627,40 @@ bool Village::saveMessage(const Message& msg) {
     return true;
 }
 
+bool Village::saveMessageToFile(const Message& msg) {
+    // Static method to save a message without needing an initialized village
+    // Used for saving messages to non-active villages
+    
+    if (msg.villageId.isEmpty()) {
+        Serial.println("[Village] Cannot save message without villageId");
+        return false;
+    }
+    
+    File file = LittleFS.open("/messages.dat", "a");
+    if (!file) {
+        Serial.println("[Village] Failed to open messages.dat for writing");
+        return false;
+    }
+    
+    JsonDocument doc;
+    doc["village"] = msg.villageId;
+    doc["sender"] = msg.sender;
+    doc["senderMAC"] = msg.senderMAC;
+    doc["content"] = msg.content;
+    doc["timestamp"] = msg.timestamp;
+    doc["received"] = msg.received;
+    doc["status"] = (int)msg.status;
+    doc["messageId"] = msg.messageId;
+    
+    String json;
+    serializeJson(doc, json);
+    file.println(json);
+    file.close();
+    
+    Serial.println("[Village] Message saved to file: id=" + msg.messageId + " village=" + msg.villageId);
+    return true;
+}
+
 std::vector<Message> Village::loadMessages() {
     std::vector<Message> messages;
     
@@ -684,6 +718,7 @@ std::vector<Message> Village::loadMessages() {
         msg.received = doc["received"] | false;
         msg.status = (MessageStatus)(doc["status"] | MSG_SENT);
         msg.messageId = doc["messageId"] | "";
+        msg.villageId = msgVillage;  // Populate villageId from loaded data
         
         messages.push_back(msg);
     }

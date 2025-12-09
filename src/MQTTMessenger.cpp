@@ -346,6 +346,7 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
             m.senderMAC = msg.senderMAC;
             m.content = msg.content;
             m.timestamp = getCurrentTime();
+            m.villageId = msg.villageId;  // Pass village ID for multi-village support
             
             // Determine if this is a received message or our own sent message
             // Compare sender username with this village's username
@@ -619,6 +620,7 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
             msgObj["messageId"] = phaseMessages[j].messageId;
             msgObj["received"] = phaseMessages[j].received;
             msgObj["status"] = (int)phaseMessages[j].status;
+            msgObj["villageId"] = phaseMessages[j].villageId;  // Include village ID for multi-village support
         }
         
         doc["batch"] = (i / BATCH_SIZE) + 1;
@@ -751,6 +753,7 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
         msg.messageId = msgObj["messageId"] | "";
         msg.received = msgObj["received"] | true;
         msg.status = (MessageStatus)(msgObj["status"] | MSG_RECEIVED);
+        msg.villageId = msgObj["villageId"] | "";  // Extract village ID from sync response
         
         // Store sender MAC from first message for background sync continuation
         if (msgCount == 0 && batch == 1 && phase == 1 && !msg.senderMAC.isEmpty()) {

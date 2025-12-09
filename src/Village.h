@@ -69,6 +69,10 @@ public:
     // Setters
     void setVillageName(const String& name);  // Update village name (for joiners receiving announcement)
     
+    // Getters
+    const char* getVillageId() const { return villageId; }
+    const char* getUsername() const { return myUsername; }
+    
     // Encryption
     const uint8_t* getEncryptionKey() { return encryptionKey; }
     String getPasswordString();  // Get password as displayable hex string
@@ -91,6 +95,7 @@ public:
     
     // Message persistence
     bool saveMessage(const Message& msg);
+    static bool saveMessageToFile(const Message& msg);  // Static method to save without loading village
     std::vector<Message> loadMessages();
     bool clearMessages();  // Clear all stored messages
     bool updateMessageStatus(const String& messageId, int newStatus);  // Update status of existing message

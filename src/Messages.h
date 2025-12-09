@@ -35,6 +35,7 @@ struct Message {
     bool received;
     MessageStatus status;
     String messageId;
+    String villageId;  // Which village this message belongs to
 };
 
 // Parsed message structure (for MQTT protocol parsing)
