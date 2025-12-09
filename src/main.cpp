@@ -10,7 +10,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.34.3"
+#define BUILD_NUMBER "v0.34.4"
 
 // Pin definitions for Heltec Vision Master E290
 #define I2C_SDA 39
@@ -102,7 +102,6 @@ std::vector<ReadReceiptQueueItem> readReceiptQueue;
 const int MAX_MESSAGES_TO_LOAD = 30;  // Only load most recent 30 messages
 const int MAX_READ_RECEIPTS = 10;  // Only send read receipts for last 10 unread messages
 unsigned long lastTransmission = 0;  // Track when last transmitted (for timing read receipts)
-unsigned long lastVillageNameRequest = 0;  // Track pending village name requests (retry every 30s)
 unsigned long lastOTACheck = 0;  // Track automatic OTA update checks
 
 // Get current Unix timestamp (seconds since epoch)
@@ -1021,11 +1020,12 @@ void handleVillageJoinPassword() {
       passphrase.toLowerCase();
       tempVillagePassword = passphrase;
       
-      // Joiner starts with placeholder name - will receive real name from creator
-      tempVillageName = "Pending...";
+      // Derive village name from passphrase (same deterministic name for all members)
+      tempVillageName = Village::deriveVillageNameFromPassword(passphrase);
       Serial.println("[Join] Passphrase entered: " + passphrase);
+      Serial.println("[Join] Derived village name: " + tempVillageName);
       
-      // Go straight to username - village name will come from creator
+      // Go straight to username with derived village name
       ui.setExistingVillageName(tempVillageName);
       appState = APP_USERNAME_INPUT;
       ui.setState(STATE_INPUT_USERNAME);
