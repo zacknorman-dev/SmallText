@@ -27,6 +27,15 @@
 			"command": "& 'C:\\Users\\zackn\\.platformio\\penv\\Scripts\\platformio.exe' run --target upload",
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "PlatformIO: Build",
+			"type": "shell",
+			"command": "platformio run",
+			"problemMatcher": [
+				"$platformio"
+			],
+			"group": "build"
 		}
 	]
 }

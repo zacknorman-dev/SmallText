@@ -333,10 +333,15 @@ void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp)
   std::vector<Message> allMessages = village.loadMessages();
   std::vector<Message> newMessages;
   
+  Serial.println("[Sync] DEBUG: Filtering " + String(allMessages.size()) + " messages");
   for (const Message& msg : allMessages) {
+    Serial.println("[Sync] DEBUG: msg.id=" + msg.messageId + " ts=" + String(msg.timestamp) + " vs requested=" + String(requestedTimestamp) + " isEmpty=" + String(msg.messageId.isEmpty()));
     // Filter: Must have message ID AND be newer than requested timestamp
     if (!msg.messageId.isEmpty() && msg.timestamp > requestedTimestamp) {
+      Serial.println("[Sync] DEBUG: INCLUDED");
       newMessages.push_back(msg);
+    } else {
+      Serial.println("[Sync] DEBUG: SKIPPED");
     }
   }
   
