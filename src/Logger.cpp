@@ -9,7 +9,6 @@ Logger::Logger() {
     currentLevel = LOG_INFO;
     bootTime = 0;
     serialConnected = false;
-    mqttClient = nullptr;
     deviceMAC = ESP.getEfuseMac();
     
     // Generate debug topic from MAC
@@ -34,13 +33,6 @@ bool Logger::begin() {
     
     Serial.println(F("[Logger] Initialized"));
     return true;
-}
-
-void Logger::setMQTTClient(PubSubClient* client) {
-    mqttClient = client;
-    if (mqttClient && mqttClient->connected()) {
-        Serial.println("[Logger] MQTT debug logging enabled on topic: " + debugTopic);
-    }
 }
 
 void Logger::setLogLevel(LogLevel level) {
@@ -69,12 +61,6 @@ void Logger::log(LogLevel level, const String& message) {
     Serial.print(levelToString(level));
     Serial.print(": ");
     Serial.println(message);
-    
-    // Publish to MQTT if connected
-    if (mqttClient && mqttClient->connected()) {
-        String mqttLog = "[" + String(entry.timestamp) + "] " + levelToString(level) + ": " + message;
-        mqttClient->publish(debugTopic.c_str(), mqttLog.c_str());
-    }
     
     // Prune if buffer is too large
     if (logBuffer.size() > MAX_ENTRIES) {

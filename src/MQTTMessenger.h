@@ -3,16 +3,18 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include <PubSubClient.h>
+#include <AsyncMqttClient.h>
 #include <set>
 #include <map>
 #include "Encryption.h"
 #include "Village.h"
 #include "Messages.h"  // Message struct and enums
 
-// MQTT Configuration
-#define MQTT_BROKER "test.mosquitto.org"  // Public broker for testing
-#define MQTT_PORT 1883
+// MQTT Configuration - HiveMQ Cloud
+#define MQTT_BROKER "83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud"
+#define MQTT_PORT 8883
+#define MQTT_USERNAME "smoltok"
+#define MQTT_PASSWORD "QdgMc7VnQ2D8dhT"
 
 // Topic structure: smoltxt/{villageId}/{messageType}
 // messageType: shout, whisper/{recipientMAC}, ack/{targetMAC}, read/{targetMAC}
@@ -27,8 +29,7 @@ struct VillageSubscription {
 
 class MQTTMessenger {
 private:
-    WiFiClient wifiClient;
-    PubSubClient mqttClient;
+    AsyncMqttClient mqttClient;
     Encryption* encryption;
     
     // Multi-village support
@@ -68,16 +69,18 @@ private:
     void handleIncomingMessage(const String& topic, const uint8_t* payload, unsigned int length);
     void handleSyncRequest(const uint8_t* payload, unsigned int length);
     void handleSyncResponse(const uint8_t* payload, unsigned int length);
-    bool reconnect();
     void cleanupSeenMessages();
     VillageSubscription* findVillageSubscription(const String& villageId);  // Find village by ID
+    bool reconnect();  // MQTT reconnection logic
     
     // Message parsing (similar to LoRa)
     ParsedMessage parseMessage(const String& decrypted);
     
-    // Static callback for PubSubClient (must be static)
+    // AsyncMqttClient callback handlers (must be static)
     static MQTTMessenger* instance;
-    static void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
+    static void onMqttConnect(bool sessionPresent);
+    static void onMqttDisconnect(AsyncMqttClientDisconnectReason reason);
+    static void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
 
 public:
     MQTTMessenger();
@@ -122,9 +125,6 @@ public:
     
     // Sync phase tracking (for UI decisions)
     int getCurrentSyncPhase() const { return currentSyncPhase; }
-    
-    // MQTT client access for Logger
-    PubSubClient* getClient() { return &mqttClient; }
 };
 
 #endif

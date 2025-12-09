@@ -546,9 +546,6 @@ void setup() {
         // Subscribe to all saved villages for multi-village support
         mqttMessenger.subscribeToAllVillages();
         Serial.println("[MQTT] Subscribed to all saved villages");
-        
-        // Enable MQTT debug logging
-        logger.setMQTTClient(mqttMessenger.getClient());
       } else {
         Serial.println("[MQTT] Failed to initialize");
       }
@@ -564,8 +561,11 @@ void setup() {
   
   // Request message sync if we have MQTT connection (in case we missed messages while offline)
   if (mqttMessenger.isConnected()) {
+    Serial.println("[Sync] Waiting for MQTT subscriptions to propagate...");
+    smartDelay(2000);  // Give MQTT subscriptions time to fully activate on broker
     Serial.println("[Sync] Requesting sync from peers");
     mqttMessenger.requestSync(0);  // Request all messages, will deduplicate locally
+    smartDelay(1000);  // Give time for sync responses to arrive
   }
   
   // Check for OTA updates on boot (if WiFi connected)

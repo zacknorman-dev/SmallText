@@ -36,6 +36,11 @@
 				"$platformio"
 			],
 			"group": "build"
+		},
+		{
+			"label": "PlatformIO: Build",
+			"type": "shell",
+			"command": "platformio run"
 		}
 	]
 }

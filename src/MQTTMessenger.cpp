@@ -6,7 +6,7 @@ extern Logger logger;
 // Static instance for callback
 MQTTMessenger* MQTTMessenger::instance = nullptr;
 
-MQTTMessenger::MQTTMessenger() : mqttClient(wifiClient) {
+MQTTMessenger::MQTTMessenger() {
     encryption = nullptr;
     currentVillageId = "";
     currentVillageName = "";
@@ -30,14 +30,21 @@ MQTTMessenger::MQTTMessenger() : mqttClient(wifiClient) {
     sprintf(macStr, "%012llx", myMAC);
     clientId = "smoltxt_" + String(macStr);
     
-    // Set static instance for callback
+    // Set static instance for callbacks
     instance = this;
     
-    // Configure MQTT client
+    // Configure AsyncMqttClient
     mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
-    mqttClient.setCallback(mqttCallback);
-    mqttClient.setBufferSize(512);  // Increase buffer for encrypted messages
+    mqttClient.setCredentials(MQTT_USERNAME, MQTT_PASSWORD);
+    mqttClient.setClientId(clientId.c_str());
+    mqttClient.setCleanSession(false);  // Persistent session for offline message queuing
     mqttClient.setKeepAlive(60);
+    // Note: TLS is automatically enabled when connecting to port 8883
+    
+    // Set callbacks
+    mqttClient.onConnect(onMqttConnect);
+    mqttClient.onDisconnect(onMqttDisconnect);
+    mqttClient.onMessage(onMqttMessage);
 }
 
 bool MQTTMessenger::begin() {
@@ -130,53 +137,20 @@ bool MQTTMessenger::reconnect() {
     }
     lastReconnectAttempt = now;
     
-    Serial.print("[MQTT] Connecting to broker... ");
+    Serial.println("[MQTT] Connecting to HiveMQ Cloud...");
     
-    // Connect with persistent session (cleanSession=false) to enable message queueing while offline
-    if (mqttClient.connect(clientId.c_str(), NULL, NULL, NULL, 0, false, NULL, false)) {
-        Serial.println("connected with persistent session!");
-        connected = true;
-        
-        // Subscribe to all saved villages
-        if (subscribedVillages.size() > 0) {
-            for (const auto& village : subscribedVillages) {
-                String baseTopic = "smoltxt/" + village.villageId + "/#";
-                mqttClient.subscribe(baseTopic.c_str());
-                Serial.println("[MQTT] Subscribed to: " + baseTopic + " (" + village.villageName + ")");
-            }
-            logger.info("MQTT: Connected - subscribed to " + String(subscribedVillages.size()) + " villages");
-        } else {
-            Serial.println("[MQTT] Warning: No villages to subscribe to");
-        }
-        
-        // Subscribe to device command topic (for remote control)
-        char macStr[13];
-        sprintf(macStr, "%012llx", myMAC);
-        String commandTopic = "smoltxt/" + String(macStr) + "/command";
-        mqttClient.subscribe(commandTopic.c_str());
-        Serial.println("[MQTT] Subscribed to command topic: " + commandTopic);
-        
-        // Subscribe to sync response topic (for receiving synced messages)
-        String syncResponseTopic = "smoltxt/" + String(macStr) + "/sync-response";
-        mqttClient.subscribe(syncResponseTopic.c_str());
-        Serial.println("[MQTT] Subscribed to sync response topic: " + syncResponseTopic);
-        
-        return true;
-    } else {
-        Serial.print("failed, rc=");
-        Serial.println(mqttClient.state());
-        connected = false;
-        return false;
-    }
+    // AsyncMqttClient connects asynchronously - onMqttConnect callback handles subscriptions
+    mqttClient.connect();
+    
+    return true;  // Connection attempt initiated
 }
 
 void MQTTMessenger::loop() {
-    // Maintain connection
+    // AsyncMqttClient handles connection automatically, no loop() needed
     if (!mqttClient.connected()) {
         connected = false;
         reconnect();
     } else {
-        mqttClient.loop();  // Process incoming messages
         connected = true;
     }
     
@@ -214,10 +188,53 @@ void MQTTMessenger::cleanupSeenMessages() {
 }
 
 // Static callback - forwards to instance method
-void MQTTMessenger::mqttCallback(char* topic, uint8_t* payload, unsigned int length) {
-    if (instance) {
-        instance->handleIncomingMessage(String(topic), payload, length);
+// AsyncMqttClient callbacks
+void MQTTMessenger::onMqttConnect(bool sessionPresent) {
+    if (!instance) return;
+    
+    Serial.println("[MQTT] Connected to HiveMQ Cloud!");
+    Serial.println("[MQTT] Session present: " + String(sessionPresent ? "yes" : "no"));
+    instance->connected = true;
+    
+    // Subscribe to all saved villages with QoS 1
+    if (instance->subscribedVillages.size() > 0) {
+        for (const auto& village : instance->subscribedVillages) {
+            String baseTopic = "smoltxt/" + village.villageId + "/#";
+            instance->mqttClient.subscribe(baseTopic.c_str(), 1);  // QoS 1
+            Serial.println("[MQTT] Subscribed to: " + baseTopic + " (" + village.villageName + ")");
+        }
+        logger.info("MQTT: Connected - subscribed to " + String(instance->subscribedVillages.size()) + " villages");
+    } else {
+        Serial.println("[MQTT] Warning: No villages to subscribe to");
     }
+    
+    // Subscribe to device command topic
+    char macStr[13];
+    sprintf(macStr, "%012llx", instance->myMAC);
+    String commandTopic = "smoltxt/" + String(macStr) + "/command";
+    instance->mqttClient.subscribe(commandTopic.c_str(), 1);
+    Serial.println("[MQTT] Subscribed to command topic: " + commandTopic);
+    
+    // Subscribe to sync response topic
+    String syncResponseTopic = "smoltxt/" + String(macStr) + "/sync-response";
+    instance->mqttClient.subscribe(syncResponseTopic.c_str(), 1);
+    Serial.println("[MQTT] Subscribed to sync response topic: " + syncResponseTopic);
+}
+
+void MQTTMessenger::onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
+    if (!instance) return;
+    
+    Serial.print("[MQTT] Disconnected from HiveMQ Cloud. Reason: ");
+    Serial.println((int)reason);
+    instance->connected = false;
+}
+
+void MQTTMessenger::onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
+    if (!instance) return;
+    
+    // Convert payload to byte array for processing
+    uint8_t* bytePayload = (uint8_t*)payload;
+    instance->handleIncomingMessage(String(topic), bytePayload, len);
 }
 
 void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* payload, unsigned int length) {
@@ -437,8 +454,9 @@ bool MQTTMessenger::announceVillageName(const String& villageName) {
     
     // Payload is just the village name (no encryption needed - derived from same password)
     // Use retained flag so MQTT broker keeps it for new subscribers
-    if (mqttClient.publish(topic.c_str(), villageName.c_str(), true)) {
-        Serial.println("[MQTT] Village name announced (retained): " + villageName);
+    uint16_t packetId = mqttClient.publish(topic.c_str(), 1, true, villageName.c_str());
+    if (packetId != 0) {
+        Serial.println("[MQTT] Village name announced (retained, QoS 1): " + villageName);
         return true;
     }
     
@@ -468,12 +486,12 @@ String MQTTMessenger::sendShout(const String& message) {
         return "";
     }
     
-    // Publish to shout topic
+    // Publish to shout topic with QoS 1
     String topic = generateTopic("shout");
-    bool success = mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
+    uint16_t packetId = mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen);
     
-    if (success) {
-        Serial.println("[MQTT] SHOUT sent: " + message);
+    if (packetId != 0) {
+        Serial.println("[MQTT] SHOUT sent (QoS 1): " + message);
         logger.info("MQTT SHOUT sent: " + message);
         return msgId;
     } else {
@@ -502,12 +520,12 @@ String MQTTMessenger::sendWhisper(const String& recipientMAC, const String& mess
         return "";
     }
     
-    // Publish to whisper topic for specific recipient
+    // Publish to whisper topic for specific recipient with QoS 1
     String topic = generateTopic("whisper", recipientMAC);
-    bool success = mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
+    uint16_t packetId = mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen);
     
-    if (success) {
-        Serial.println("[MQTT] WHISPER sent to " + recipientMAC + ": " + message);
+    if (packetId != 0) {
+        Serial.println("[MQTT] WHISPER sent (QoS 1) to " + recipientMAC + ": " + message);
         logger.info("MQTT WHISPER sent: " + message);
         return msgId;
     } else {
@@ -534,7 +552,7 @@ bool MQTTMessenger::sendAck(const String& messageId, const String& targetMAC) {
     }
     
     String topic = generateTopic("ack", targetMAC);
-    return mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
+    return mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen) != 0;
 }
 
 bool MQTTMessenger::sendReadReceipt(const String& messageId, const String& targetMAC) {
@@ -555,7 +573,7 @@ bool MQTTMessenger::sendReadReceipt(const String& messageId, const String& targe
     }
     
     String topic = generateTopic("read", targetMAC);
-    return mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
+    return mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen) != 0;
 }
 
 bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
@@ -591,17 +609,17 @@ bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
     
     String topic = "smoltxt/" + currentVillageId + "/sync-request/" + String(myMAC, HEX);
     Serial.println("[MQTT] Publishing sync request to: " + topic);
-    bool success = mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
+    uint16_t packetId = mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen);
     
-    if (success) {
-        Serial.println("[MQTT] Sync request sent (will receive all messages, dedup on receive)");
+    if (packetId != 0) {
+        Serial.println("[MQTT] Sync request sent (QoS 1, will receive all messages, dedup on receive)");
         logger.info("Sync request sent");
     } else {
         Serial.println("[MQTT] Sync request failed");
         logger.error("Sync request publish failed");
     }
     
-    return success;
+    return (packetId != 0);
 }
 
 bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<Message>& messages, int phase) {
@@ -680,9 +698,9 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
         }
         
         String topic = "smoltxt/" + targetMAC + "/sync-response";
-        bool success = mqttClient.publish(topic.c_str(), encrypted, encryptedLen);
+        uint16_t packetId = mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen);
         
-        if (success) {
+        if (packetId != 0) {
             totalSent += min(BATCH_SIZE, (int)(phaseMessages.size() - i));
             Serial.println("[MQTT] Phase " + String(phase) + " batch " + String((i / BATCH_SIZE) + 1) + "/" + String((phaseMessages.size() + BATCH_SIZE - 1) / BATCH_SIZE) + " sent");
             logger.info("Sync batch " + String((i / BATCH_SIZE) + 1) + " sent");
@@ -738,7 +756,11 @@ void MQTTMessenger::handleSyncRequest(const uint8_t* payload, unsigned int lengt
 }
 
 void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int length) {
-    Serial.println("[MQTT] Received sync response, decrypting...");
+    Serial.println("[MQTT] ============================================");
+    Serial.println("[MQTT] SYNC RESPONSE RECEIVED - length=" + String(length) + " bytes");
+    Serial.println("[MQTT] ============================================");
+    Serial.println("[MQTT] Decrypting sync response...");
+    logger.info("Sync response received: " + String(length) + " bytes");
     
     if (!encryption) {
         Serial.println("[MQTT] No encryption set");
@@ -887,7 +909,7 @@ void MQTTMessenger::addVillageSubscription(const String& villageId, const String
     // Subscribe to MQTT topic if already connected
     if (isConnected()) {
         String baseTopic = "smoltxt/" + villageId + "/#";
-        mqttClient.subscribe(baseTopic.c_str());
+        mqttClient.subscribe(baseTopic.c_str(), 1);  // QoS 1
         Serial.println("[MQTT] Subscribed to topic: " + baseTopic);
     }
 }
