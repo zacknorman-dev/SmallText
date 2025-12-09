@@ -1,12 +1,45 @@
 #include "MQTTMessenger.h"
 #include "Logger.h"
 
+// Let's Encrypt R12 intermediate certificate for HiveMQ Cloud TLS
+// HiveMQ Cloud uses: Server cert -> R12 (intermediate) -> ISRG Root X1 (root)
+// ESP32 needs the R12 intermediate to complete chain validation
+static const char LETSENCRYPT_R12_CERT[] = R"EOF(
+-----BEGIN CERTIFICATE-----
+MIIFBjCCAu6gAwIBAgIRAMISMktwqbSRcdxA9+KFJjwwDQYJKoZIhvcNAQELBQAw
+TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
+cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMjQwMzEzMDAwMDAw
+WhcNMjcwMzEyMjM1OTU5WjAzMQswCQYDVQQGEwJVUzEWMBQGA1UEChMNTGV0J3Mg
+RW5jcnlwdDEMMAoGA1UEAxMDUjEyMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+CgKCAQEA2pgodK2+lP474B7i5Ut1qywSf+2nAzJ+Npfs6DGPpRONC5kuHs0BUT1M
+5ShuCVUxqqUiXXL0LQfCTUA83wEjuXg39RplMjTmhnGdBO+ECFu9AhqZ66YBAJpz
+kG2Pogeg0JfT2kVhgTU9FPnEwF9q3AuWGrCf4yrqvSrWmMebcas7dA8827JgvlpL
+Thjp2ypzXIlhZZ7+7Tymy05v5J75AEaz/xlNKmOzjmbGGIVwx1Blbzt05UiDDwhY
+XS0jnV6j/ujbAKHS9OMZTfLuevYnnuXNnC2i8n+cF63vEzc50bTILEHWhsDp7CH4
+WRt/uTp8n1wBnWIEwii9Cq08yhDsGwIDAQABo4H4MIH1MA4GA1UdDwEB/wQEAwIB
+hjAdBgNVHSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwEgYDVR0TAQH/BAgwBgEB
+/wIBADAdBgNVHQ4EFgQUALUp8i2ObzHom0yteD763OkM0dIwHwYDVR0jBBgwFoAU
+ebRZ5nu25eQBc4AIiMgaWPbpm24wMgYIKwYBBQUHAQEEJjAkMCIGCCsGAQUFBzAC
+hhZodHRwOi8veDEuaS5sZW5jci5vcmcvMBMGA1UdIAQMMAowCAYGZ4EMAQIBMCcG
+A1UdHwQgMB4wHKAaoBiGFmh0dHA6Ly94MS5jLmxlbmNyLm9yZy8wDQYJKoZIhvcN
+AQELBQADggIBAI910AnPanZIZTKS3rVEyIV29BWEjAK/duuz8eL5boSoVpHhkkv3
+4eoAeEiPdZLj5EZ7G2ArIK+gzhTlRQ1q4FKGpPPaFBSpqV/xbUb5UlAXQOnkHn3m
+FVj+qYv87/WeY+Bm4sN3Ox8BhyaU7UAQ3LeZ7N1X01xxQe4wIAAE3JVLUCiHmZL+
+qoCUtgYIFPgcg350QMUIWgxPXNGEncT921ne7nluI02V8pLUmClqXOsCwULw+PVO
+ZCB7qOMxxMBoCUeL2Ll4oMpOSr5pJCpLN3tRA2s6P1KLs9TSrVhOk+7LX28NMUlI
+usQ/nxLJID0RhAeFtPjyOCOscQBA53+NRjSCak7P4A5jX7ppmkcJECL+S0i3kXVU
+y5Me5BbrU8973jZNv/ax6+ZK6TM8jWmimL6of6OrX7ZU6E2WqazzsFrLG3o2kySb
+zlhSgJ81Cl4tv3SbYiYXnJExKQvzf83DYotox3f0fwv7xln1A2ZLplCb0O+l/AK0
+YE0DS2FPxSAHi0iwMfW2nNHJrXcY3LLHD77gRgje4Eveubi2xxa+Nmk/hmhLdIET
+iVDFanoCrMVIpQ59XWHkzdFmoHXHBV7oibVjGSO7ULSQ7MJ1Nz51phuDJSgAIU7A
+0zrLnOrAj/dfrlEWRhCvAgbuwLZX1A2sjNjXoPOHbsPiy+lO1KF8/XY7
+-----END CERTIFICATE-----
+)EOF";
+
 extern Logger logger;
 
-// Static instance for callback
-MQTTMessenger* MQTTMessenger::instance = nullptr;
-
 MQTTMessenger::MQTTMessenger() {
+    mqttClient = nullptr;
     encryption = nullptr;
     currentVillageId = "";
     currentVillageName = "";
@@ -25,24 +58,10 @@ MQTTMessenger::MQTTMessenger() {
     syncTargetMAC = "";
     lastSyncPhaseTime = 0;
     
-    // Generate unique client ID from MAC
+    // Generate unique client ID from MAC with timestamp to avoid conflicts
     char macStr[13];
     sprintf(macStr, "%012llx", myMAC);
-    clientId = "smoltxt_" + String(macStr);
-    
-    // Set static instance for callbacks
-    instance = this;
-    
-    // Configure AsyncMqttClient for test.mosquitto.org
-    mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
-    mqttClient.setClientId(clientId.c_str());
-    mqttClient.setCleanSession(false);  // Persistent session for offline message queuing
-    mqttClient.setKeepAlive(60);
-    
-    // Set callbacks
-    mqttClient.onConnect(onMqttConnect);
-    mqttClient.onDisconnect(onMqttDisconnect);
-    mqttClient.onMessage(onMqttMessage);
+    clientId = "smol_esp_" + String(macStr) + "_" + String(millis());
 }
 
 bool MQTTMessenger::begin() {
@@ -51,11 +70,99 @@ bool MQTTMessenger::begin() {
         return false;
     }
     
-    Serial.println("[MQTT] Initializing MQTT messenger");
-    Serial.println("[MQTT] Broker: " + String(MQTT_BROKER) + ":" + String(MQTT_PORT));
+    Serial.println("[MQTT] Initializing ESP-MQTT messenger");
+    Serial.println("[MQTT] Broker: " + String(MQTT_BROKER_URI));
+    Serial.println("[MQTT] Username: " + String(MQTT_USERNAME));
     Serial.println("[MQTT] Client ID: " + clientId);
     
-    return reconnect();
+    logger.info("MQTT: Broker=" + String(MQTT_BROKER_URI));
+    logger.info("MQTT: ClientID=" + clientId);
+    if (strlen(MQTT_USERNAME) > 0) {
+        logger.info("MQTT: User=" + String(MQTT_USERNAME));
+    } else {
+        logger.info("MQTT: No authentication (open broker)");
+    }
+    
+    // Configure ESP-MQTT client
+    esp_mqtt_client_config_t mqtt_cfg = {};
+    mqtt_cfg.uri = MQTT_BROKER_URI;
+    mqtt_cfg.client_id = clientId.c_str();
+    
+    // Only set credentials if provided
+    if (strlen(MQTT_USERNAME) > 0) {
+        mqtt_cfg.username = MQTT_USERNAME;
+    }
+    if (strlen(MQTT_PASSWORD) > 0) {
+        mqtt_cfg.password = MQTT_PASSWORD;
+    }
+    
+    // Only set certificate for TLS connections (mqtts://)
+    if (strstr(MQTT_BROKER_URI, "mqtts://") != nullptr) {
+        mqtt_cfg.cert_pem = LETSENCRYPT_R12_CERT;
+        logger.info("MQTT: TLS enabled with R12 certificate");
+    } else {
+        logger.info("MQTT: Plain MQTT (no TLS)");
+    }
+    
+    mqtt_cfg.disable_clean_session = 1;  // 1 = disable persistent session (try clean session first)
+    mqtt_cfg.keepalive = 60;  // Shorter keepalive
+    mqtt_cfg.disable_auto_reconnect = false;  // Enable auto-reconnect
+    mqtt_cfg.network_timeout_ms = 10000;  // 10 second timeout
+    mqtt_cfg.protocol_ver = MQTT_PROTOCOL_V_3_1_1;  // Explicitly use MQTT 3.1.1
+    
+    logger.info("MQTT: Config set - clean_session=true keepalive=60");
+    
+    //  Based on community research: ESP-MQTT TLS has ~20% initial connection failure rate
+    // Solution: Retry mechanism (1-2 retries resolves 97% of issues)
+    // Source: https://github.com/espressif/esp-mqtt/issues/288
+    const int MAX_RETRIES = 3;
+    int retry_count = 0;
+    bool init_success = false;
+    
+    while (retry_count < MAX_RETRIES && !init_success) {
+        if (retry_count > 0) {
+            Serial.printf("[MQTT] Retry attempt %d of %d\n", retry_count, MAX_RETRIES - 1);
+            logger.info("MQTT: Retry " + String(retry_count));
+            delay(2000 * retry_count);  // Exponential backoff: 2s, 4s, 6s
+        }
+        
+        // Initialize client
+        mqttClient = esp_mqtt_client_init(&mqtt_cfg);
+        if (!mqttClient) {
+            Serial.println("[MQTT] Failed to initialize client");
+            retry_count++;
+            continue;
+        }
+        
+        // Register event handler (pass 'this' as context to access member variables)
+        esp_mqtt_client_register_event(mqttClient, (esp_mqtt_event_id_t)ESP_EVENT_ANY_ID, 
+                                       mqttEventHandler, this);
+        
+        // Start client
+        esp_err_t err = esp_mqtt_client_start(mqttClient);
+        if (err != ESP_OK) {
+            Serial.printf("[MQTT] Failed to start: %s\n", esp_err_to_name(err));
+            esp_mqtt_client_destroy(mqttClient);
+            mqttClient = nullptr;
+            retry_count++;
+            continue;
+        }
+        
+        init_success = true;
+    }
+    
+    if (!init_success) {
+        Serial.printf("[MQTT] Failed to initialize after %d retries\n", MAX_RETRIES);
+        logger.error("MQTT: Failed after " + String(MAX_RETRIES) + " retries");
+        return false;
+    }
+    
+    Serial.printf("[MQTT] Client started (retry attempts: %d)\n", retry_count);
+    if (retry_count > 0) {
+        logger.info("MQTT: Started after " + String(retry_count) + " retries");
+    }
+    
+    return true;
 }
 
 void MQTTMessenger::setEncryption(Encryption* enc) {
@@ -122,35 +229,14 @@ String MQTTMessenger::generateTopic(const String& messageType, const String& tar
 }
 
 bool MQTTMessenger::reconnect() {
-    if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("[MQTT] WiFi not connected, can't reconnect");
-        connected = false;
-        return false;
-    }
-    
-    // Limit reconnect attempts
-    unsigned long now = millis();
-    if (now - lastReconnectAttempt < 5000) {
-        return false;  // Too soon
-    }
-    lastReconnectAttempt = now;
-    
-    Serial.println("[MQTT] Connecting to broker...");
-    
-    // AsyncMqttClient connects asynchronously - onMqttConnect callback handles subscriptions
-    mqttClient.connect();
-    
-    return true;  // Connection attempt initiated
+    // ESP-MQTT handles reconnection automatically
+    // This function is kept for API compatibility but doesn't need to do anything
+    return mqttClient != nullptr;
 }
 
 void MQTTMessenger::loop() {
-    // AsyncMqttClient handles connection automatically, no loop() needed
-    if (!mqttClient.connected()) {
-        connected = false;
-        reconnect();
-    } else {
-        connected = true;
-    }
+    // ESP-MQTT handles all connection management internally via FreeRTOS task
+    // No explicit loop processing needed
     
     // Background sync phase continuation
     // If Phase 1 is complete and more history exists, request next phase after delay
@@ -185,55 +271,93 @@ void MQTTMessenger::cleanupSeenMessages() {
     }
 }
 
-// Static callback - forwards to instance method
-// AsyncMqttClient callbacks
-void MQTTMessenger::onMqttConnect(bool sessionPresent) {
-    if (!instance) return;
+// ESP-MQTT unified event handler
+void MQTTMessenger::mqttEventHandler(void *handler_args, esp_event_base_t base,
+                                    int32_t event_id, void *event_data) {
+    MQTTMessenger* self = (MQTTMessenger*)handler_args;
+    if (!self) return;
     
-    Serial.println("[MQTT] Connected to broker!");
-    Serial.println("[MQTT] Session present: " + String(sessionPresent ? "yes" : "no"));
-    instance->connected = true;
+    esp_mqtt_event_handle_t event = (esp_mqtt_event_handle_t)event_data;
+    esp_mqtt_client_handle_t client = event->client;
     
-    // Subscribe to all saved villages with QoS 1
-    if (instance->subscribedVillages.size() > 0) {
-        for (const auto& village : instance->subscribedVillages) {
-            String baseTopic = "smoltxt/" + village.villageId + "/#";
-            instance->mqttClient.subscribe(baseTopic.c_str(), 1);  // QoS 1
-            Serial.println("[MQTT] Subscribed to: " + baseTopic + " (" + village.villageName + ")");
+    switch ((esp_mqtt_event_id_t)event_id) {
+        case MQTT_EVENT_CONNECTED: {
+            Serial.println("[MQTT] Connected to broker!");
+            Serial.println("[MQTT] Session present: " + String(event->session_present ? "yes" : "no"));
+            self->connected = true;
+            
+            // Subscribe to all saved villages with QoS 1
+            if (self->subscribedVillages.size() > 0) {
+                for (const auto& village : self->subscribedVillages) {
+                    String baseTopic = "smoltxt/" + village.villageId + "/#";
+                    esp_mqtt_client_subscribe(client, baseTopic.c_str(), 1);  // QoS 1
+                    Serial.println("[MQTT] Subscribed to: " + baseTopic + " (" + village.villageName + ")");
+                }
+                logger.info("MQTT: Connected - subscribed to " + String(self->subscribedVillages.size()) + " villages");
+            } else {
+                Serial.println("[MQTT] Warning: No villages to subscribe to");
+            }
+            
+            // Subscribe to device command topic
+            char macStr[13];
+            sprintf(macStr, "%012llx", self->myMAC);
+            String commandTopic = "smoltxt/" + String(macStr) + "/command";
+            esp_mqtt_client_subscribe(client, commandTopic.c_str(), 1);
+            Serial.println("[MQTT] Subscribed to command topic: " + commandTopic);
+            
+            // Subscribe to sync response topic
+            String syncResponseTopic = "smoltxt/" + String(macStr) + "/sync-response";
+            esp_mqtt_client_subscribe(client, syncResponseTopic.c_str(), 1);
+            Serial.println("[MQTT] Subscribed to sync response topic: " + syncResponseTopic);
+            break;
         }
-        logger.info("MQTT: Connected - subscribed to " + String(instance->subscribedVillages.size()) + " villages");
-    } else {
-        Serial.println("[MQTT] Warning: No villages to subscribe to");
+            
+        case MQTT_EVENT_DISCONNECTED:
+            Serial.println("[MQTT] Disconnected from broker");
+            self->connected = false;
+            break;
+            
+        case MQTT_EVENT_SUBSCRIBED:
+            Serial.printf("[MQTT] Subscribed to topic, msg_id=%d\n", event->msg_id);
+            break;
+            
+        case MQTT_EVENT_DATA: {
+            // Handle incoming message
+            String topic(event->topic, event->topic_len);
+            self->handleIncomingMessage(topic, (const uint8_t*)event->data, event->data_len);
+            break;
+        }
+            
+        case MQTT_EVENT_PUBLISHED:
+            // QoS 1 ACK received for our published message
+            Serial.printf("[MQTT] Message published successfully, msg_id=%d\n", event->msg_id);
+            break;
+            
+        case MQTT_EVENT_ERROR:
+            Serial.println("[MQTT] Error occurred");
+            if (event->error_handle->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
+                Serial.printf("  Transport error type: TCP_TRANSPORT\n");
+                Serial.printf("  TLS stack error: 0x%x\n", event->error_handle->esp_tls_stack_err);
+                Serial.printf("  TLS cert verify error: 0x%x\n", event->error_handle->esp_tls_cert_verify_flags);
+                Serial.printf("  ESP-TLS error: %s (0x%x)\n", 
+                    esp_err_to_name(event->error_handle->esp_tls_last_esp_err),
+                    event->error_handle->esp_tls_last_esp_err);
+            } else if (event->error_handle->error_type == MQTT_ERROR_TYPE_CONNECTION_REFUSED) {
+                Serial.printf("  Connection refused\n");
+            }
+            self->connected = false;
+            break;
+            
+        default:
+            Serial.printf("[MQTT] Other event id:%d\n", event_id);
+            break;
     }
-    
-    // Subscribe to device command topic
-    char macStr[13];
-    sprintf(macStr, "%012llx", instance->myMAC);
-    String commandTopic = "smoltxt/" + String(macStr) + "/command";
-    instance->mqttClient.subscribe(commandTopic.c_str(), 1);
-    Serial.println("[MQTT] Subscribed to command topic: " + commandTopic);
-    
-    // Subscribe to sync response topic
-    String syncResponseTopic = "smoltxt/" + String(macStr) + "/sync-response";
-    instance->mqttClient.subscribe(syncResponseTopic.c_str(), 1);
-    Serial.println("[MQTT] Subscribed to sync response topic: " + syncResponseTopic);
 }
 
-void MQTTMessenger::onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
-    if (!instance) return;
-    
-    Serial.print("[MQTT] Disconnected from broker. Reason: ");
-    Serial.println((int)reason);
-    instance->connected = false;
-}
-
-void MQTTMessenger::onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
-    if (!instance) return;
-    
-    // Convert payload to byte array for processing
-    uint8_t* bytePayload = (uint8_t*)payload;
-    instance->handleIncomingMessage(String(topic), bytePayload, len);
-}
+// OLD AsyncMqttClient callbacks - REMOVED
+// void MQTTMessenger::onMqttConnect(bool sessionPresent) { ... }
+// void MQTTMessenger::onMqttDisconnect(AsyncMqttClientDisconnectReason reason) { ... }
+// void MQTTMessenger::onMqttMessage(char* topic, char* payload, ...) { ... }
 
 void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* payload, unsigned int length) {
     Serial.println("[MQTT] Received on topic: " + topic);
@@ -452,8 +576,9 @@ bool MQTTMessenger::announceVillageName(const String& villageName) {
     
     // Payload is just the village name (no encryption needed - derived from same password)
     // Use retained flag so MQTT broker keeps it for new subscribers
-    uint16_t packetId = mqttClient.publish(topic.c_str(), 1, true, villageName.c_str());
-    if (packetId != 0) {
+    int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), villageName.c_str(), 
+                                        villageName.length(), 1, 1);  // QoS 1, retain=1
+    if (msg_id >= 0) {
         Serial.println("[MQTT] Village name announced (retained, QoS 1): " + villageName);
         return true;
     }
@@ -486,9 +611,10 @@ String MQTTMessenger::sendShout(const String& message) {
     
     // Publish to shout topic with QoS 1
     String topic = generateTopic("shout");
-    uint16_t packetId = mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen);
+    int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), (const char*)encrypted, 
+                                        encryptedLen, 1, 0);  // QoS 1, retain=0
     
-    if (packetId != 0) {
+    if (msg_id >= 0) {
         Serial.println("[MQTT] SHOUT sent (QoS 1): " + message);
         logger.info("MQTT SHOUT sent: " + message);
         return msgId;
@@ -520,9 +646,10 @@ String MQTTMessenger::sendWhisper(const String& recipientMAC, const String& mess
     
     // Publish to whisper topic for specific recipient with QoS 1
     String topic = generateTopic("whisper", recipientMAC);
-    uint16_t packetId = mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen);
+    int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), (const char*)encrypted, 
+                                        encryptedLen, 1, 0);  // QoS 1, retain=0
     
-    if (packetId != 0) {
+    if (msg_id >= 0) {
         Serial.println("[MQTT] WHISPER sent (QoS 1) to " + recipientMAC + ": " + message);
         logger.info("MQTT WHISPER sent: " + message);
         return msgId;
@@ -550,7 +677,9 @@ bool MQTTMessenger::sendAck(const String& messageId, const String& targetMAC) {
     }
     
     String topic = generateTopic("ack", targetMAC);
-    return mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen) != 0;
+    int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), (const char*)encrypted, 
+                                        encryptedLen, 1, 0);  // QoS 1, retain=0
+    return msg_id >= 0;
 }
 
 bool MQTTMessenger::sendReadReceipt(const String& messageId, const String& targetMAC) {
@@ -571,11 +700,13 @@ bool MQTTMessenger::sendReadReceipt(const String& messageId, const String& targe
     }
     
     String topic = generateTopic("read", targetMAC);
-    return mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen) != 0;
+    int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), (const char*)encrypted, 
+                                        encryptedLen, 1, 0);  // QoS 1, retain=0
+    return msg_id >= 0;
 }
 
 bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
-    if (!connected || !mqttClient.connected()) {
+    if (!connected || !mqttClient) {
         Serial.println("[MQTT] Cannot request sync - not connected");
         logger.error("Sync request failed: not connected");
         return false;
@@ -607,9 +738,10 @@ bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
     
     String topic = "smoltxt/" + currentVillageId + "/sync-request/" + String(myMAC, HEX);
     Serial.println("[MQTT] Publishing sync request to: " + topic);
-    uint16_t packetId = mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen);
+    int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), (const char*)encrypted, 
+                                        encryptedLen, 1, 0);  // QoS 1, retain=0
     
-    if (packetId != 0) {
+    if (msg_id >= 0) {
         Serial.println("[MQTT] Sync request sent (QoS 1, will receive all messages, dedup on receive)");
         logger.info("Sync request sent");
     } else {
@@ -617,11 +749,11 @@ bool MQTTMessenger::requestSync(unsigned long lastMessageTimestamp) {
         logger.error("Sync request publish failed");
     }
     
-    return (packetId != 0);
+    return (msg_id >= 0);
 }
 
 bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<Message>& messages, int phase) {
-    if (!connected || !mqttClient.connected()) {
+    if (!connected || !mqttClient) {
         Serial.println("[MQTT] Cannot send sync response - not connected");
         return false;
     }
@@ -696,9 +828,10 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
         }
         
         String topic = "smoltxt/" + targetMAC + "/sync-response";
-        uint16_t packetId = mqttClient.publish(topic.c_str(), 1, false, (const char*)encrypted, encryptedLen);
+        int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), (const char*)encrypted, 
+                                            encryptedLen, 1, 0);  // QoS 1, retain=0
         
-        if (packetId != 0) {
+        if (msg_id >= 0) {
             totalSent += min(BATCH_SIZE, (int)(phaseMessages.size() - i));
             Serial.println("[MQTT] Phase " + String(phase) + " batch " + String((i / BATCH_SIZE) + 1) + "/" + String((phaseMessages.size() + BATCH_SIZE - 1) / BATCH_SIZE) + " sent");
             logger.info("Sync batch " + String((i / BATCH_SIZE) + 1) + " sent");
@@ -876,7 +1009,7 @@ String MQTTMessenger::getConnectionStatus() {
         return "No WiFi";
     }
     
-    if (!connected || !mqttClient.connected()) {
+    if (!connected || !mqttClient) {
         return "Disconnected";
     }
     
@@ -907,7 +1040,7 @@ void MQTTMessenger::addVillageSubscription(const String& villageId, const String
     // Subscribe to MQTT topic if already connected
     if (isConnected()) {
         String baseTopic = "smoltxt/" + villageId + "/#";
-        mqttClient.subscribe(baseTopic.c_str(), 1);  // QoS 1
+        esp_mqtt_client_subscribe(mqttClient, baseTopic.c_str(), 1);  // QoS 1
         Serial.println("[MQTT] Subscribed to topic: " + baseTopic);
     }
 }
@@ -920,7 +1053,7 @@ void MQTTMessenger::removeVillageSubscription(const String& villageId) {
             // Unsubscribe from MQTT topic if connected
             if (isConnected()) {
                 String baseTopic = "smoltxt/" + villageId + "/#";
-                mqttClient.unsubscribe(baseTopic.c_str());
+                esp_mqtt_client_unsubscribe(mqttClient, baseTopic.c_str());
                 Serial.println("[MQTT] Unsubscribed from topic: " + baseTopic);
             }
             

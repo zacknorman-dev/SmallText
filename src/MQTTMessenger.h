@@ -3,16 +3,17 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
-#include <AsyncMqttClient.h>
+#include "mqtt_client.h"
 #include <set>
 #include <map>
 #include "Encryption.h"
 #include "Village.h"
 #include "Messages.h"  // Message struct and enums
 
-// MQTT Configuration - test.mosquitto.org with QoS 1
-#define MQTT_BROKER "test.mosquitto.org"
-#define MQTT_PORT 1883
+// MQTT Configuration - HiveMQ Cloud with TLS (updated credentials)
+#define MQTT_BROKER_URI "mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883"
+#define MQTT_USERNAME "smoltxt2"
+#define MQTT_PASSWORD "QdgMc7VnQ2D8dhTV"
 
 // Topic structure: smoltxt/{villageId}/{messageType}
 // messageType: shout, whisper/{recipientMAC}, ack/{targetMAC}, read/{targetMAC}
@@ -27,7 +28,7 @@ struct VillageSubscription {
 
 class MQTTMessenger {
 private:
-    AsyncMqttClient mqttClient;
+    esp_mqtt_client_handle_t mqttClient;
     Encryption* encryption;
     
     // Multi-village support
@@ -74,11 +75,9 @@ private:
     // Message parsing (similar to LoRa)
     ParsedMessage parseMessage(const String& decrypted);
     
-    // AsyncMqttClient callback handlers (must be static)
-    static MQTTMessenger* instance;
-    static void onMqttConnect(bool sessionPresent);
-    static void onMqttDisconnect(AsyncMqttClientDisconnectReason reason);
-    static void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total);
+    // ESP-MQTT event handler (unified callback for all events)
+    static void mqttEventHandler(void *handler_args, esp_event_base_t base,
+                                int32_t event_id, void *event_data);
 
 public:
     MQTTMessenger();
@@ -118,7 +117,7 @@ public:
     bool sendSyncResponse(const String& targetMAC, const std::vector<Message>& messages, int phase = 1);  // Send messages to peer (phase 1 = recent 20, phase 2+ = older batches)
     
     // Connection status
-    bool isConnected() { return connected && mqttClient.connected(); }
+    bool isConnected() { return connected && mqttClient != nullptr; }
     String getConnectionStatus();
     
     // Sync phase tracking (for UI decisions)
