@@ -1339,13 +1339,21 @@ void handleUsernameInput() {
           Serial.println("[Village] Announced village name: " + village.getVillageName());
         }
         
-        // Log passphrase to serial for creator to see
-        Serial.println("========================================");
-        Serial.println("[Village] Created: " + village.getVillageName());
-        Serial.println("[Village] Passphrase: " + tempVillagePassword);
-        Serial.println("========================================");
+        // Show passphrase for creators
+        String infoMsg = "The secret passphrase for\nthis village is:\n\n";
+        infoMsg += tempVillagePassword + "\n\n";
+        infoMsg += "Only friends you tell it to\ncan join.\n\n";
+        infoMsg += "Press ENTER to continue";
         
-        // Go directly to messaging - no intermediate screen
+        ui.showMessage("Village Created!", infoMsg, 0);
+        
+        // Wait for enter key to continue
+        while (!keyboard.isEnterPressed() && !keyboard.isRightPressed()) {
+          keyboard.update();
+          smartDelay(50);
+        }
+        
+        Serial.println("[Village] Creator acknowledged passphrase, going to messaging");
       } else {
         // Joiner: Wait briefly for village name announcement
         Serial.println("[Village] Waiting for village name announcement...");
@@ -1373,7 +1381,14 @@ void handleUsernameInput() {
       }
       
       // Properly initialize messaging screen (same as menu path)
-      Serial.println("[App] Entering messaging. Messages in history: " + String(ui.getMessageCount()));
+      Serial.println("[App] ============================================");
+      Serial.println("[App] ENTERING MESSAGING - appState will be set to APP_MESSAGING");
+      Serial.println("[App] isCreatingVillage: " + String(isCreatingVillage));
+      Serial.println("[App] Village: " + village.getVillageName());
+      Serial.println("[App] Username: " + village.getUsername());
+      Serial.println("[App] Messages in history: " + String(ui.getMessageCount()));
+      Serial.println("[App] ============================================");
+      
       keyboard.clearInput();  // Clear buffer to prevent typing detection freeze
       appState = APP_MESSAGING;
       inMessagingScreen = true;  // Set flag - we're now viewing messages
