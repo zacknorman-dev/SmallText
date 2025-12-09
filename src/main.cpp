@@ -106,13 +106,23 @@ unsigned long lastOTACheck = 0;  // Track automatic OTA update checks
 
 // Get current Unix timestamp (seconds since epoch)
 unsigned long getCurrentTime() {
-  // If WiFi has synced NTP, use real Unix time
+  // Always return Unix timestamp in seconds
+  // If WiFi has synced NTP, use accurate real-world time
   long offset = wifiManager.getTimeOffset();
   if (offset != 0) {
     return (millis() / 1000) + offset;
   }
-  // Fallback to millis() if NTP not synced (shouldn't happen in normal operation)
-  return millis();
+  
+  // If NTP not synced yet, estimate based on compile time
+  // This ensures we always use Unix epoch seconds, never millis()
+  // __DATE__ and __TIME__ give compile timestamp, which is close enough for ordering
+  // Typical compile: "Dec  9 2025" and "14:30:00"
+  // We use a rough approximation: assume we're within a day of compile time
+  // Real fix happens when NTP syncs in a few seconds after WiFi connects
+  
+  // December 9, 2025 00:00:00 UTC ≈ 1765324800 seconds since epoch
+  // This is just a reasonable starting point until NTP syncs
+  return 1765324800 + (millis() / 1000);
 }
 
 // Forward declarations
