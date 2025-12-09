@@ -655,6 +655,7 @@ bool Village::saveMessageToFile(const Message& msg) {
     String json;
     serializeJson(doc, json);
     file.println(json);
+    file.flush();  // CRITICAL: Ensure data is written to disk before closing
     file.close();
     
     Serial.println("[Village] Message saved to file: id=" + msg.messageId + " village=" + msg.villageId);
@@ -844,6 +845,7 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
         writeFile.println(line);
     }
     
+    writeFile.flush();  // CRITICAL: Ensure data is written to disk before closing
     writeFile.close();
     logger.info("Saved " + String(allLines.size()) + " total lines (all villages preserved)");
     return true;
