@@ -8,7 +8,7 @@
 #define ADC_CTRL 46
 #define ADC_CTRL_ENABLED HIGH
 #define ADC_CHANNEL ADC1_CHANNEL_6  // GPIO7 is ADC1 Channel 6 on ESP32-S3
-#define ADC_MULTIPLIER 5.047  // 4.9 * 1.03
+#define ADC_MULTIPLIER 5.265  // Calibrated: 5.047 * (4.07 / 3.9)
 #define ADC_ATTENUATION ADC_ATTEN_DB_2_5
 #define BATTERY_SENSE_SAMPLES 10
 
