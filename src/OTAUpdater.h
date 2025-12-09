@@ -11,7 +11,7 @@
 
 // Firmware version comes from build flags in platformio.ini
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "0.38.0"
+#define FIRMWARE_VERSION "0.39.0"
 #endif
 
 enum UpdateStatus {

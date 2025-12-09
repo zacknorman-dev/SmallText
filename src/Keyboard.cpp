@@ -126,13 +126,14 @@ char Keyboard::readKey() {
         }
         
         // Validate key is in expected ranges
-        // CardKB special keys: 0xB2-0xB7, printable ASCII: 0x20-0x7E, CR/LF: 0x0A/0x0D, BS/DEL: 0x08/0x7F
+        // CardKB special keys: 0xB2-0xB7, printable ASCII: 0x20-0x7E, CR/LF: 0x0A/0x0D, BS/DEL: 0x08/0x7F, TAB: 0x09
         if (key != 0 && key != 0xFF) {
             uint8_t ukey = (uint8_t)key;
             if ((ukey >= 0x20 && ukey <= 0x7E) ||  // Printable ASCII
                 (ukey >= 0xB2 && ukey <= 0xB7) ||  // CardKB special keys
                 ukey == 0x0A || ukey == 0x0D ||    // Line feed / Carriage return (ENTER)
-                ukey == 0x08 || ukey == 0x7F) {    // Backspace / Delete
+                ukey == 0x08 || ukey == 0x7F ||    // Backspace / Delete
+                ukey == 0x09) {                    // Tab key
                 return key;
             } else {
                 Serial.print("[KB-READ] Invalid key code: 0x");
@@ -234,6 +235,10 @@ void Keyboard::update() {
             Serial.printf("[Keyboard] BACKSPACE pressed! Raw key value: %d (0x%02X)\n", key, key);
             Serial.printf("[Keyboard] Setting currentKey to: %d (0x%02X)\n", key, key);
             // Don't return - keep currentKey set so isBackspacePressed() can detect it
+        } else if (key == 0x09) {
+            // Tab key
+            Serial.println("[Keyboard] TAB pressed");
+            // Don't return - keep currentKey set so isTabHeld() can detect it
         } else if (key >= 32 && key <= 126) {
             // Printable ASCII character - add to buffer
             inputBuffer += key;
@@ -275,6 +280,15 @@ bool Keyboard::isBackspacePressed() {
         currentKey = 0;  // Consume the key
     }
     return pressed;
+}
+
+bool Keyboard::isTabHeld() {
+    // Check Tab key (0x09) without consuming - for hold detection
+    bool held = (currentKey == CARDKB_TAB);
+    if (held) {
+        Serial.println("[Keyboard] Tab key detected! currentKey = 0x09");
+    }
+    return held;
 }
 
 bool Keyboard::isUpPressed() {

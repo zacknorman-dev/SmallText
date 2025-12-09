@@ -11,6 +11,7 @@
 #define CARDKB_RIGHT 0xB7
 #define CARDKB_ENTER 0xB2
 #define CARDKB_BS    0xB3
+#define CARDKB_TAB   0x09  // Tab key for power management
 
 // Common I2C keyboard addresses
 #define KEYBOARD_I2C_ADDR 0x5F  // M5Stack CardKB I2C address
@@ -65,6 +66,9 @@ public:
     bool isDownPressed();
     bool isLeftPressed();
     bool isRightPressed();
+    
+    // Check key without consuming (for hold detection)
+    bool isTabHeld();
     
     // Clear special key state (call after handling)
     void clearSpecialKey() { currentKey = 0; }

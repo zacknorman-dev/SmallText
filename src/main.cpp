@@ -10,7 +10,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.35.0"
+#define BUILD_NUMBER "v0.39.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define I2C_SDA 39
@@ -104,6 +104,12 @@ const int MAX_READ_RECEIPTS = 10;  // Only send read receipts for last 10 unread
 unsigned long lastTransmission = 0;  // Track when last transmitted (for timing read receipts)
 unsigned long lastOTACheck = 0;  // Track automatic OTA update checks
 
+// Power management - use single key long-press since CardKB can't detect simultaneous keys
+unsigned long shutdownHoldStart = 0;
+const unsigned long SHUTDOWN_HOLD_TIME = 3000;  // 3 seconds to trigger shutdown
+bool isShuttingDown = false;
+char lastShutdownKey = 0;
+
 // Get current Unix timestamp (seconds since epoch)
 unsigned long getCurrentTime() {
   // Always return Unix timestamp in seconds
@@ -123,6 +129,42 @@ unsigned long getCurrentTime() {
   // December 9, 2025 00:00:00 UTC ≈ 1765324800 seconds since epoch
   // This is just a reasonable starting point until NTP syncs
   return 1765324800 + (millis() / 1000);
+}
+
+// Power management - graceful shutdown
+void enterDeepSleep() {
+  Serial.println("[Power] Entering deep sleep mode");
+  logger.info("Entering deep sleep");
+  
+  // Allow MQTT to flush any pending messages
+  if (mqttMessenger.isConnected()) {
+    for (int i = 0; i < 10; i++) {
+      mqttMessenger.loop();
+      smartDelay(100);
+    }
+    Serial.println("[Power] MQTT messages flushed");
+  }
+  
+  // Show powering down message
+  ui.showPoweringDown();
+  smartDelay(1000);
+  
+  // Show sleep screen
+  ui.showSleepScreen();
+  smartDelay(1000);
+  
+  // Configure wake - just stay asleep until manual reset/power cycle
+  // User will press reset button or power cycle when they want to wake up
+  Serial.println("[Power] Entering deep sleep - press reset button to wake");
+  
+  Serial.println("[Power] Entering deep sleep now");
+  Serial.flush();
+  
+  // Enter deep sleep with no wake sources - only manual reset or power cycle will wake
+  // This is the simplest approach - no timers, no GPIO wake
+  esp_deep_sleep_start();
+  
+  // Device will restart from setup() when it wakes
 }
 
 // Forward declarations
@@ -676,6 +718,43 @@ void loop() {
   // Update battery readings (rate-limited internally)
   battery.update();
   ui.setBatteryStatus(battery.getVoltage(), battery.getPercent());
+  
+  // Check for shutdown using Tab key held for 3 seconds
+  // Tab key is 0x09 - simple and rarely used in normal operation
+  bool tabCurrentlyHeld = keyboard.isTabHeld();
+  
+  if (!isShuttingDown && tabCurrentlyHeld) {
+    if (shutdownHoldStart == 0) {
+      shutdownHoldStart = millis();
+      lastShutdownKey = 'T';  // Mark as Tab key
+      Serial.println("[Power] Tab key hold detected - hold for 3s to sleep");
+    }
+    
+    unsigned long holdDuration = millis() - shutdownHoldStart;
+    
+    // Check if we've reached 3 seconds - trigger shutdown immediately while still holding
+    if (holdDuration >= SHUTDOWN_HOLD_TIME && !isShuttingDown) {
+      isShuttingDown = true;
+      Serial.println("[Power] Shutdown triggered! (3s hold complete)");
+      enterDeepSleep();
+      // Never returns - device enters deep sleep
+    }
+    // Show progress every second while holding
+    else if (holdDuration >= 2000 && holdDuration < 3000 && lastShutdownKey != '2') {
+      Serial.println("[Power] 1 more second... (holdDuration=" + String(holdDuration) + "ms)");
+      lastShutdownKey = '2';  // Mark we've shown 2s message
+    } else if (holdDuration >= 1000 && holdDuration < 2000 && lastShutdownKey != '1') {
+      Serial.println("[Power] 2 more seconds... (holdDuration=" + String(holdDuration) + "ms)");
+      lastShutdownKey = '1';  // Mark we've shown 1s message
+    }
+  } else {
+    // Tab key released - reset timer only if not already shutting down
+    if (shutdownHoldStart != 0 && !isShuttingDown) {
+      Serial.println("[Power] Shutdown cancelled - Tab key released (tabHeld=" + String(tabCurrentlyHeld) + ")");
+      shutdownHoldStart = 0;
+      lastShutdownKey = 0;
+    }
+  }
   
   // Process read receipt queue in background (send one per loop iteration)
   static unsigned long lastReadReceiptSent = 0;

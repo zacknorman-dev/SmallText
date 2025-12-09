@@ -35,7 +35,9 @@ enum UIState {
     STATE_MESSAGING,
     STATE_INPUT_TEXT,
     STATE_INPUT_USERNAME,
-    STATE_INPUT_MESSAGE
+    STATE_INPUT_MESSAGE,
+    STATE_POWERING_DOWN,
+    STATE_SLEEPING
 };
 
 class UI {
@@ -77,6 +79,8 @@ private:
     void drawViewMembers();
     void drawMessaging();
     void drawInputPrompt(const String& prompt);
+    void drawPoweringDown();
+    void drawSleeping();
     
 public:
     UI();
@@ -130,6 +134,8 @@ public:
     
     // Display helpers
     void showMessage(const String& title, const String& message, int durationMs = 2000);
+    void showPoweringDown();
+    void showSleepScreen();
     void clear();
 };
 

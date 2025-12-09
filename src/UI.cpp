@@ -106,6 +106,12 @@ void UI::update() {
         case STATE_INPUT_MESSAGE:
             drawInputPrompt("New message:");
             break;
+        case STATE_POWERING_DOWN:
+            drawPoweringDown();
+            break;
+        case STATE_SLEEPING:
+            drawSleeping();
+            break;
     }
     
     display->display(true);  // Partial refresh - no flash
@@ -956,6 +962,40 @@ void UI::showMessage(const String& title, const String& message, int durationMs)
 
 void UI::clear() {
     display->fillScreen(GxEPD_WHITE);
+}
+
+void UI::showPoweringDown() {
+    setState(STATE_POWERING_DOWN);
+    update();
+}
+
+void UI::showSleepScreen() {
+    setState(STATE_SLEEPING);
+    display->setFullWindow();
+    display->firstPage();
+    do {
+        drawSleeping();
+    } while (display->nextPage());
+}
+
+void UI::drawPoweringDown() {
+    display->setFont(&FreeSansBold12pt7b);
+    display->setCursor(50, 60);
+    display->print("Powering Down...");
+}
+
+void UI::drawSleeping() {
+    display->fillScreen(GxEPD_WHITE);
+    
+    display->setFont(&FreeSansBold12pt7b);
+    display->setCursor(20, 40);
+    display->print("SmolTxt Sleeping");
+    
+    display->setFont(&FreeSans9pt7b);
+    display->setCursor(10, 70);
+    display->print("Hold Tab 3s to sleep");
+    display->setCursor(10, 95);
+    display->print("Press reset to wake");
 }
 
 // Battery display
