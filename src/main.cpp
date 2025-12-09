@@ -803,6 +803,7 @@ void handleVillageMenu() {
       appState = APP_MESSAGING;
       inMessagingScreen = true;  // Set flag - we're now viewing messages
       lastMessagingActivity = millis();  // Record activity time
+      ui.setCurrentUsername(village.getUsername());  // Set username for message display
       ui.setState(STATE_MESSAGING);
       ui.resetMessageScroll();  // Reset scroll to show latest messages
       
@@ -1251,6 +1252,7 @@ void handleUsernameInput() {
       appState = APP_MESSAGING;
       inMessagingScreen = true;  // Set flag - we're now viewing messages
       lastMessagingActivity = millis();  // Record activity time
+      ui.setCurrentUsername(village.getUsername());  // Set username for message display
       ui.setState(STATE_MESSAGING);
       ui.resetMessageScroll();  // Reset scroll to show latest messages
       
@@ -1414,6 +1416,7 @@ void handleMessageCompose() {
   // Left arrow to cancel
   if (keyboard.isLeftPressed()) {
     appState = APP_MESSAGING;
+    ui.setCurrentUsername(village.getUsername());  // Set username for message display
     ui.setState(STATE_MESSAGING);
     ui.setInputText("");
     ui.update();
@@ -1477,6 +1480,7 @@ void handleMessageCompose() {
       // Clear input and switch to messaging view
       ui.setInputText("");
       appState = APP_MESSAGING;
+      ui.setCurrentUsername(village.getUsername());  // Set username for message display
       ui.setState(STATE_MESSAGING);
       ui.update();
     }

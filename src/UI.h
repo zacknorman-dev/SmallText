@@ -53,6 +53,7 @@ private:
     
     std::vector<String> memberList;  // Store member list for display
     String existingVillageName;  // Store village name if one exists
+    String currentUsername;  // Current user's username for message display
     String buildNumber;  // Build version to display
     float batteryVoltage;  // Current battery voltage
     int batteryPercent;    // Current battery percentage
@@ -118,6 +119,7 @@ public:
     // Member list
     void setMemberList(const std::vector<String>& members);
     void setExistingVillageName(const String& name);
+    void setCurrentUsername(const String& username) { currentUsername = username; }
     
     // Build version
     void setBuildNumber(const String& build) { buildNumber = build; }

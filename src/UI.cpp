@@ -657,7 +657,8 @@ void UI::drawMessaging() {
             
             // Format: "You: " or "Alice: "
             display->setCursor(5, y);
-            if (!msg.received) {
+            // Check if this message is from the current user
+            if (msg.sender == currentUsername) {
                 display->print("You");
             } else {
                 // Truncate long sender names
