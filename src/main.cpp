@@ -1339,12 +1339,13 @@ void handleUsernameInput() {
           Serial.println("[Village] Announced village name: " + village.getVillageName());
         }
         
-        // Show passphrase for creators
-        String infoMsg = "The secret passphrase for\nthis village is:\n\n";
-        infoMsg += tempVillagePassword + "\n\n";
-        infoMsg += "Only friends you tell it to\ncan join.";
+        // Log passphrase to serial for creator to see
+        Serial.println("========================================");
+        Serial.println("[Village] Created: " + village.getVillageName());
+        Serial.println("[Village] Passphrase: " + tempVillagePassword);
+        Serial.println("========================================");
         
-        ui.showMessage("Village Created!", infoMsg, 0);
+        // Go directly to messaging - no intermediate screen
       } else {
         // Joiner: Wait briefly for village name announcement
         Serial.println("[Village] Waiting for village name announcement...");
@@ -1357,18 +1358,18 @@ void handleUsernameInput() {
         // Reload village to get updated name
         village.loadFromSlot(currentVillageSlot);
         
-        // For joiners, show generic welcome (name updates in background)
+        // For joiners, show welcome screen
         String infoMsg = "Welcome to the village!\n\n";
         infoMsg += "You can now chat with\nother members.\n\n";
         infoMsg += "Press ENTER to continue";
         
         ui.showMessage("Village Joined!", infoMsg, 0);
-      }
-      
-      // Wait for enter key to continue
-      while (!keyboard.isEnterPressed() && !keyboard.isRightPressed()) {
-        keyboard.update();
-        smartDelay(50);
+        
+        // Wait for enter key to continue
+        while (!keyboard.isEnterPressed() && !keyboard.isRightPressed()) {
+          keyboard.update();
+          smartDelay(50);
+        }
       }
       
       // Properly initialize messaging screen (same as menu path)
