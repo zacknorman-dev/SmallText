@@ -436,8 +436,9 @@ bool MQTTMessenger::announceVillageName(const String& villageName) {
     String topic = "smoltxt/" + currentVillageId + "/villagename";
     
     // Payload is just the village name (no encryption needed - derived from same password)
-    if (mqttClient.publish(topic.c_str(), villageName.c_str())) {
-        Serial.println("[MQTT] Village name announced: " + villageName);
+    // Use retained flag so MQTT broker keeps it for new subscribers
+    if (mqttClient.publish(topic.c_str(), villageName.c_str(), true)) {
+        Serial.println("[MQTT] Village name announced (retained): " + villageName);
         return true;
     }
     
