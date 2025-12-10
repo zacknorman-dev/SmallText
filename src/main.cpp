@@ -516,7 +516,7 @@ void setup() {
   // Show splash screen
   Serial.println("[Display] Showing splash...");
   ui.setState(STATE_SPLASH);
-  ui.update();
+  ui.updateClean();  // Clean transition at launch
   smartDelay(2000);
   
   // Initialize I2C for keyboard
@@ -668,7 +668,7 @@ void setup() {
   ui.setState(STATE_VILLAGE_SELECT);
   ui.resetMenuSelection();
   Serial.println("[System] About to call ui.update() for village select...");
-  ui.update();
+  ui.updateClean();  // Clean transition to main menu
   Serial.println("[System] Village select displayed");
   
   Serial.println("[System] Setup complete!");
@@ -845,48 +845,6 @@ void handleMainMenu() {
     smartDelay(200);
   }
   
-  // Backspace to delete selected village
-  if (keyboard.isBackspacePressed()) {
-    int selection = ui.getMenuSelection();
-    
-    // Count existing villages
-    int villageCount = 0;
-    int villageSlots[10];
-    for (int i = 0; i < 10; i++) {
-      if (Village::hasVillageInSlot(i)) {
-        villageSlots[villageCount] = i;
-        villageCount++;
-      }
-    }
-    
-    // Only delete if selecting an existing village (not "New" or "Join")
-    if (selection < villageCount) {
-      int slot = villageSlots[selection];
-      String villageName = Village::getVillageNameFromSlot(slot);
-      String villageId = Village::getVillageIdFromSlot(slot);
-      
-      Serial.println("[MainMenu] Deleting village from slot " + String(slot));
-      Village::deleteSlot(slot);
-      
-      // Remove from MQTT subscriptions
-      if (!villageId.isEmpty()) {
-        mqttMessenger.removeVillageSubscription(villageId);
-        Serial.println("[MainMenu] Removed village from MQTT subscriptions");
-      }
-      
-      // Show confirmation
-      ui.showMessage("Village Deleted", villageName + " removed", 1000);
-      
-      // Reset selection and refresh
-      ui.resetMenuSelection();
-      ui.setState(STATE_VILLAGE_SELECT);
-      ui.update();
-    }
-    
-    smartDelay(300);
-    return;
-  }
-  
   // Check for enter or right arrow
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     Serial.println("[MainMenu] ENTER or RIGHT pressed - advancing to selection");
@@ -922,7 +880,7 @@ void handleMainMenu() {
         appState = APP_VILLAGE_MENU;
         ui.setState(STATE_VILLAGE_MENU);
         ui.resetMenuSelection();
-        ui.update();
+        ui.updateClean();  // Clean transition
       }
     } else if (selection == villageCount) {
       // Selected "New Village" - ask for village name first
@@ -931,7 +889,7 @@ void handleMainMenu() {
       appState = APP_VILLAGE_CREATE;
       ui.setState(STATE_CREATE_VILLAGE);
       ui.setInputText("");
-      ui.update();
+      ui.updateClean();  // Clean transition
     } else if (selection == villageCount + 1) {
       // Selected "Join Village"
       isCreatingVillage = false;
@@ -939,14 +897,14 @@ void handleMainMenu() {
       appState = APP_VILLAGE_JOIN_PASSWORD;
       ui.setState(STATE_JOIN_VILLAGE_PASSWORD);
       ui.setInputText("");
-      ui.update();
+      ui.updateClean();  // Clean transition
     } else if (selection == villageCount + 2) {
       // Selected "WiFi & Updates"
       keyboard.clearInput();
       appState = APP_WIFI_SETUP_MENU;
       ui.setState(STATE_WIFI_SETUP_MENU);
       ui.resetMenuSelection();
-      ui.update();
+      ui.updateClean();  // Clean transition
     }
     
     smartDelay(300);
@@ -970,7 +928,7 @@ void handleVillageMenu() {
     appState = APP_MAIN_MENU;
     ui.setState(STATE_VILLAGE_SELECT);
     ui.resetMenuSelection();
-    ui.update();
+    ui.updateClean();  // Clean transition
     smartDelay(300);
     return;
   }
@@ -1055,7 +1013,7 @@ void handleVillageMenu() {
       appState = APP_VIEW_MEMBERS;
       ui.setState(STATE_VIEW_MEMBERS);
       ui.setMemberList(village.getMemberList());
-      ui.update();
+      ui.updateClean();  // Clean transition
     } else if (selection == 3) {
       // Leave Village
       ui.showMessage("Leave Village?", "Press ENTER to confirm\nor LEFT to cancel", 0);
@@ -1083,11 +1041,11 @@ void handleVillageMenu() {
           appState = APP_MAIN_MENU;
           ui.setState(STATE_VILLAGE_SELECT);
           ui.resetMenuSelection();
-          ui.update();
+          ui.updateClean();  // Clean transition
           break;
         } else if (keyboard.isLeftPressed()) {
           ui.setState(STATE_VILLAGE_MENU);
-          ui.update();
+          ui.updateClean();  // Clean transition
           break;
         }
         smartDelay(50);
@@ -1106,7 +1064,7 @@ void handleViewMembers() {
     appState = APP_VILLAGE_MENU;
     ui.setState(STATE_VILLAGE_MENU);
     ui.resetMenuSelection();
-    ui.update();
+    ui.updateClean();  // Clean transition
     smartDelay(300);
   }
 }

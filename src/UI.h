@@ -7,7 +7,9 @@
 #include <GxEPD2_BW.h>
 #include <epd/GxEPD2_290_BS.h>
 #include <Fonts/FreeSans9pt7b.h>
+#include <Fonts/FreeSansBold9pt7b.h>
 #include <Fonts/FreeSansBold12pt7b.h>
+#include <Fonts/FreeSansBold24pt7b.h>
 #include "Messages.h"
 #include "Village.h"
 
@@ -45,6 +47,12 @@ private:
     SPIClass* displaySPI;  // Separate SPI bus for display
     GxEPD2_BW<GxEPD2_290_BS, GxEPD2_290_BS::HEIGHT>* display;
     UIState currentState;
+    // Refresh policy counters
+    unsigned long lastFullRefreshMs = 0;
+    int partialRefreshCount = 0;
+    // Tunables
+    static const int MAX_PARTIAL_BEFORE_FULL = 12;   // force full after N partials
+    static const unsigned long MAX_PARTIAL_AGE_MS = 15000; // or after 15s
     
     int menuSelection;
     String inputText;
@@ -88,6 +96,8 @@ public:
     bool begin(int8_t sck, int8_t miso, int8_t mosi, int8_t cs, int8_t dc, int8_t rst, int8_t busy);
     void update();
     void updatePartial();  // Partial refresh for smooth menu navigation
+    void updateFull();     // Full-screen refresh (multi-phase waveform)
+    void updateClean();    // Clear then draw - cleaner transitions than partial alone
     
     // Callback to check if user is typing (for deferring display updates)
     void setTypingCheckCallback(bool (*callback)());

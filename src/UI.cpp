@@ -179,6 +179,72 @@ void UI::updatePartial() {
     display->display(true);  // Partial refresh
 }
 
+void UI::updateClean() {
+    // Clean transition: clear to white with partial, then draw content with partial
+    // This minimizes ghosting better than single partial refresh
+    display->setPartialWindow(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    display->fillScreen(GxEPD_WHITE);
+    display->display(true);  // Partial refresh to clear
+    
+    // Now draw the actual content
+    display->fillScreen(GxEPD_WHITE);
+    switch (currentState) {
+        case STATE_SPLASH:          drawSplash(); break;
+        case STATE_VILLAGE_SELECT:  drawVillageSelect(); break;
+        case STATE_MAIN_MENU:       drawMainMenu(); break;
+        case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
+        case STATE_WIFI_SSID_INPUT: drawWiFiSSIDInput(); break;
+        case STATE_WIFI_PASSWORD_INPUT: drawWiFiPasswordInput(); break;
+        case STATE_WIFI_STATUS:     drawWiFiStatus(); break;
+        case STATE_OTA_CHECK:       drawOTACheck(); break;
+        case STATE_OTA_UPDATE:      drawOTAUpdate(); break;
+        case STATE_CREATE_VILLAGE:  drawInputPrompt("Village name:"); break;
+        case STATE_JOIN_VILLAGE_NAME: drawInputPrompt("Village to join:"); break;
+        case STATE_JOIN_VILLAGE_PASSWORD: drawInputPrompt("Enter secret passphrase:"); break;
+        case STATE_INPUT_PASSWORD:  drawInputPrompt("Village password:"); break;
+        case STATE_ADD_MEMBER:      drawAddMember(); break;
+        case STATE_VIEW_MEMBERS:    drawViewMembers(); break;
+        case STATE_MESSAGING:       drawMessaging(); break;
+        case STATE_INPUT_TEXT:      drawInputPrompt("Enter text:"); break;
+        case STATE_INPUT_USERNAME:  drawInputPrompt("Your display name:"); break;
+        case STATE_INPUT_MESSAGE:   drawInputPrompt("New message:"); break;
+        case STATE_POWERING_DOWN:   drawPoweringDown(); break;
+        case STATE_SLEEPING:        drawSleeping(); break;
+        case STATE_VILLAGE_MENU:    drawVillageMenu(); break;
+    }
+    display->display(true);  // Partial refresh to draw content
+}
+
+void UI::updateFull() {
+    // Full refresh: set full window, draw current state, then use full waveform
+    display->setFullWindow();
+    display->fillScreen(GxEPD_WHITE);
+    switch (currentState) {
+        case STATE_SPLASH:          drawSplash(); break;
+        case STATE_VILLAGE_SELECT:  drawVillageSelect(); break;
+        case STATE_MAIN_MENU:       drawMainMenu(); break;
+        case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
+        case STATE_WIFI_SSID_INPUT: drawWiFiSSIDInput(); break;
+        case STATE_WIFI_PASSWORD_INPUT: drawWiFiPasswordInput(); break;
+        case STATE_WIFI_STATUS:     drawWiFiStatus(); break;
+        case STATE_OTA_CHECK:       drawOTACheck(); break;
+        case STATE_OTA_UPDATE:      drawOTAUpdate(); break;
+        case STATE_CREATE_VILLAGE:  drawInputPrompt("Village name:"); break;
+        case STATE_JOIN_VILLAGE_NAME: drawInputPrompt("Village to join:"); break;
+        case STATE_JOIN_VILLAGE_PASSWORD: drawInputPrompt("Enter secret passphrase:"); break;
+        case STATE_INPUT_PASSWORD:  drawInputPrompt("Village password:"); break;
+        case STATE_ADD_MEMBER:      drawAddMember(); break;
+        case STATE_VIEW_MEMBERS:    drawViewMembers(); break;
+        case STATE_MESSAGING:       drawMessaging(); break;
+        case STATE_INPUT_TEXT:      drawInputPrompt("Enter text:"); break;
+        case STATE_INPUT_USERNAME:  drawInputPrompt("Your display name:"); break;
+        case STATE_INPUT_MESSAGE:   drawInputPrompt("New message:"); break;
+        case STATE_POWERING_DOWN:   drawPoweringDown(); break;
+        case STATE_SLEEPING:        drawSleeping(); break;
+    }
+    display->display(false);  // Full refresh (multi-phase, clears ghosting)
+}
+
 void UI::setTypingCheckCallback(bool (*callback)()) {
     typingCheckCallback = callback;
 }
@@ -191,97 +257,136 @@ void UI::setState(UIState state) {
 }
 
 void UI::drawSplash() {
-    display->setFont(&FreeSansBold12pt7b);
-    display->setCursor(80, 50);
-    display->print("SmolTxt");
+    // Large smolTxt title (note lowercase 's')
+    display->setFont(&FreeSansBold24pt7b);
+    display->setCursor(55, 55);
+    display->print("smolTxt");
     
+    // Single-line subtitle (moved right 22px)
     display->setFont(&FreeSans9pt7b);
-    display->setCursor(70, 80);
-    display->print("Safe Texting");
-    display->setCursor(80, 100);
-    display->print("for Kids");
+    display->setCursor(72, 85);
+    display->print("Safe text for kids");
     
     // Battery icon in upper right
     drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
 }
 
 void UI::drawVillageSelect() {
-    // Title
-    display->setFont(&FreeSansBold12pt7b);
-    display->setCursor(20, 20);
-    display->print("SELECT VILLAGE");
+    // Title - bold 9pt
+    display->setFont(&FreeSansBold9pt7b);
+    display->setCursor(10, 18);
+    display->print("Select Conversation");
+    
+    // Horizontal line under title
+    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
+    
+    // Battery icon at original position
+    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
     
     display->setFont(&FreeSans9pt7b);
     
-    int y = 45;
+    int y = 35;
     int lineHeight = 18;
     int item = 0;
+    int scrollOffset = 0;
+    
+    // Count total items to determine scroll offset
+    int totalItems = 0;
+    for (int slot = 0; slot < 10; slot++) {
+        if (Village::getVillageNameFromSlot(slot).length() > 0) {
+            totalItems++;
+        }
+    }
+    totalItems += 3; // + New, Join, WiFi
+    
+    // Calculate scroll offset if selection is beyond visible area
+    const int maxVisibleItems = 5;
+    if (menuSelection >= maxVisibleItems) {
+        scrollOffset = menuSelection - maxVisibleItems + 1;
+    }
     
     // List all saved villages from slots 0-9
     for (int slot = 0; slot < 10; slot++) {
         String villageName = Village::getVillageNameFromSlot(slot);
         if (villageName.length() > 0) {
-            if (menuSelection == item) {
-                display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-                display->setTextColor(GxEPD_WHITE);
+            // Skip items that are scrolled off the top
+            if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+                if (menuSelection == item) {
+                    display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+                    display->setTextColor(GxEPD_WHITE);
+                }
+                display->setCursor(10, y);
+                display->print(villageName);
+                if (menuSelection == item) {
+                    display->setTextColor(GxEPD_BLACK);
+                }
+                y += lineHeight;
             }
-            display->setCursor(10, y);
-            display->print(villageName);
-            if (menuSelection == item) {
-                display->setTextColor(GxEPD_BLACK);
-            }
-            y += lineHeight;
             item++;
-            
-            // Stop if we're out of screen space
-            if (y > 100) break;
         }
     }
     
-    // New Village
-    if (menuSelection == item) {
-        display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
+    // New Conversation
+    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+        if (menuSelection == item) {
+            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+            display->setTextColor(GxEPD_WHITE);
+        }
+        display->setCursor(10, y);
+        display->print("New Conversation");
+        if (menuSelection == item) {
+            display->setTextColor(GxEPD_BLACK);
+        }
+        y += lineHeight;
     }
-    display->setCursor(10, y);
-    display->print("New Village");
-    if (menuSelection == item) {
-        display->setTextColor(GxEPD_BLACK);
-    }
-    y += lineHeight;
     item++;
     
-    // Join Village
-    if (menuSelection == item) {
-        display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
+    // Join Conversation
+    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+        if (menuSelection == item) {
+            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+            display->setTextColor(GxEPD_WHITE);
+        }
+        display->setCursor(10, y);
+        display->print("Join Conversation");
+        if (menuSelection == item) {
+            display->setTextColor(GxEPD_BLACK);
+        }
+        y += lineHeight;
     }
-    display->setCursor(10, y);
-    display->print("Join Village");
-    if (menuSelection == item) {
-        display->setTextColor(GxEPD_BLACK);
-    }
-    y += lineHeight;
     item++;
     
     // WiFi & Updates
-    if (menuSelection == item) {
-        display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
+    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+        if (menuSelection == item) {
+            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+            display->setTextColor(GxEPD_WHITE);
+        }
+        display->setCursor(10, y);
+        display->print("WiFi & Updates");
+        if (menuSelection == item) {
+            display->setTextColor(GxEPD_BLACK);
+        }
     }
-    display->setCursor(10, y);
-    display->print("WiFi & Updates");
-    if (menuSelection == item) {
-        display->setTextColor(GxEPD_BLACK);
+    item++;
+    
+    // Draw down-arrow if there are more items below the visible area
+    int lastVisibleItem = scrollOffset + maxVisibleItems - 1;
+    if (totalItems > maxVisibleItems && lastVisibleItem < totalItems - 1) {
+        // Draw small equilateral triangle pointing down (10px wide, 10px high)
+        int arrowX = 10;
+        int arrowY = SCREEN_HEIGHT - 15;
+        int arrowWidth = 10;
+        int arrowHeight = 10;
+        
+        // Draw filled triangle: three points forming downward arrow
+        display->fillTriangle(
+            arrowX, arrowY,                           // Top left
+            arrowX + arrowWidth, arrowY,              // Top right
+            arrowX + arrowWidth/2, arrowY + arrowHeight, // Bottom center
+            GxEPD_BLACK
+        );
     }
-    
-    // Battery icon in upper right
-    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
-    
-    // Footer hint
-    display->setFont();
-    display->setCursor(5, SCREEN_HEIGHT - 8);
-    display->print("UP/DN ENTER:ok BS:delete");
 }
 
 void UI::drawMainMenu() {
@@ -323,17 +428,20 @@ void UI::drawMainMenu() {
 }
 
 void UI::drawVillageMenu() {
-    // Title
-    display->setFont(&FreeSansBold12pt7b);
-    display->setCursor(60, 20);
-    display->print("VILLAGE MENU");
+    // Title - show conversation name in bold 9pt
+    display->setFont(&FreeSansBold9pt7b);
+    display->setCursor(10, 18);
+    display->print(existingVillageName);  // Show conversation name instead of "VILLAGE MENU"
     
-    // Battery icon in upper right
+    // Horizontal line under title
+    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
+    
+    // Battery icon at original position
     drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
     
     display->setFont(&FreeSans9pt7b);
     
-    int y = 45;
+    int y = 38;
     int lineHeight = 20;
     
     // Messages
@@ -372,21 +480,16 @@ void UI::drawVillageMenu() {
     }
     y += lineHeight;
     
-    // Delete/Leave Village - text changes based on ownership but that's handled by caller
+    // Delete Group
     if (menuSelection == 3) {
         display->fillRect(5, y - 15, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
         display->setTextColor(GxEPD_WHITE);
     }
     display->setCursor(10, y);
-    display->print("Leave Village");
+    display->print("Delete Group");
     if (menuSelection == 3) {
         display->setTextColor(GxEPD_BLACK);
     }
-    
-    // Footer hint
-    display->setFont();
-    display->setCursor(5, SCREEN_HEIGHT - 8);
-    display->print("<-:back UP/DN:select ENTER:choose");
 }
 
 void UI::drawWiFiSetupMenu() {
@@ -600,137 +703,316 @@ void UI::drawViewMembers() {
 
 void UI::drawMessaging() {
     Serial.println("[UI] Drawing messaging. History size: " + String(messageHistory.size()));
-    display->setFont(&FreeSansBold12pt7b);
-    display->setCursor(40, 20);
-    display->print("VILLAGE CHAT");
     
     // Battery icon in upper right
     drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
     
-    // Draw divider line
-    display->drawLine(0, 25, SCREEN_WIDTH, 25, GxEPD_BLACK);
-    
     display->setFont(&FreeSans9pt7b);
     
     int lineHeight = 16;
-    int maxVisibleMessages = 3;  // Show 3 messages (reduced to make room for input)
+    int leftMargin = 5;
+    int rightMargin = 5;
+    int maxLineWidth = SCREEN_WIDTH - leftMargin - rightMargin;  // Available width in pixels
     
-    // Calculate input area position (fixed at bottom)
-    int inputY = SCREEN_HEIGHT - 35;
+    // Cursor gets a full line at the bottom
+    int cursorY = SCREEN_HEIGHT - 4;  // Full line height baseline
     
-    // Messages should be positioned just above the input area, growing upward
-    // Bottom message is at inputY - 10, then work upward
-    int bottomMessageY = inputY - 10;
+    // Messages fill screen from top to just above cursor line
+    int topY = 15;  // Allow partial text at top edge
+    int bottomY = cursorY - lineHeight;  // One full line above cursor
     
     if (messageHistory.size() == 0) {
-        // Center "No messages yet" in the available space
         display->setCursor(10, 60);
         display->print("No messages yet");
     } else {
-        // Calculate which messages to display (show most recent at bottom)
         int msgCount = (int)messageHistory.size();
-        int endIdx = msgCount - 1;  // Most recent message
         
-        if (msgCount > maxVisibleMessages) {
-            endIdx = msgCount - 1 - messageScrollOffset;
-            // Bounds checking
-            if (endIdx >= msgCount) endIdx = msgCount - 1;
-            if (endIdx < 0) endIdx = maxVisibleMessages - 1;
-            if (endIdx >= msgCount) endIdx = msgCount - 1;  // Double check after adjustment
-        }
+        // Build wrapped lines for ALL messages, newest to oldest
+        // Each message becomes multiple display lines
+        // messageScrollOffset tells us how many display LINES to scroll up
         
-        int startIdx = endIdx - maxVisibleMessages + 1;
-        if (startIdx < 0) startIdx = 0;
-        if (startIdx >= msgCount) startIdx = msgCount - 1;
+        // First pass: calculate all wrapped lines for all messages
+        // Store lines with status info so we can render status in small font
+        struct DisplayLine {
+            String text;
+            String status;  // Empty or "(sent)", "(read)", etc.
+            bool isFirstLine;  // First line of message (sender name bold)
+            String senderPart;  // "You: " or "Name: " for bold rendering
+        };
+        std::vector<DisplayLine> allLines;
         
-        // Final safety check
-        if (endIdx < 0 || endIdx >= msgCount || startIdx < 0 || startIdx >= msgCount) {
-            Serial.println("[UI] ERROR: Invalid message indices!");
-            display->setCursor(10, 60);
-            display->print("Display error");
-            return;
-        }
-        
-        // Count how many messages we'll actually display
-        int numMessages = endIdx - startIdx + 1;
-        
-        // Start from the bottom and work upward
-        int y = bottomMessageY - (lineHeight * (numMessages - 1));
-        
-        // Display messages from oldest to newest (bottom to top positioning)
-        for (int i = startIdx; i <= endIdx && i < messageHistory.size(); i++) {
+        for (int i = msgCount - 1; i >= 0; i--) {  // Start from most recent
             const Message& msg = messageHistory[i];
             
-            // Format: "You: " or "Alice: "
-            display->setCursor(5, y);
-            // Check if this message is from the current user
+            // Build the message text WITHOUT status
+            String msgText = "";
             if (msg.sender == currentUsername) {
-                display->print("You");
+                msgText = "You: ";
             } else {
-                // Truncate long sender names
                 String sender = msg.sender;
                 if (sender.length() > 8) {
                     sender = sender.substring(0, 8);
                 }
-                display->print(sender);
+                msgText = sender + ": ";
             }
-            display->print(": ");
             
-            // Message content (truncate if too long)
-            String content = msg.content;
-            if (content.length() > 30) {
-                content = content.substring(0, 27) + "...";
-            }
-            display->print(content);
+            msgText += msg.content;
             
-            // Show status for sent messages (not received)
+            // Determine status text (if any)
+            String statusText = "";
             if (!msg.received) {
-                display->print(" ");
-                display->setFont();  // Use smaller font for status
                 switch (msg.status) {
                     case MSG_SENT:
-                        display->print("(Sent)");
+                        statusText = " (sent)";
                         break;
                     case MSG_RECEIVED:
-                        display->print("(Rec'd)");
+                        statusText = " (rec'd)";
                         break;
                     case MSG_SEEN:
-                        display->print("(Rec'd)");  // Same as received for now
+                        statusText = " (rec'd)";
                         break;
                     case MSG_READ:
-                        display->print("(Read)");
+                        statusText = " (read)";
                         break;
                 }
-                display->setFont(&FreeSans9pt7b);  // Restore font
             }
             
-            y += lineHeight;  // Next message goes down (newer)
+            // Word wrap the message text (without status) using pixel width
+            // Collect all lines for THIS message first
+            std::vector<DisplayLine> messageLines;
+            String remainingText = msgText;
+            bool firstLineOfMessage = true;
+            
+            // Extract sender part for bold rendering (without trailing space)
+            String senderPart = "";
+            if (msg.sender == currentUsername) {
+                senderPart = "You:";
+            } else {
+                String sender = msg.sender;
+                if (sender.length() > 8) {
+                    sender = sender.substring(0, 8);
+                }
+                senderPart = sender + ":";
+            }
+            
+            while (remainingText.length() > 0) {
+                DisplayLine dLine;
+                dLine.isFirstLine = firstLineOfMessage;
+                dLine.senderPart = firstLineOfMessage ? senderPart : "";
+                firstLineOfMessage = false;
+                
+                // Measure how much text fits in maxLineWidth
+                int16_t x1, y1;
+                uint16_t w, h;
+                display->setFont(&FreeSans9pt7b);
+                display->getTextBounds(remainingText, 0, 0, &x1, &y1, &w, &h);
+                
+                if (w <= maxLineWidth) {
+                    // Entire remaining text fits on one line
+                    dLine.text = remainingText;
+                    dLine.status = statusText;  // Status on last line
+                    remainingText = "";
+                } else {
+                    // Need to wrap - find longest substring that fits
+                    int breakPoint = -1;
+                    int lastSpacePos = -1;
+                    
+                    // Binary search for the longest fitting substring
+                    int left = 1;
+                    int right = remainingText.length();
+                    int bestFit = 1;
+                    
+                    while (left <= right) {
+                        int mid = (left + right) / 2;
+                        String testStr = remainingText.substring(0, mid);
+                        display->getTextBounds(testStr, 0, 0, &x1, &y1, &w, &h);
+                        
+                        if (w <= maxLineWidth) {
+                            bestFit = mid;
+                            left = mid + 1;
+                        } else {
+                            right = mid - 1;
+                        }
+                    }
+                    
+                    // Now find last space before bestFit position
+                    for (int j = bestFit; j > 0; j--) {
+                        if (remainingText.charAt(j) == ' ') {
+                            lastSpacePos = j;
+                            break;
+                        }
+                    }
+                    
+                    // If we found a space, break there; otherwise force break at bestFit
+                    if (lastSpacePos > 0 && lastSpacePos > bestFit / 2) {
+                        breakPoint = lastSpacePos;
+                    } else {
+                        breakPoint = bestFit;
+                    }
+                    
+                    dLine.text = remainingText.substring(0, breakPoint);
+                    dLine.status = "";  // No status on wrapped lines
+                    
+                    // Move past the break point and trim leading space
+                    remainingText = remainingText.substring(breakPoint);
+                    if (remainingText.startsWith(" ")) {
+                        remainingText = remainingText.substring(1);
+                    }
+                }
+                
+                messageLines.push_back(dLine);
+            }
+            
+            // Add this message's lines to allLines in REVERSE order
+            // (last continuation line first, then first line last)
+            // This way when drawn from bottom up, first line appears at bottom
+            for (int j = messageLines.size() - 1; j >= 0; j--) {
+                allLines.push_back(messageLines[j]);
+            }
+        }
+        
+        // Now draw lines with scroll offset applied
+        // allLines[0] = most recent message's first line
+        // messageScrollOffset = number of MESSAGE POSTS to skip (not lines)
+        // When scrollOffset > 0, we skip recent messages and show older ones
+        
+        int totalLines = allLines.size();
+        
+        // Calculate how many complete messages to skip
+        // We need to count messages, not lines
+        // Recount messages and their line counts
+        int linesSoFar = 0;
+        int linesToSkip = 0;
+        
+        // Count lines to skip based on messageScrollOffset (whole messages)
+        if (messageScrollOffset > 0) {
+            int msgsSkipped = 0;
+            for (int m = msgCount - 1; m >= 0 && msgsSkipped < messageScrollOffset; m--) {
+                const Message& msg = messageHistory[m];
+                String fullLine = "";
+                if (msg.sender == currentUsername) {
+                    fullLine = "You: ";
+                } else {
+                    String sender = msg.sender;
+                    if (sender.length() > 8) sender = sender.substring(0, 8);
+                    fullLine = sender + ": ";
+                }
+                fullLine += msg.content;
+                if (!msg.received) fullLine += " (read)";
+                
+                // Count lines for this message using pixel-based wrapping
+                String remainingText = fullLine;
+                while (remainingText.length() > 0) {
+                    int16_t x1, y1;
+                    uint16_t w, h;
+                    display->setFont(&FreeSans9pt7b);
+                    display->getTextBounds(remainingText, 0, 0, &x1, &y1, &w, &h);
+                    
+                    if (w <= maxLineWidth) {
+                        linesToSkip++;
+                        remainingText = "";
+                    } else {
+                        // Binary search for longest fitting substring
+                        int left = 1;
+                        int right = remainingText.length();
+                        int bestFit = 1;
+                        
+                        while (left <= right) {
+                            int mid = (left + right) / 2;
+                            String testStr = remainingText.substring(0, mid);
+                            display->getTextBounds(testStr, 0, 0, &x1, &y1, &w, &h);
+                            
+                            if (w <= maxLineWidth) {
+                                bestFit = mid;
+                                left = mid + 1;
+                            } else {
+                                right = mid - 1;
+                            }
+                        }
+                        
+                        // Find last space before bestFit
+                        int breakPoint = bestFit;
+                        for (int j = bestFit; j > 0; j--) {
+                            if (remainingText.charAt(j) == ' ') {
+                                breakPoint = j;
+                                break;
+                            }
+                        }
+                        
+                        remainingText = remainingText.substring(breakPoint);
+                        if (remainingText.startsWith(" ")) remainingText = remainingText.substring(1);
+                        linesToSkip++;
+                    }
+                }
+                msgsSkipped++;
+            }
+        }
+        
+        // Draw from bottom to top, starting after skipped lines
+        int currentY = bottomY;
+        for (int i = linesToSkip; i < totalLines && currentY >= topY - lineHeight; i++) {  // Allow partial at top
+            int xPos = leftMargin;
+            
+            // If first line, render sender name in bold
+            if (allLines[i].isFirstLine && allLines[i].senderPart.length() > 0) {
+                display->setFont(&FreeSansBold9pt7b);
+                display->setCursor(xPos, currentY);
+                display->print(allLines[i].senderPart);
+                
+                // Calculate width of sender part to position message text
+                int16_t x1, y1;
+                uint16_t w, h;
+                display->getTextBounds(allLines[i].senderPart, 0, 0, &x1, &y1, &w, &h);
+                xPos += w;
+                
+                // Extract message part (after sender with colon)
+                // allLines[i].text contains full line like "You: Wanka"
+                // senderPart is "You:" (no space)
+                // We need to skip "You: " (with space) to get "Wanka"
+                String messagePart = allLines[i].text;
+                int colonPos = messagePart.indexOf(':');
+                if (colonPos >= 0 && colonPos + 2 < messagePart.length()) {
+                    // Skip past ":" and " " to get message content
+                    messagePart = messagePart.substring(colonPos + 2);
+                }
+                
+                // Render space and message in regular font  
+                display->setFont(&FreeSans9pt7b);
+                display->setCursor(xPos, currentY);
+                display->print(" ");  // Space after colon
+                display->print(messagePart);
+            } else {
+                // Continuation line - just regular font
+                display->setFont(&FreeSans9pt7b);
+                display->setCursor(xPos, currentY);
+                display->print(allLines[i].text);
+            }
+            
+            // Add status in small font if present
+            if (allLines[i].status.length() > 0) {
+                display->setFont();  // Small default font
+                display->print(allLines[i].status);
+            }
+            
+            currentY -= lineHeight;  // Next line goes up
         }
     }
     
-    // Draw input area at bottom (inputY already defined above)
-    display->drawLine(0, inputY - 5, SCREEN_WIDTH, inputY - 5, GxEPD_BLACK);
-    
-    // Input prompt
+    // Cursor at the bottom with full line height
     display->setFont(&FreeSans9pt7b);
-    display->setCursor(5, inputY + 10);
+    display->setCursor(5, cursorY);
     display->print(">");
     
     // Show current input text
-    display->setCursor(15, inputY + 10);
+    display->setCursor(15, cursorY);
     String displayText = inputText;
-    if (displayText.length() > 32) {
-        displayText = displayText.substring(displayText.length() - 32);
+    if (displayText.length() > 40) {
+        displayText = displayText.substring(displayText.length() - 40);
     }
     display->print(displayText);
     
     // Cursor indicator
     display->print("_");
-    
-    // Footer hint
-    display->setFont();
-    display->setCursor(5, SCREEN_HEIGHT - 4);
-    display->print("<-:back UP/DN:scroll ENTER:send");
 }
 
 void UI::drawInputPrompt(const String& prompt) {
@@ -797,6 +1079,9 @@ void UI::drawInputPrompt(const String& prompt) {
 void UI::menuUp() {
     if (menuSelection > 0) {
         menuSelection--;
+    } else {
+        // Already at top, don't trigger redraw
+        return;
     }
 }
 
@@ -829,6 +1114,9 @@ void UI::menuDown() {
     
     if (menuSelection < maxItems) {
         menuSelection++;
+    } else {
+        // Already at bottom, don't trigger redraw
+        return;
     }
 }
 
@@ -882,13 +1170,15 @@ void UI::clearMessages() {
 }
 
 void UI::scrollMessagesUp() {
-    if (messageScrollOffset > 0) {
-        messageScrollOffset--;
-    }
+    // UP = go back in time = show older messages
+    messageScrollOffset++;
 }
 
 void UI::scrollMessagesDown() {
-    messageScrollOffset++;
+    // DOWN = go forward in time = show newer messages
+    if (messageScrollOffset > 0) {
+        messageScrollOffset--;
+    }
 }
 
 void UI::resetMessageScroll() {
@@ -1011,10 +1301,10 @@ void UI::drawBatteryIcon(int x, int y, int percent) {
     int tipWidth = 2;
     int tipHeight = 4;
     
-    // Draw voltage text to the left of battery icon (small font)
+    // Draw voltage text to the left of battery icon (small font, moved down 2px)
     display->setFont();
     String voltageStr = String(batteryVoltage, 1);  // 1 decimal place
-    display->setCursor(x - voltageStr.length() * 6 - 2, y + 8);  // Position to left
+    display->setCursor(x - voltageStr.length() * 6 - 2, y + 2);  // Position to left, down 2px from icon
     display->print(voltageStr);
     
     // Draw battery body
