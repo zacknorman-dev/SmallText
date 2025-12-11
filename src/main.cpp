@@ -25,7 +25,7 @@
 #define EPD_MISO -1
 
 // Buzzer pin
-#define BUZZER_PIN 9
+#define BUZZER_PIN 40
 #define BUZZER_CHANNEL 0
 
 // Global objects
