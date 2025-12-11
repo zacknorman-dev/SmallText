@@ -63,9 +63,11 @@ Write-Host "      Changes committed" -ForegroundColor Green
 
 # Step 6: Create annotated tag
 Write-Host "`n[6/8] Creating Git tag..." -ForegroundColor Yellow
-# Delete tag if it exists locally
-git tag -d "v$Version" 2>$null
 git tag -a "v$Version" -m "Release v$Version`n`n$Message"
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "      Tag creation failed (tag may already exist)" -ForegroundColor Red
+    exit 1
+}
 Write-Host "      Tag v$Version created" -ForegroundColor Green
 
 # Step 7: Push to GitHub
