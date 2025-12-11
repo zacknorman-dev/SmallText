@@ -858,42 +858,13 @@ void setup() {
     smartDelay(1000);  // Give time for sync responses to arrive
   }
   
-  // If woke from nap timer (not key press), check for messages then go back to sleep
-  if (wokeFromNap && wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
-    Serial.println("[Power] Nap wake-up - checking for new messages");
-    
-    // Check if there are any unread messages (max 5 alerts)
-    int unreadCount = 0;
-    if (village.isInitialized()) {
-      std::vector<Message> messages = village.loadMessages();
-      for (const Message& msg : messages) {
-        if (msg.status != MSG_READ && msg.status != MSG_SEEN) {
-          unreadCount++;
-        }
-      }
-    }
-    
-    if (unreadCount > 0) {
-      int alertCount = min(unreadCount, 5);  // Max 5 ringtones
-      Serial.println("[Power] Found " + String(unreadCount) + " unread messages, playing " + String(alertCount) + " alerts");
-      for (int i = 0; i < alertCount; i++) {
-        playRingtoneSound(selectedRingtone);
-        smartDelay(1000);
-      }
-    } else {
-      Serial.println("[Power] No new messages");
-    }
-    
-    // Go back to sleep immediately
-    Serial.println("[Power] Returning to nap mode");
-    powerMode = POWER_NAPPING;
-    enterDeepSleep();
-    // Never returns
-  }
+  // Timer wake logic will be handled after full initialization below
   
   // If woke from key press, stay awake and continue normal boot
   if (wokeFromNap && wakeup_reason == ESP_SLEEP_WAKEUP_EXT1) {
     Serial.println("[Power] Woke by key press - staying awake");
+    Serial.println("[Display] Forcing full refresh after wake from nap");
+    ui.updateClean();  // Force full display refresh to prevent white screen/corruption
     powerMode = POWER_AWAKE;
     lastActivityTime = millis();
   }
@@ -937,6 +908,68 @@ void setup() {
     Serial.println("[System] No previous village to auto-load");
   }
   
+  // If woke from nap timer (not key press), check for messages then go back to sleep
+  if (wokeFromNap && wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
+    Serial.println("[Power] Nap timer wake - checking for new messages");
+    
+    // Give more time for MQTT messages to arrive if WiFi is connected
+    if (mqttMessenger.isConnected()) {
+      Serial.println("[Power] Waiting for messages to arrive...");
+      for (int i = 0; i < 30; i++) {  // Wait up to 3 seconds total
+        mqttMessenger.loop();  // Process incoming messages
+        smartDelay(100);
+      }
+      Serial.println("[Power] Message wait complete");
+    }
+    
+    // Check if there are any unread messages (max 5 alerts)
+    int unreadCount = 0;
+    if (village.isInitialized()) {
+      std::vector<Message> messages = village.loadMessages();
+      for (const Message& msg : messages) {
+        if (msg.status != MSG_READ && msg.status != MSG_SEEN) {
+          unreadCount++;
+        }
+      }
+    }
+    
+    if (unreadCount > 0) {
+      // Show message notification screen
+      Serial.println("[Power] Showing new message notification");
+      ui.setState(STATE_SPLASH);  // Use splash state for simple text display
+      String notificationText = "SmolTxt Napping\n\n";
+      notificationText += "You have " + String(unreadCount) + " new message";
+      if (unreadCount > 1) notificationText += "s";
+      notificationText += "\n\nPress any key to view";
+      ui.setInputText(notificationText);
+      ui.updateClean();  // Show the notification
+      
+      int alertCount = min(unreadCount, 5);  // Max 5 ringtones
+      Serial.println("[Power] Playing " + String(alertCount) + " alerts");
+      for (int i = 0; i < alertCount; i++) {
+        playRingtoneSound(selectedRingtone);
+        smartDelay(1000);
+      }
+      
+      // Keep message visible for a few seconds before sleeping
+      Serial.println("[Power] Keeping notification visible");
+      smartDelay(3000);
+    } else {
+      Serial.println("[Power] No new messages - staying asleep");
+    }
+    
+    // Show napping screen before going back to sleep
+    Serial.println("[Power] Showing napping screen");
+    ui.showNappingScreen(battery.getVoltage());
+    smartDelay(1000);
+    
+    // Go back to sleep
+    Serial.println("[Power] Returning to nap mode");
+    powerMode = POWER_NAPPING;
+    enterDeepSleep();
+    // Never returns - device enters deep sleep
+  }
+  
   appState = APP_MAIN_MENU;
   ui.setState(STATE_VILLAGE_SELECT);
   ui.resetMenuSelection();
@@ -962,6 +995,8 @@ void loop() {
   // Update typing timestamp if new input detected
   if (keyboard.isKeyboardPresent() && keyboard.hasInput() && !hadInput) {
     lastKeystroke = millis();
+    lastActivityTime = millis();  // Reset inactivity timer on any keyboard input
+    // Serial.println("[Power] Activity timer reset - keyboard input");
   }
   
   // Check for messaging screen timeout (clear flag if inactive for too long)
@@ -1005,10 +1040,13 @@ void loop() {
     
     unsigned long holdDuration = millis() - shutdownHoldStart;
     
-    // Check if we've reached 3 seconds - trigger shutdown immediately while still holding
+    // Check if we've reached 3 seconds - trigger napping mode immediately while still holding
     if (holdDuration >= SHUTDOWN_HOLD_TIME && !isShuttingDown) {
       isShuttingDown = true;
-      Serial.println("[Power] Shutdown triggered! (3s hold complete)");
+      Serial.println("[Power] Manual nap triggered! (3s hold complete)");
+      logger.info("Power: Entering nap mode (manual)");
+      powerMode = POWER_NAPPING;
+      sleepBatteryVoltage = battery.getVoltage();
       enterDeepSleep();
       // Never returns - device enters deep sleep
     }
