@@ -10,7 +10,7 @@
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
 
-#define BUILD_NUMBER "v0.40.5"
+#define BUILD_NUMBER "v0.40.7"
 
 // Pin definitions for Heltec Vision Master E290
 #define I2C_SDA 39
