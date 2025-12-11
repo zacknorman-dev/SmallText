@@ -252,9 +252,9 @@ void onMessageReceived(const Message& msg) {
   }
   
   // Only mark as read if this is a NEW message (not a synced historical message)
-  // AND if we're actively viewing the messaging screen
+  // AND if we're actively viewing the messaging screen AND it's for the current village
   // This upgrades the message from MSG_RECEIVED (status 2) to MSG_READ (status 3)
-  if (!isSyncing && msg.received && appState == APP_MESSAGING && inMessagingScreen) {
+  if (!isSyncing && msg.received && appState == APP_MESSAGING && inMessagingScreen && isForCurrentVillage) {
     Serial.println("[App] Already in messaging screen, marking NEW message as read (status 3)");
     
     // Mark message as read locally

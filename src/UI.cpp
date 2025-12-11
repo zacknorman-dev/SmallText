@@ -1162,6 +1162,7 @@ void UI::setInputComplete(bool complete) {
 // Messaging
 void UI::addMessage(const Message& msg) {
     messageHistory.push_back(msg);
+    messageScrollOffset = 0;  // Reset scroll to show new message at bottom
     Serial.println("[UI] Message added. Total: " + String(messageHistory.size()));
 }
 
