@@ -293,8 +293,9 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
   // Then try to update UI - this may fail if message not in UI yet (race condition with message save)
   ui.updateMessageStatus(messageId, MSG_RECEIVED);
   
-  // Update display if we're actively viewing messaging screen
-  if (inMessagingScreen) {
+  // Update display if we're actively viewing messaging screen OR if we're in village/main menu
+  // (so status changes are visible even when not actively in the messaging screen)
+  if (inMessagingScreen || appState == APP_VILLAGE_MENU || appState == APP_MAIN_MENU) {
     ui.updatePartial();
   }
 }
@@ -310,8 +311,9 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
   // Then try to update UI - this may fail if message not in UI yet (race condition with message save)
   ui.updateMessageStatus(messageId, MSG_READ);
   
-  // Update display if we're actively viewing messaging screen
-  if (inMessagingScreen) {
+  // Update display if we're actively viewing messaging screen OR if we're in village/main menu
+  // (so status changes are visible even when not actively in the messaging screen)
+  if (inMessagingScreen || appState == APP_VILLAGE_MENU || appState == APP_MAIN_MENU) {
     ui.updatePartial();
   }
 }

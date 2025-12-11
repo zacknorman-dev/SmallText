@@ -490,7 +490,7 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
         
         // Send ACK
         Serial.println("[MQTT] Sending ACK for message: " + msg.messageId + " to " + msg.senderMAC);
-        sendAck(msg.messageId, msg.senderMAC);
+        sendAck(msg.messageId, msg.senderMAC, msg.villageId);
         
         // Deliver message to app
         if (onMessageReceived) {
@@ -659,24 +659,38 @@ String MQTTMessenger::sendWhisper(const String& recipientMAC, const String& mess
     }
 }
 
-bool MQTTMessenger::sendAck(const String& messageId, const String& targetMAC) {
-    if (!isConnected() || !encryption) {
+bool MQTTMessenger::sendAck(const String& messageId, const String& targetMAC, const String& villageId) {
+    if (!isConnected()) {
         return false;
     }
+    
+    // Find the village subscription to get encryption key and username
+    VillageSubscription* village = findVillageSubscription(villageId);
+    if (!village) {
+        Serial.println("[MQTT] Cannot send ACK - village not found: " + villageId);
+        return false;
+    }
+    
+    // Use temporary encryption with this village's key
+    Encryption tempEncryption;
+    tempEncryption.setKey(village->encryptionKey);
     
     String ackId = generateMessageId();
     String myMacStr = String(myMAC, HEX);
     myMacStr.toLowerCase();
     
     // Format: ACK:villageId:targetMAC:sender:senderMAC:ackId:originalMessageId:0:0
-    String formatted = "ACK:" + currentVillageId + ":" + targetMAC + ":" +
-                      currentUsername + ":" + myMacStr + ":" + ackId + ":" + messageId + ":0:0";    uint8_t encrypted[MAX_CIPHERTEXT];
+    String formatted = "ACK:" + villageId + ":" + targetMAC + ":" +
+                      village->username + ":" + myMacStr + ":" + ackId + ":" + messageId + ":0:0";
+    
+    uint8_t encrypted[MAX_CIPHERTEXT];
     size_t encryptedLen;
-    if (!encryption->encryptString(formatted, encrypted, MAX_CIPHERTEXT, &encryptedLen)) {
+    if (!tempEncryption.encryptString(formatted, encrypted, MAX_CIPHERTEXT, &encryptedLen)) {
         return false;
     }
     
-    String topic = generateTopic("ack", targetMAC);
+    // Generate topic using the message's villageId
+    String topic = "smoltxt/" + villageId + "/ack/" + targetMAC;
     int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), (const char*)encrypted, 
                                         encryptedLen, 1, 0);  // QoS 1, retain=0
     return msg_id >= 0;

@@ -109,7 +109,7 @@ public:
     // Messaging API (matches LoRaMessenger)
     String sendShout(const String& message);
     String sendWhisper(const String& recipientMAC, const String& message);
-    bool sendAck(const String& messageId, const String& targetMAC);
+    bool sendAck(const String& messageId, const String& targetMAC, const String& villageId);
     bool sendReadReceipt(const String& messageId, const String& targetMAC);
     
     // Message sync for offline devices
