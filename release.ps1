@@ -23,8 +23,9 @@ $content = $content -replace '#define BUILD_NUMBER "v[\d\.]+"', "#define BUILD_N
 Set-Content $mainCppPath $content -NoNewline
 Write-Host "      Version updated to v$Version" -ForegroundColor Green
 
-# Step 2: Build firmware
-Write-Host "`n[2/8] Building firmware..." -ForegroundColor Yellow
+# Step 2: Clean and build firmware
+Write-Host "`n[2/8] Cleaning and building firmware..." -ForegroundColor Yellow
+& C:\Users\zackn\.platformio\penv\Scripts\platformio.exe run --target clean
 & C:\Users\zackn\.platformio\penv\Scripts\platformio.exe run
 if ($LASTEXITCODE -ne 0) {
     Write-Host "      Build failed!" -ForegroundColor Red
