@@ -28,6 +28,9 @@
 #define BUZZER_PIN 40
 #define BUZZER_CHANNEL 0
 
+// User button (PRG button on Heltec boards - typically GPIO 0)
+#define USER_BUTTON_PIN 0
+
 // Global objects
 Village village;
 Encryption encryption;
@@ -335,10 +338,10 @@ void enterDeepSleep() {
     esp_sleep_enable_timer_wakeup(NAP_WAKE_INTERVAL * 1000ULL);  // Convert ms to microseconds
     Serial.println("[Power] Timer wake enabled: 15 minutes");
     
-    // Wake on any key press (GPIO 39 = I2C_SDA)
-    // Using EXT1 wake on HIGH level (keyboard pulls line high when pressed)
-    esp_sleep_enable_ext1_wakeup(1ULL << I2C_SDA, ESP_EXT1_WAKEUP_ANY_HIGH);
-    Serial.println("[Power] GPIO wake enabled: GPIO 39 (any key)");
+    // Wake on user button press (GPIO 0 = PRG button)
+    // Button is active LOW (pressed = 0), so wake on LOW level
+    esp_sleep_enable_ext0_wakeup((gpio_num_t)USER_BUTTON_PIN, 0);
+    Serial.println("[Power] Button wake enabled: GPIO 0 (PRG button)");
   }
   
   Serial.println("[Power] Entering deep sleep now");
@@ -859,22 +862,24 @@ void setup() {
   if (wokeFromNap && wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
     Serial.println("[Power] Nap wake-up - checking for new messages");
     
-    // Check if there are any unread messages
-    bool hasNewMessages = false;
+    // Check if there are any unread messages (max 5 alerts)
+    int unreadCount = 0;
     if (village.isInitialized()) {
       std::vector<Message> messages = village.loadMessages();
       for (const Message& msg : messages) {
         if (msg.status != MSG_READ && msg.status != MSG_SEEN) {
-          hasNewMessages = true;
-          break;
+          unreadCount++;
         }
       }
     }
     
-    if (hasNewMessages) {
-      Serial.println("[Power] New messages found - playing ringtone");
-      playRingtoneSound(selectedRingtone);
-      smartDelay(1000);
+    if (unreadCount > 0) {
+      int alertCount = min(unreadCount, 5);  // Max 5 ringtones
+      Serial.println("[Power] Found " + String(unreadCount) + " unread messages, playing " + String(alertCount) + " alerts");
+      for (int i = 0; i < alertCount; i++) {
+        playRingtoneSound(selectedRingtone);
+        smartDelay(1000);
+      }
     } else {
       Serial.println("[Power] No new messages");
     }
@@ -1269,14 +1274,17 @@ void handleVillageMenu() {
       
       // Mark all received (but not yet read) messages as read and queue read receipts
       readReceiptQueue.clear();  // Clear any old queue items
+      std::vector<String> messagesToMarkRead;  // Batch list
       int unreadCount = 0;
       for (int i = startIndex; i < messages.size(); i++) {
         const Message& msg = messages[i];
         // Only process received messages that aren't already read
         if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
-          // Mark as read in UI and storage
+          // Mark as read in UI
           ui.updateMessageStatus(msg.messageId, MSG_READ);
-          village.updateMessageStatus(msg.messageId, MSG_READ);
+          
+          // Add to batch list for storage update
+          messagesToMarkRead.push_back(msg.messageId);
           
           // Queue read receipt to sender
           if (!msg.senderMAC.isEmpty()) {
@@ -1288,7 +1296,10 @@ void handleVillageMenu() {
           }
         }
       }
-      if (unreadCount > 0) {
+      
+      // Batch update all messages at once (single file write instead of N writes)
+      if (!messagesToMarkRead.empty()) {
+        village.batchUpdateMessageStatus(messagesToMarkRead, MSG_READ);
         Serial.println("[App] Marked " + String(unreadCount) + " unread messages as read, queued receipts");
       }
       
@@ -1766,14 +1777,17 @@ void handleUsernameInput() {
       
       // Mark all received (but not yet read) messages as read and queue read receipts
       readReceiptQueue.clear();  // Clear any old queue items
+      std::vector<String> messagesToMarkRead;  // Batch list
       int unreadCount = 0;
       for (int i = startIndex; i < messages.size(); i++) {
         const Message& msg = messages[i];
         // Only process received messages that aren't already read
         if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
-          // Mark as read in UI and storage
+          // Mark as read in UI
           ui.updateMessageStatus(msg.messageId, MSG_READ);
-          village.updateMessageStatus(msg.messageId, MSG_READ);
+          
+          // Add to batch list for storage update
+          messagesToMarkRead.push_back(msg.messageId);
           
           // Queue read receipt to sender
           if (!msg.senderMAC.isEmpty()) {
@@ -1785,7 +1799,10 @@ void handleUsernameInput() {
           }
         }
       }
-      if (unreadCount > 0) {
+      
+      // Batch update all messages at once (single file write instead of N writes)
+      if (!messagesToMarkRead.empty()) {
+        village.batchUpdateMessageStatus(messagesToMarkRead, MSG_READ);
         Serial.println("[App] Marked " + String(unreadCount) + " unread messages as read, queued receipts");
       }
       

@@ -860,6 +860,80 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
     return true;
 }
 
+bool Village::batchUpdateMessageStatus(const std::vector<String>& messageIds, int newStatus) {
+    if (!initialized) return false;
+    if (messageIds.empty()) return true;  // Nothing to update
+    
+    // Create a set for fast lookup
+    std::set<String> targetIds(messageIds.begin(), messageIds.end());
+    
+    // Load ALL messages from file
+    std::vector<String> allLines;
+    File readFile = LittleFS.open("/messages.dat", "r");
+    if (!readFile) {
+        logger.error("Failed to open messages.dat for batch status update");
+        return false;
+    }
+    
+    while (readFile.available()) {
+        String line = readFile.readStringUntil('\n');
+        line.trim();
+        allLines.push_back(line);
+    }
+    readFile.close();
+    
+    // Update all matching messages in memory
+    int updatedCount = 0;
+    String currentVillageId = String(villageId);
+    
+    for (int i = 0; i < allLines.size(); i++) {
+        String& line = allLines[i];
+        
+        if (line.length() == 0) continue;
+        
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, line);
+        
+        if (error) continue;
+        
+        String msgVillage = doc["village"] | "";
+        String msgId = doc["messageId"] | "";
+        
+        // Check if this message is in our batch and from our village
+        if (msgVillage == currentVillageId && targetIds.find(msgId) != targetIds.end()) {
+            doc["status"] = newStatus;
+            
+            // Re-serialize the updated message
+            String updatedLine;
+            serializeJson(doc, updatedLine);
+            allLines[i] = updatedLine;
+            
+            updatedCount++;
+            
+            // If we've found all messages, we can stop
+            if (updatedCount >= messageIds.size()) break;
+        }
+    }
+    
+    logger.info("Batch updated " + String(updatedCount) + " messages to status " + String(newStatus));
+    
+    // Write once at the end
+    File writeFile = LittleFS.open("/messages.dat", "w");
+    if (!writeFile) {
+        logger.critical("Failed to reopen messages.dat for writing");
+        return false;
+    }
+    
+    for (const String& line : allLines) {
+        writeFile.println(line);
+    }
+    
+    writeFile.flush();
+    writeFile.close();
+    logger.info("Saved " + String(allLines.size()) + " total lines (all villages preserved)");
+    return true;
+}
+
 bool Village::messageIdExists(const String& messageId) {
     if (messageId.isEmpty()) return false;
     return messageIdCache.find(messageId) != messageIdCache.end();
