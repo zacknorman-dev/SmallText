@@ -1,0 +1,7 @@
+SmolTxt Backlog
+===============
+
+## UI/UX Issues
+
+- Update screen shows "Please wait" twice during firmware download - should only show once
+
