@@ -1425,6 +1425,57 @@ void UI::showSleepScreen() {
     } while (display->nextPage());
 }
 
+void UI::showNappingScreen(float batteryVoltage) {
+    setState(STATE_SLEEPING);
+    display->setFullWindow();
+    display->firstPage();
+    do {
+        display->fillScreen(GxEPD_WHITE);
+        
+        display->setFont(&FreeSansBold12pt7b);
+        display->setCursor(20, 30);
+        display->print("SmolTxt Napping");
+        
+        display->setFont(&FreeSans9pt7b);
+        display->setCursor(5, 60);
+        display->print("Wake every 15 min to");
+        display->setCursor(5, 80);
+        display->print("check messages & alert");
+        display->setCursor(5, 100);
+        display->print("Press any key to wake");
+        
+        // Show battery voltage in corner
+        display->setFont();
+        String voltageStr = String(batteryVoltage, 2) + "V";
+        display->setCursor(240, 5);
+        display->print(voltageStr);
+    } while (display->nextPage());
+}
+
+void UI::showLowBatteryScreen(float batteryVoltage) {
+    setState(STATE_SLEEPING);
+    display->setFullWindow();
+    display->firstPage();
+    do {
+        display->fillScreen(GxEPD_WHITE);
+        
+        display->setFont(&FreeSansBold12pt7b);
+        display->setCursor(10, 35);
+        display->print("Battery Too Low!");
+        
+        display->setFont(&FreeSans9pt7b);
+        display->setCursor(5, 65);
+        display->print("SmolTxt going to sleep");
+        display->setCursor(5, 90);
+        display->print("Please charge me!");
+        
+        // Show battery voltage prominently
+        display->setFont(&FreeSansBold12pt7b);
+        display->setCursor(80, 118);
+        display->print(String(batteryVoltage, 2) + "V");
+    } while (display->nextPage());
+}
+
 void UI::drawPoweringDown() {
     display->setFont(&FreeSansBold12pt7b);
     display->setCursor(50, 60);

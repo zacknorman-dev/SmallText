@@ -158,6 +158,8 @@ public:
     void showMessage(const String& title, const String& message, int durationMs = 2000);
     void showPoweringDown();
     void showSleepScreen();
+    void showNappingScreen(float batteryVoltage);
+    void showLowBatteryScreen(float batteryVoltage);
     void clear();
 };
 

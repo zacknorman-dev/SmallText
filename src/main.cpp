@@ -87,6 +87,20 @@ const unsigned long MESSAGING_TIMEOUT = 300000;  // 5 minutes timeout
 int currentVillageSlot = -1;  // Track which village slot is currently active (-1 = none)
 bool isSyncing = false;  // Flag to track if we're currently syncing (skip status updates during sync)
 
+// Power management states
+enum PowerMode {
+  POWER_AWAKE,     // Active, polling, listening
+  POWER_NAPPING,   // Deep sleep with 15-min wake cycles
+  POWER_ASLEEP     // Low battery, stay asleep until charged
+};
+
+PowerMode powerMode = POWER_AWAKE;
+unsigned long lastActivityTime = 0;  // Last message sent/received or user interaction
+const unsigned long AWAKE_TIMEOUT = 300000;  // 5 minutes = 300,000ms
+const unsigned long NAP_WAKE_INTERVAL = 900000;  // 15 minutes = 900,000ms
+const float LOW_BATTERY_THRESHOLD = 3.0;  // 3.0V = too low, go to permanent sleep
+float sleepBatteryVoltage = 0.0;  // Battery voltage when entering nap mode
+
 // Ringtone types
 enum RingtoneType {
   RINGTONE_RISING,      // 0
@@ -266,11 +280,34 @@ unsigned long getCurrentTime() {
 
 // Power management - graceful shutdown
 void enterDeepSleep() {
-  Serial.println("[Power] Entering deep sleep mode");
-  logger.info("Entering deep sleep");
+  Serial.println("[Power] Entering deep sleep mode (mode=" + String(powerMode) + ")");
+  
+  // Check battery voltage before sleep
+  float currentVoltage = battery.getVoltage();
+  Serial.println("[Power] Battery voltage: " + String(currentVoltage) + "V");
+  
+  // If battery too low, enter permanent sleep mode
+  if (currentVoltage < LOW_BATTERY_THRESHOLD) {
+    Serial.println("[Power] Battery too low! Entering permanent sleep");
+    logger.info("Power: Battery critical, permanent sleep");
+    powerMode = POWER_ASLEEP;
+    sleepBatteryVoltage = currentVoltage;
+    
+    // Show low battery screen
+    ui.showLowBatteryScreen(currentVoltage);
+    smartDelay(3000);
+    
+    Serial.println("[Power] Entering permanent sleep - charge to wake");
+    Serial.flush();
+    
+    // No wake sources - only power cycle/reset will wake
+    esp_deep_sleep_start();
+    return;
+  }
   
   // Allow MQTT to flush any pending messages
   if (mqttMessenger.isConnected()) {
+    Serial.println("[Power] Flushing MQTT messages...");
     for (int i = 0; i < 10; i++) {
       mqttMessenger.loop();
       smartDelay(100);
@@ -278,23 +315,36 @@ void enterDeepSleep() {
     Serial.println("[Power] MQTT messages flushed");
   }
   
-  // Show powering down message
-  ui.showPoweringDown();
-  smartDelay(1000);
+  // For napping mode, show napping screen with battery info
+  if (powerMode == POWER_NAPPING) {
+    logger.info("Power: Entering nap mode");
+    ui.showNappingScreen(currentVoltage);
+    smartDelay(2000);
+  } else {
+    // Manual sleep via Tab key
+    logger.info("Entering deep sleep");
+    ui.showPoweringDown();
+    smartDelay(1000);
+    ui.showSleepScreen();
+    smartDelay(1000);
+  }
   
-  // Show sleep screen
-  ui.showSleepScreen();
-  smartDelay(1000);
-  
-  // Configure wake - just stay asleep until manual reset/power cycle
-  // User will press reset button or power cycle when they want to wake up
-  Serial.println("[Power] Entering deep sleep - press reset button to wake");
+  // Configure wake sources for napping mode
+  if (powerMode == POWER_NAPPING) {
+    // Wake on timer (15 minutes)
+    esp_sleep_enable_timer_wakeup(NAP_WAKE_INTERVAL * 1000ULL);  // Convert ms to microseconds
+    Serial.println("[Power] Timer wake enabled: 15 minutes");
+    
+    // Wake on any key press (GPIO 39 = I2C_SDA)
+    // Using EXT1 wake on HIGH level (keyboard pulls line high when pressed)
+    esp_sleep_enable_ext1_wakeup(1ULL << I2C_SDA, ESP_EXT1_WAKEUP_ANY_HIGH);
+    Serial.println("[Power] GPIO wake enabled: GPIO 39 (any key)");
+  }
   
   Serial.println("[Power] Entering deep sleep now");
   Serial.flush();
   
-  // Enter deep sleep with no wake sources - only manual reset or power cycle will wake
-  // This is the simplest approach - no timers, no GPIO wake
+  // Enter deep sleep
   esp_deep_sleep_start();
   
   // Device will restart from setup() when it wakes
@@ -325,6 +375,10 @@ void dumpMessageStoreDebug(int completedPhase);
 // Message callback
 void onMessageReceived(const Message& msg) {
   Serial.println("[Message] From " + msg.sender + ": " + msg.content + " (village: " + msg.villageId + ")");
+  
+  // Reset activity timer - new message keeps device awake
+  lastActivityTime = millis();
+  Serial.println("[Power] Activity timer reset - message received");
   
   // Check if this message is for the currently loaded village
   bool isForCurrentVillage = village.isInitialized() && (String(village.getVillageId()) == msg.villageId);
@@ -632,6 +686,14 @@ void setup() {
   Serial.begin(115200);
   smartDelay(1000);
   
+  // Check wake-up reason
+  esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+  bool wokeFromNap = (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER || wakeup_reason == ESP_SLEEP_WAKEUP_EXT1);
+  
+  if (wokeFromNap) {
+    Serial.println("[Power] Woke from nap - reason: " + String(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER ? "TIMER" : "KEY_PRESS"));
+  }
+  
   // Initialize buzzer
   // First, explicitly detach GPIO 9 (old buzzer pin) to prevent dual activation
   ledcDetachPin(9);
@@ -715,6 +777,11 @@ void setup() {
   lastMessagingActivity = 0;
   currentVillageSlot = -1;  // No village loaded yet
   
+  // Initialize power management - start awake timer
+  powerMode = POWER_AWAKE;
+  lastActivityTime = millis();
+  Serial.println("[Power] Device awake - 5 minute activity timer started");
+  
   // Set typing check callback to defer display updates during typing
   ui.setTypingCheckCallback(isUserTyping);
   
@@ -786,6 +853,44 @@ void setup() {
     Serial.println("[Sync] Requesting sync from peers");
     mqttMessenger.requestSync(0);  // Request all messages, will deduplicate locally
     smartDelay(1000);  // Give time for sync responses to arrive
+  }
+  
+  // If woke from nap timer (not key press), check for messages then go back to sleep
+  if (wokeFromNap && wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
+    Serial.println("[Power] Nap wake-up - checking for new messages");
+    
+    // Check if there are any unread messages
+    bool hasNewMessages = false;
+    if (village.isInitialized()) {
+      std::vector<Message> messages = village.loadMessages();
+      for (const Message& msg : messages) {
+        if (msg.status != MSG_READ && msg.status != MSG_SEEN) {
+          hasNewMessages = true;
+          break;
+        }
+      }
+    }
+    
+    if (hasNewMessages) {
+      Serial.println("[Power] New messages found - playing ringtone");
+      playRingtoneSound(selectedRingtone);
+      smartDelay(1000);
+    } else {
+      Serial.println("[Power] No new messages");
+    }
+    
+    // Go back to sleep immediately
+    Serial.println("[Power] Returning to nap mode");
+    powerMode = POWER_NAPPING;
+    enterDeepSleep();
+    // Never returns
+  }
+  
+  // If woke from key press, stay awake and continue normal boot
+  if (wokeFromNap && wakeup_reason == ESP_SLEEP_WAKEUP_EXT1) {
+    Serial.println("[Power] Woke by key press - staying awake");
+    powerMode = POWER_AWAKE;
+    lastActivityTime = millis();
   }
   
   // Check for OTA updates on boot (if WiFi connected)
@@ -930,6 +1035,20 @@ void loop() {
     
     lastReadReceiptSent = millis();
     lastTransmission = millis();
+    lastActivityTime = millis();  // Reset activity timer on message send
+  }
+  
+  // Check for inactivity timeout - enter napping mode after 5 minutes
+  if (powerMode == POWER_AWAKE) {
+    unsigned long inactiveTime = millis() - lastActivityTime;
+    if (inactiveTime >= AWAKE_TIMEOUT) {
+      Serial.println("[Power] 5 minutes of inactivity - entering napping mode");
+      logger.info("Power: Entering nap mode after inactivity");
+      powerMode = POWER_NAPPING;
+      sleepBatteryVoltage = battery.getVoltage();
+      enterDeepSleep();
+      // Never returns - device enters deep sleep
+    }
   }
   
   switch (appState) {
