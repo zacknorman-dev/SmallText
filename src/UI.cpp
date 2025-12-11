@@ -799,15 +799,41 @@ void UI::drawMessaging() {
                 DisplayLine dLine;
                 dLine.isFirstLine = firstLineOfMessage;
                 dLine.senderPart = firstLineOfMessage ? senderPart : "";
+                
+                int availableWidth = maxLineWidth;
+                
+                // For first line, account for bold sender width + space
+                if (firstLineOfMessage && senderPart.length() > 0) {
+                    int16_t x1, y1;
+                    uint16_t w, h;
+                    display->setFont(&FreeSansBold9pt7b);
+                    display->getTextBounds(senderPart, 0, 0, &x1, &y1, &w, &h);
+                    int senderWidth = w;
+                    
+                    // Add space width
+                    display->setFont(&FreeSans9pt7b);
+                    display->getTextBounds(" ", 0, 0, &x1, &y1, &w, &h);
+                    int spaceWidth = w;
+                    
+                    availableWidth = maxLineWidth - senderWidth - spaceWidth;
+                    
+                    // For first line, remainingText is "You: message"
+                    // We need to extract just "message" part for measurement
+                    int colonPos = remainingText.indexOf(':');
+                    if (colonPos >= 0 && colonPos + 2 < remainingText.length()) {
+                        remainingText = remainingText.substring(colonPos + 2);  // Skip ": "
+                    }
+                }
+                
                 firstLineOfMessage = false;
                 
-                // Measure how much text fits in maxLineWidth
+                // Measure how much text fits in availableWidth
                 int16_t x1, y1;
                 uint16_t w, h;
                 display->setFont(&FreeSans9pt7b);
                 display->getTextBounds(remainingText, 0, 0, &x1, &y1, &w, &h);
                 
-                if (w <= maxLineWidth) {
+                if (w <= availableWidth) {
                     // Entire remaining text fits on one line
                     dLine.text = remainingText;
                     dLine.status = statusText;  // Status on last line
@@ -827,7 +853,7 @@ void UI::drawMessaging() {
                         String testStr = remainingText.substring(0, mid);
                         display->getTextBounds(testStr, 0, 0, &x1, &y1, &w, &h);
                         
-                        if (w <= maxLineWidth) {
+                        if (w <= availableWidth) {
                             bestFit = mid;
                             left = mid + 1;
                         } else {
@@ -885,63 +911,20 @@ void UI::drawMessaging() {
         int linesToSkip = 0;
         
         // Count lines to skip based on messageScrollOffset (whole messages)
+        // We already calculated all lines in allLines, just count them by message
         if (messageScrollOffset > 0) {
             int msgsSkipped = 0;
-            for (int m = msgCount - 1; m >= 0 && msgsSkipped < messageScrollOffset; m--) {
-                const Message& msg = messageHistory[m];
-                String fullLine = "";
-                if (msg.sender == currentUsername) {
-                    fullLine = "You: ";
-                } else {
-                    String sender = msg.sender;
-                    if (sender.length() > 8) sender = sender.substring(0, 8);
-                    fullLine = sender + ": ";
-                }
-                fullLine += msg.content;
-                if (!msg.received) fullLine += " (read)";
-                
-                // Count lines for this message using pixel-based wrapping
-                String remainingText = fullLine;
-                while (remainingText.length() > 0) {
-                    int16_t x1, y1;
-                    uint16_t w, h;
-                    display->setFont(&FreeSans9pt7b);
-                    display->getTextBounds(remainingText, 0, 0, &x1, &y1, &w, &h);
-                    
-                    if (w <= maxLineWidth) {
-                        linesToSkip++;
-                        remainingText = "";
-                    } else {
-                        // Binary search for longest fitting substring
-                        int left = 1;
-                        int right = remainingText.length();
-                        int bestFit = 1;
-                        
-                        while (left <= right) {
-                            int mid = (left + right) / 2;
-                            String testStr = remainingText.substring(0, mid);
-                            display->getTextBounds(testStr, 0, 0, &x1, &y1, &w, &h);
-                            
-                            if (w <= maxLineWidth) {
-                                bestFit = mid;
-                                left = mid + 1;
-                            } else {
-                                right = mid - 1;
-                            }
-                        }
-                        
-                        // Find last space before bestFit
-                        int breakPoint = bestFit;
-                        for (int j = bestFit; j > 0; j--) {
-                            if (remainingText.charAt(j) == ' ') {
-                                breakPoint = j;
-                                break;
-                            }
-                        }
-                        
-                        remainingText = remainingText.substring(breakPoint);
-                        if (remainingText.startsWith(" ")) remainingText = remainingText.substring(1);
-                        linesToSkip++;
+            int lineIdx = 0;
+            
+            // Walk through allLines counting complete messages
+            while (lineIdx < totalLines && msgsSkipped < messageScrollOffset) {
+                // Skip all lines of this message
+                while (lineIdx < totalLines) {
+                    linesToSkip++;
+                    lineIdx++;
+                    // If we hit a first line (next message), stop
+                    if (lineIdx < totalLines && allLines[lineIdx].isFirstLine) {
+                        break;
                     }
                 }
                 msgsSkipped++;
@@ -965,22 +948,12 @@ void UI::drawMessaging() {
                 display->getTextBounds(allLines[i].senderPart, 0, 0, &x1, &y1, &w, &h);
                 xPos += w;
                 
-                // Extract message part (after sender with colon)
-                // allLines[i].text contains full line like "You: Wanka"
-                // senderPart is "You:" (no space)
-                // We need to skip "You: " (with space) to get "Wanka"
-                String messagePart = allLines[i].text;
-                int colonPos = messagePart.indexOf(':');
-                if (colonPos >= 0 && colonPos + 2 < messagePart.length()) {
-                    // Skip past ":" and " " to get message content
-                    messagePart = messagePart.substring(colonPos + 2);
-                }
-                
-                // Render space and message in regular font  
+                // Render space and message in regular font
+                // Note: allLines[i].text now contains ONLY the message content (no sender prefix)
                 display->setFont(&FreeSans9pt7b);
                 display->setCursor(xPos, currentY);
                 display->print(" ");  // Space after colon
-                display->print(messagePart);
+                display->print(allLines[i].text);
             } else {
                 // Continuation line - just regular font
                 display->setFont(&FreeSans9pt7b);
@@ -1003,12 +976,43 @@ void UI::drawMessaging() {
     display->setCursor(5, cursorY);
     display->print(">");
     
-    // Show current input text
-    display->setCursor(15, cursorY);
+    // Show current input text with pixel-based scrolling to keep cursor visible
+    int promptX = 15;  // X position after ">"
+    int availableWidth = SCREEN_WIDTH - promptX - 15;  // Leave room for cursor and margin
+    
     String displayText = inputText;
-    if (displayText.length() > 40) {
-        displayText = displayText.substring(displayText.length() - 40);
+    if (displayText.length() > 0) {
+        // Measure the full text width
+        int16_t x1, y1;
+        uint16_t w, h;
+        display->getTextBounds(displayText, 0, 0, &x1, &y1, &w, &h);
+        
+        if (w > availableWidth) {
+            // Text is too long - show the rightmost part that fits
+            // Binary search for the longest substring from the END that fits
+            int left = 1;
+            int right = displayText.length();
+            int bestFit = 1;
+            
+            while (left <= right) {
+                int mid = (left + right) / 2;
+                String testStr = displayText.substring(displayText.length() - mid);
+                display->getTextBounds(testStr, 0, 0, &x1, &y1, &w, &h);
+                
+                if (w <= availableWidth) {
+                    bestFit = mid;
+                    left = mid + 1;
+                } else {
+                    right = mid - 1;
+                }
+            }
+            
+            // Show only the last 'bestFit' characters
+            displayText = displayText.substring(displayText.length() - bestFit);
+        }
     }
+    
+    display->setCursor(promptX, cursorY);
     display->print(displayText);
     
     // Cursor indicator
