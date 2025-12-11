@@ -8,11 +8,9 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include "Logger.h"
+#include "version.h"
 
-// Firmware version - BUILD_NUMBER is defined in main.cpp
-#ifndef BUILD_NUMBER
-#define BUILD_NUMBER "v0.40.9"
-#endif
+// Firmware version uses BUILD_NUMBER from version.h
 #define FIRMWARE_VERSION BUILD_NUMBER
 
 enum UpdateStatus {

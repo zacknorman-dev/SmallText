@@ -15,12 +15,12 @@ Write-Host "`n========================================" -ForegroundColor Cyan
 Write-Host "SmolTxt Release Process v$Version" -ForegroundColor Cyan
 Write-Host "========================================`n" -ForegroundColor Cyan
 
-# Step 1: Update version in main.cpp
-Write-Host "[1/8] Updating version in main.cpp..." -ForegroundColor Yellow
-$mainCppPath = "src\main.cpp"
-$content = Get-Content $mainCppPath -Raw
+# Step 1: Update version in version.h
+Write-Host "[1/8] Updating version in version.h..." -ForegroundColor Yellow
+$versionPath = "src\version.h"
+$content = Get-Content $versionPath -Raw
 $content = $content -replace '#define BUILD_NUMBER "v[\d\.]+"', "#define BUILD_NUMBER `"v$Version`""
-Set-Content $mainCppPath $content -NoNewline
+Set-Content $versionPath $content -NoNewline
 Write-Host "      Version updated to v$Version" -ForegroundColor Green
 
 # Step 2: Clean and build firmware

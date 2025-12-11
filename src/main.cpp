@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include "version.h"
 #include "Village.h"
 #include "Encryption.h"
 #include "MQTTMessenger.h"
@@ -9,8 +10,6 @@
 #include "Logger.h"
 #include "WiFiManager.h"
 #include "OTAUpdater.h"
-
-#define BUILD_NUMBER "v0.41.0"
 
 // Pin definitions for Heltec Vision Master E290
 #define I2C_SDA 39
