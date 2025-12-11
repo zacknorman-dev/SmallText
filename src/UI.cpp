@@ -1427,6 +1427,7 @@ void UI::showSleepScreen() {
 
 void UI::showNappingScreen(float batteryVoltage) {
     setState(STATE_SLEEPING);
+    display->init();  // Re-initialize display to clear any partial mode state
     display->setFullWindow();
     display->firstPage();
     do {
