@@ -1442,7 +1442,7 @@ void UI::showNappingScreen(float batteryVoltage) {
         display->setCursor(5, 80);
         display->print("check messages & alert");
         display->setCursor(5, 100);
-        display->print("Press PRG button to wake");
+        display->print("Press any key to wake");
         
         // Show battery voltage in corner
         display->setFont();

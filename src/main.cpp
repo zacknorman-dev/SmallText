@@ -28,8 +28,8 @@
 #define BUZZER_PIN 40
 #define BUZZER_CHANNEL 0
 
-// User button (PRG button on Heltec boards - typically GPIO 0)
-#define USER_BUTTON_PIN 0
+// Keyboard interrupt pin (same as I2C SDA - CardKB pulls LOW when key pressed)
+#define KEYBOARD_INT_PIN 39
 
 // Global objects
 Village village;
@@ -338,10 +338,10 @@ void enterDeepSleep() {
     esp_sleep_enable_timer_wakeup(NAP_WAKE_INTERVAL * 1000ULL);  // Convert ms to microseconds
     Serial.println("[Power] Timer wake enabled: 15 minutes");
     
-    // Wake on user button press (GPIO 0 = PRG button)
-    // Button is active LOW (pressed = 0), so wake on LOW level
-    esp_sleep_enable_ext0_wakeup((gpio_num_t)USER_BUTTON_PIN, 0);
-    Serial.println("[Power] Button wake enabled: GPIO 0 (PRG button)");
+    // Wake on keyboard interrupt (GPIO 39 = I2C SDA / CardKB INT)
+    // CardKB pulls line LOW when any key is pressed
+    esp_sleep_enable_ext0_wakeup((gpio_num_t)KEYBOARD_INT_PIN, 0);
+    Serial.println("[Power] Keyboard wake enabled: GPIO 39 (any key press)");
   }
   
   Serial.println("[Power] Entering deep sleep now");
