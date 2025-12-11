@@ -11,6 +11,8 @@ UI::UI() {
     typingCheckCallback = nullptr;
     batteryVoltage = 0.0;
     batteryPercent = 0;
+    ringtoneEnabled = true;  // Default to on
+    ringtoneName = "Rising Tone";  // Default ringtone name
 }
 
 bool UI::begin(int8_t sck, int8_t miso, int8_t mosi, int8_t cs, int8_t dc, int8_t rst, int8_t busy) {
@@ -129,6 +131,12 @@ void UI::updatePartial() {
         case STATE_MAIN_MENU:
             drawMainMenu();
             break;
+        case STATE_SETTINGS_MENU:
+            drawSettingsMenu();
+            break;
+        case STATE_RINGTONE_SELECT:
+            drawRingtoneSelect();
+            break;
         case STATE_WIFI_SETUP_MENU:
             drawWiFiSetupMenu();
             break;
@@ -192,6 +200,8 @@ void UI::updateClean() {
         case STATE_SPLASH:          drawSplash(); break;
         case STATE_VILLAGE_SELECT:  drawVillageSelect(); break;
         case STATE_MAIN_MENU:       drawMainMenu(); break;
+        case STATE_SETTINGS_MENU:   drawSettingsMenu(); break;
+        case STATE_RINGTONE_SELECT: drawRingtoneSelect(); break;
         case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
         case STATE_WIFI_SSID_INPUT: drawWiFiSSIDInput(); break;
         case STATE_WIFI_PASSWORD_INPUT: drawWiFiPasswordInput(); break;
@@ -223,6 +233,8 @@ void UI::updateFull() {
         case STATE_SPLASH:          drawSplash(); break;
         case STATE_VILLAGE_SELECT:  drawVillageSelect(); break;
         case STATE_MAIN_MENU:       drawMainMenu(); break;
+        case STATE_SETTINGS_MENU:   drawSettingsMenu(); break;
+        case STATE_RINGTONE_SELECT: drawRingtoneSelect(); break;
         case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
         case STATE_WIFI_SSID_INPUT: drawWiFiSSIDInput(); break;
         case STATE_WIFI_PASSWORD_INPUT: drawWiFiPasswordInput(); break;
@@ -356,14 +368,14 @@ void UI::drawVillageSelect() {
     }
     item++;
     
-    // WiFi & Updates
+    // Settings
     if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
         if (menuSelection == item) {
             display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
             display->setTextColor(GxEPD_WHITE);
         }
         display->setCursor(10, y);
-        display->print("WiFi & Updates");
+        display->print("Settings");
         if (menuSelection == item) {
             display->setTextColor(GxEPD_BLACK);
         }
@@ -492,59 +504,193 @@ void UI::drawVillageMenu() {
     }
 }
 
-void UI::drawWiFiSetupMenu() {
-    // Title
-    display->setFont(&FreeSansBold12pt7b);
-    display->setCursor(60, 20);
-    display->print("WiFi Setup");
+void UI::drawSettingsMenu() {
+    // Title - bold 9pt
+    display->setFont(&FreeSansBold9pt7b);
+    display->setCursor(10, 18);
+    display->print("Settings");
     
-    // Battery icon in upper right
+    // Horizontal line under title
+    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
+    
+    // Battery icon
     drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
     
     display->setFont(&FreeSans9pt7b);
     
-    int y = 50;
-    int lineHeight = 25;
+    int y = 35;
+    int lineHeight = 18;
+    int item = 0;
+    int scrollOffset = 0;
+    
+    const int totalItems = 3;
+    const int maxVisibleItems = 5;
+    
+    // Calculate scroll offset
+    if (menuSelection >= maxVisibleItems) {
+        scrollOffset = menuSelection - maxVisibleItems + 1;
+    }
+    
+    // Ringtone
+    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+        if (menuSelection == item) {
+            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+            display->setTextColor(GxEPD_WHITE);
+        }
+        display->setCursor(10, y);
+        display->print("Ringtone: " + ringtoneName);
+        if (menuSelection == item) {
+            display->setTextColor(GxEPD_BLACK);
+        }
+        y += lineHeight;
+    }
+    item++;
+    
+    // WiFi
+    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+        if (menuSelection == item) {
+            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+            display->setTextColor(GxEPD_WHITE);
+        }
+        display->setCursor(10, y);
+        display->print("WiFi");
+        if (menuSelection == item) {
+            display->setTextColor(GxEPD_BLACK);
+        }
+        y += lineHeight;
+    }
+    item++;
+    
+    // Updates
+    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+        if (menuSelection == item) {
+            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+            display->setTextColor(GxEPD_WHITE);
+        }
+        display->setCursor(10, y);
+        display->print("Updates");
+        if (menuSelection == item) {
+            display->setTextColor(GxEPD_BLACK);
+        }
+    }
+}
+
+void UI::drawRingtoneSelect() {
+    // Title - bold 9pt
+    display->setFont(&FreeSansBold9pt7b);
+    display->setCursor(10, 18);
+    display->print("Select Ringtone");
+    
+    // Horizontal line under title
+    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
+    
+    // Battery icon
+    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
+    
+    display->setFont(&FreeSans9pt7b);
+    
+    int y = 35;
+    int lineHeight = 18;
+    int scrollOffset = 0;
+    
+    const int totalItems = 12;
+    const int maxVisibleItems = 5;
+    
+    // Calculate scroll offset - keep selection visible
+    if (menuSelection >= maxVisibleItems) {
+        scrollOffset = menuSelection - maxVisibleItems + 1;
+    }
+    
+    // Get ringtone names from main.cpp
+    extern const char* ringtoneNames[];
+    
+    // Draw visible ringtone options
+    for (int i = 0; i < totalItems; i++) {
+        if (i >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+            if (menuSelection == i) {
+                display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+                display->setTextColor(GxEPD_WHITE);
+            }
+            display->setCursor(10, y);
+            display->print(ringtoneNames[i]);
+            if (menuSelection == i) {
+                display->setTextColor(GxEPD_BLACK);
+            }
+            y += lineHeight;
+        }
+    }
+    
+    // Draw down-arrow if there are more items below
+    int lastVisibleItem = scrollOffset + maxVisibleItems - 1;
+    if (totalItems > maxVisibleItems && lastVisibleItem < totalItems - 1) {
+        int arrowX = 10;
+        int arrowY = SCREEN_HEIGHT - 15;
+        int arrowWidth = 10;
+        int arrowHeight = 10;
+        
+        display->fillTriangle(
+            arrowX, arrowY,
+            arrowX + arrowWidth, arrowY,
+            arrowX + arrowWidth/2, arrowY + arrowHeight,
+            GxEPD_BLACK
+        );
+    }
+}
+
+void UI::drawWiFiSetupMenu() {
+    // Title - bold 9pt
+    display->setFont(&FreeSansBold9pt7b);
+    display->setCursor(10, 18);
+    display->print("WiFi");
+    
+    // Horizontal line under title
+    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
+    
+    // Battery icon
+    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
+    
+    display->setFont(&FreeSans9pt7b);
+    
+    int y = 35;
+    int lineHeight = 18;
+    int item = 0;
+    int scrollOffset = 0;
+    
+    const int totalItems = 2;
+    const int maxVisibleItems = 5;
+    
+    // Calculate scroll offset
+    if (menuSelection >= maxVisibleItems) {
+        scrollOffset = menuSelection - maxVisibleItems + 1;
+    }
     
     // Configure WiFi
-    if (menuSelection == 0) {
-        display->fillRect(5, y - 18, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
+    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+        if (menuSelection == item) {
+            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+            display->setTextColor(GxEPD_WHITE);
+        }
+        display->setCursor(10, y);
+        display->print("Configure WiFi");
+        if (menuSelection == item) {
+            display->setTextColor(GxEPD_BLACK);
+        }
+        y += lineHeight;
     }
-    display->setCursor(10, y);
-    display->print("Configure WiFi");
-    if (menuSelection == 0) {
-        display->setTextColor(GxEPD_BLACK);
-    }
-    y += lineHeight;
+    item++;
     
     // Check Connection
-    if (menuSelection == 1) {
-        display->fillRect(5, y - 18, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
+    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+        if (menuSelection == item) {
+            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+            display->setTextColor(GxEPD_WHITE);
+        }
+        display->setCursor(10, y);
+        display->print("Check Connection");
+        if (menuSelection == item) {
+            display->setTextColor(GxEPD_BLACK);
+        }
     }
-    display->setCursor(10, y);
-    display->print("Check Connection");
-    if (menuSelection == 1) {
-        display->setTextColor(GxEPD_BLACK);
-    }
-    y += lineHeight;
-    
-    // Check for Updates
-    if (menuSelection == 2) {
-        display->fillRect(5, y - 18, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
-    }
-    display->setCursor(10, y);
-    display->print("Check for Updates");
-    if (menuSelection == 2) {
-        display->setTextColor(GxEPD_BLACK);
-    }
-    
-    // Footer hint
-    display->setFont();
-    display->setCursor(5, SCREEN_HEIGHT - 8);
-    display->print("<-:back UP/DN:select ENTER:choose");
 }
 
 void UI::drawWiFiSSIDInput() {
@@ -1106,11 +1252,17 @@ void UI::menuDown() {
         case STATE_MAIN_MENU:
             maxItems = 1;
             break;
+        case STATE_SETTINGS_MENU:
+            maxItems = 2;  // Ringtone, WiFi, Updates (0-2)
+            break;
+        case STATE_RINGTONE_SELECT:
+            maxItems = 11;  // 12 ringtone options (0-11)
+            break;
         case STATE_VILLAGE_MENU:
             maxItems = 3;
             break;
         case STATE_WIFI_SETUP_MENU:
-            maxItems = 2;  // Configure WiFi, Check Connection, Check for Updates (0-2)
+            maxItems = 1;  // Configure WiFi, Check Connection (0-1)
             break;
         default:
             maxItems = 0;

@@ -66,6 +66,7 @@ public:
     bool isDownPressed();
     bool isLeftPressed();
     bool isRightPressed();
+    bool isEscPressed();
     
     // Check key without consuming (for hold detection)
     bool isTabHeld();

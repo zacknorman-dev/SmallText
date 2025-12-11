@@ -41,6 +41,19 @@
 			"label": "PlatformIO: Build",
 			"type": "shell",
 			"command": "platformio run"
+		},
+		{
+			"label": "PlatformIO: Monitor",
+			"type": "shell",
+			"command": "C:\\Users\\zackn\\.platformio\\penv\\Scripts\\platformio.exe device monitor",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "none"
+		},
+		{
+			"label": "PlatformIO Upload COM13",
+			"type": "shell",
+			"command": "platformio run --target upload --upload-port COM13"
 		}
 	]
 }

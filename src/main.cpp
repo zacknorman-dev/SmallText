@@ -25,6 +25,10 @@
 #define EPD_MOSI 1
 #define EPD_MISO -1
 
+// Buzzer pin
+#define BUZZER_PIN 9
+#define BUZZER_CHANNEL 0
+
 // Global objects
 Village village;
 Encryption encryption;
@@ -39,6 +43,8 @@ OTAUpdater otaUpdater;
 // Application state
 enum AppState {
   APP_MAIN_MENU,
+  APP_SETTINGS_MENU,
+  APP_RINGTONE_SELECT,
   APP_WIFI_SETUP_MENU,
   APP_WIFI_SSID_INPUT,
   APP_WIFI_PASSWORD_INPUT,
@@ -81,6 +87,134 @@ unsigned long lastMessagingActivity = 0;  // Timestamp of last activity in messa
 const unsigned long MESSAGING_TIMEOUT = 300000;  // 5 minutes timeout
 int currentVillageSlot = -1;  // Track which village slot is currently active (-1 = none)
 bool isSyncing = false;  // Flag to track if we're currently syncing (skip status updates during sync)
+
+// Ringtone types
+enum RingtoneType {
+  RINGTONE_RISING,      // 0
+  RINGTONE_FALLING,     // 1
+  RINGTONE_FIVE_TONE,   // 2
+  RINGTONE_TRIPLE_CHIRP,// 3
+  RINGTONE_DOUBLE_BEEP, // 4
+  RINGTONE_3000HZ,      // 5
+  RINGTONE_2500HZ,      // 6
+  RINGTONE_2000HZ,      // 7
+  RINGTONE_1500HZ,      // 8
+  RINGTONE_1000HZ,      // 9
+  RINGTONE_500HZ,       // 10
+  RINGTONE_OFF          // 11
+};
+
+const char* ringtoneNames[] = {
+  "Rising Tone",
+  "Falling Tone",
+  "Five Tone",
+  "Triple Chirp",
+  "Double Beep",
+  "3000 Hz",
+  "2500 Hz",
+  "2000 Hz",
+  "1500 Hz",
+  "1000 Hz",
+  "500 Hz",
+  "Off"
+};
+
+// Ringtone settings
+RingtoneType selectedRingtone = RINGTONE_RISING;  // Default to Rising Tone
+bool ringtoneEnabled = true;  // Default to on
+bool hasUnreadMessages = false;  // Track if there are unread messages to ring for
+String lastRingtoneVillageId = "";  // Track which village triggered last ringtone
+
+// Play a specific ringtone
+void playRingtoneSound(RingtoneType type) {
+  switch(type) {
+    case RINGTONE_RISING:
+      for(int freq = 800; freq <= 2000; freq += 100) {
+        ledcWriteTone(BUZZER_CHANNEL, freq);
+        delay(30);
+      }
+      break;
+    case RINGTONE_FALLING:
+      for(int freq = 2000; freq >= 800; freq -= 100) {
+        ledcWriteTone(BUZZER_CHANNEL, freq);
+        delay(30);
+      }
+      break;
+    case RINGTONE_FIVE_TONE:
+      ledcWriteTone(BUZZER_CHANNEL, 1900);
+      delay(100);
+      ledcWriteTone(BUZZER_CHANNEL, 0);
+      delay(50);
+      ledcWriteTone(BUZZER_CHANNEL, 2000);
+      delay(100);
+      ledcWriteTone(BUZZER_CHANNEL, 0);
+      delay(50);
+      ledcWriteTone(BUZZER_CHANNEL, 2100);
+      delay(100);
+      ledcWriteTone(BUZZER_CHANNEL, 0);
+      delay(50);
+      ledcWriteTone(BUZZER_CHANNEL, 2000);
+      delay(100);
+      ledcWriteTone(BUZZER_CHANNEL, 0);
+      delay(50);
+      ledcWriteTone(BUZZER_CHANNEL, 1900);
+      delay(100);
+      break;
+    case RINGTONE_TRIPLE_CHIRP:
+      for(int i = 0; i < 3; i++) {
+        ledcWriteTone(BUZZER_CHANNEL, 2500);
+        delay(50);
+        ledcWriteTone(BUZZER_CHANNEL, 0);
+        delay(50);
+      }
+      break;
+    case RINGTONE_DOUBLE_BEEP:
+      ledcWriteTone(BUZZER_CHANNEL, 1500);
+      delay(100);
+      ledcWriteTone(BUZZER_CHANNEL, 0);
+      delay(50);
+      ledcWriteTone(BUZZER_CHANNEL, 1500);
+      delay(100);
+      break;
+    case RINGTONE_3000HZ:
+      ledcWriteTone(BUZZER_CHANNEL, 3000);
+      delay(200);
+      break;
+    case RINGTONE_2500HZ:
+      ledcWriteTone(BUZZER_CHANNEL, 2500);
+      delay(200);
+      break;
+    case RINGTONE_2000HZ:
+      ledcWriteTone(BUZZER_CHANNEL, 2000);
+      delay(200);
+      break;
+    case RINGTONE_1500HZ:
+      ledcWriteTone(BUZZER_CHANNEL, 1500);
+      delay(200);
+      break;
+    case RINGTONE_1000HZ:
+      ledcWriteTone(BUZZER_CHANNEL, 1000);
+      delay(200);
+      break;
+    case RINGTONE_500HZ:
+      ledcWriteTone(BUZZER_CHANNEL, 500);
+      delay(200);
+      break;
+    case RINGTONE_OFF:
+      // No sound
+      break;
+  }
+  ledcWriteTone(BUZZER_CHANNEL, 0);  // Stop
+}
+
+// Play the selected ringtone (for notifications)
+void playRingtone() {
+  if (selectedRingtone == RINGTONE_OFF) return;
+  
+  Serial.print("[Ringtone] Playing: ");
+  Serial.println(ringtoneNames[selectedRingtone]);
+  playRingtoneSound(selectedRingtone);
+}
 
 // Typing detection - pause non-critical operations while user is actively typing
 unsigned long lastKeystroke = 0;
@@ -169,6 +303,8 @@ void enterDeepSleep() {
 
 // Forward declarations
 void handleMainMenu();
+void handleSettingsMenu();
+void handleRingtoneSelect();
 void handleWiFiSetupMenu();
 void handleWiFiSSIDInput();
 void handleWiFiPasswordInput();
@@ -235,6 +371,13 @@ void onMessageReceived(const Message& msg) {
     if (shouldUpdateUI) {
       ui.addMessage(msg);
       Serial.println("[Message] Added to UI. Total messages in history: " + String(ui.getMessageCount()));
+      
+      // Play ringtone if: real-time message AND not viewing this conversation AND ringtone enabled
+      bool isRealTime = (syncPhase == 0);
+      bool notViewingConversation = !(appState == APP_MESSAGING && inMessagingScreen);
+      if (isRealTime && notViewingConversation && isNewMessage) {
+        playRingtone();
+      }
     } else {
       Serial.println("[Message] Silently cached (not added to UI)");
     }
@@ -249,6 +392,12 @@ void onMessageReceived(const Message& msg) {
     // Message is for a different village - save to messages.dat without updating UI
     Serial.println("[Message] Message for different village (" + msg.villageId + ") - saving to storage only");
     Village::saveMessageToFile(msg);  // Use static method to save without loading village
+    
+    // Play ringtone for messages in other conversations (if real-time and new)
+    bool isRealTime = (syncPhase == 0);
+    if (isRealTime && isNewMessage) {
+      playRingtone();
+    }
   }
   
   // Only mark as read if this is a NEW message (not a synced historical message)
@@ -483,6 +632,14 @@ void setup() {
   
   Serial.begin(115200);
   smartDelay(1000);
+  
+  // Initialize buzzer
+  ledcSetup(BUZZER_CHANNEL, 2000, 8);  // 2000 Hz, 8-bit resolution
+  ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);
+  Serial.print("[Buzzer] Initialized on GPIO ");
+  Serial.print(BUZZER_PIN);
+  Serial.print(" using LEDC channel ");
+  Serial.println(BUZZER_CHANNEL);
   
   Serial.println("\n\n\n\n\n");  // Extra newlines to ensure visibility
   Serial.println("=================================");
@@ -780,6 +937,12 @@ void loop() {
       }
       handleMainMenu();
       break;
+    case APP_SETTINGS_MENU:
+      handleSettingsMenu();
+      break;
+    case APP_RINGTONE_SELECT:
+      handleRingtoneSelect();
+      break;
     case APP_WIFI_SETUP_MENU:
       handleWiFiSetupMenu();
       break;
@@ -901,10 +1064,10 @@ void handleMainMenu() {
       ui.setInputText("");
       ui.updateClean();  // Clean transition
     } else if (selection == villageCount + 2) {
-      // Selected "WiFi & Updates"
+      // Selected "Settings"
       keyboard.clearInput();
-      appState = APP_WIFI_SETUP_MENU;
-      ui.setState(STATE_WIFI_SETUP_MENU);
+      appState = APP_SETTINGS_MENU;
+      ui.setState(STATE_SETTINGS_MENU);
       ui.resetMenuSelection();
       ui.updateClean();  // Clean transition
     }
@@ -1732,7 +1895,7 @@ void handleMessageCompose() {
 // WiFi & OTA HANDLERS
 // ============================================================================
 
-void handleWiFiSetupMenu() {
+void handleSettingsMenu() {
   if (keyboard.isUpPressed()) {
     ui.menuUp();
     ui.updatePartial();
@@ -1749,12 +1912,130 @@ void handleWiFiSetupMenu() {
     appState = APP_MAIN_MENU;
     ui.setState(STATE_VILLAGE_SELECT);
     ui.resetMenuSelection();
-    ui.update();
+    ui.updateClean();
     smartDelay(300);
     return;
   }
   
-  if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
+  // Right arrow to open submenu
+  if (keyboard.isRightPressed()) {
+    int selection = ui.getMenuSelection();
+    
+    if (selection == 0) {
+      // Open Ringtone selection menu
+      keyboard.clearInput();
+      appState = APP_RINGTONE_SELECT;
+      ui.setState(STATE_RINGTONE_SELECT);
+      ui.resetMenuSelection();
+      ui.updateClean();
+    } else if (selection == 1) {
+      // Open WiFi menu
+      keyboard.clearInput();
+      appState = APP_WIFI_SETUP_MENU;
+      ui.setState(STATE_WIFI_SETUP_MENU);
+      ui.resetMenuSelection();
+      ui.updateClean();
+    } else if (selection == 2) {
+      // Check for Updates
+      keyboard.clearInput();
+      appState = APP_OTA_CHECKING;
+      ui.setState(STATE_OTA_CHECK);
+      ui.setInputText("Checking...\nCurrent: " + String(FIRMWARE_VERSION));
+      ui.update();
+      
+      // Perform check (blocking)
+      if (otaUpdater.checkForUpdate()) {
+        String updateInfo = "Update Available!\n";
+        updateInfo += "New version: " + otaUpdater.getLatestVersion() + "\n";
+        updateInfo += "Current: " + otaUpdater.getCurrentVersion();
+        ui.setInputText(updateInfo);
+      } else {
+        String updateInfo = otaUpdater.getStatusString() + "\n";
+        updateInfo += "Version: " + otaUpdater.getCurrentVersion();
+        ui.setInputText(updateInfo);
+      }
+      ui.update();
+    }
+    
+    smartDelay(300);
+  }
+}
+
+void handleRingtoneSelect() {
+  static int lastSelection = -1;
+  int currentSelection = ui.getMenuSelection();
+  
+  if (keyboard.isUpPressed()) {
+    lastSelection = -1;  // Force preview on next selection
+    ui.menuUp();
+    ui.updatePartial();
+    smartDelay(200);
+  } else if (keyboard.isDownPressed()) {
+    lastSelection = -1;  // Force preview on next selection
+    ui.menuDown();
+    ui.updatePartial();
+    smartDelay(200);
+  }
+  
+  // Play preview when selection changes
+  currentSelection = ui.getMenuSelection();
+  if (currentSelection != lastSelection) {
+    lastSelection = currentSelection;
+    playRingtoneSound((RingtoneType)currentSelection);
+  }
+  
+  // Left arrow - go back without changing selection
+  if (keyboard.isLeftPressed()) {
+    keyboard.clearInput();
+    appState = APP_SETTINGS_MENU;
+    ui.setState(STATE_SETTINGS_MENU);
+    ui.resetMenuSelection();
+    ui.updateClean();
+    smartDelay(300);
+    return;
+  }
+  
+  // Right arrow - select and go back
+  if (keyboard.isRightPressed()) {
+    selectedRingtone = (RingtoneType)currentSelection;
+    ringtoneEnabled = (selectedRingtone != RINGTONE_OFF);
+    ui.setRingtoneEnabled(ringtoneEnabled);
+    ui.setRingtoneName(ringtoneNames[selectedRingtone]);
+    Serial.print("[Settings] Ringtone set to: ");
+    Serial.println(ringtoneNames[selectedRingtone]);
+    
+    keyboard.clearInput();
+    appState = APP_SETTINGS_MENU;
+    ui.setState(STATE_SETTINGS_MENU);
+    ui.resetMenuSelection();
+    ui.updateClean();
+    smartDelay(300);
+  }
+}
+
+void handleWiFiSetupMenu() {
+  if (keyboard.isUpPressed()) {
+    ui.menuUp();
+    ui.updatePartial();
+    smartDelay(200);
+  } else if (keyboard.isDownPressed()) {
+    ui.menuDown();
+    ui.updatePartial();
+    smartDelay(200);
+  }
+  
+  // Left arrow to go back to settings
+  if (keyboard.isLeftPressed()) {
+    keyboard.clearInput();
+    appState = APP_SETTINGS_MENU;
+    ui.setState(STATE_SETTINGS_MENU);
+    ui.resetMenuSelection();
+    ui.updateClean();
+    smartDelay(300);
+    return;
+  }
+  
+  if (keyboard.isRightPressed()) {
     int selection = ui.getMenuSelection();
     
     if (selection == 0) {
@@ -1779,26 +2060,6 @@ void handleWiFiSetupMenu() {
         status += "Not connected";
       }
       ui.setInputText(status);
-      ui.update();
-    } else if (selection == 2) {
-      // Check for Updates
-      keyboard.clearInput();
-      appState = APP_OTA_CHECKING;
-      ui.setState(STATE_OTA_CHECK);
-      ui.setInputText("Checking...\nCurrent: " + String(FIRMWARE_VERSION));
-      ui.update();
-      
-      // Perform check (blocking)
-      if (otaUpdater.checkForUpdate()) {
-        String updateInfo = "Update Available!\n";
-        updateInfo += "New version: " + otaUpdater.getLatestVersion() + "\n";
-        updateInfo += "Current: " + otaUpdater.getCurrentVersion();
-        ui.setInputText(updateInfo);
-      } else {
-        String updateInfo = otaUpdater.getStatusString() + "\n";
-        updateInfo += "Version: " + otaUpdater.getCurrentVersion();
-        ui.setInputText(updateInfo);
-      }
       ui.update();
     }
     

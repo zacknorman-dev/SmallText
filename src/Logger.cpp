@@ -246,6 +246,13 @@ void Logger::update() {
             dumpToSerial();
         } else if (cmd == "!CLEARLOG") {
             clearLog();
+        } else if (cmd == "!BEEP") {
+            // Test buzzer command
+            Serial.println("Testing buzzer on GPIO 16...");
+            ledcWriteTone(0, 2000);  // 2000 Hz
+            delay(200);
+            ledcWriteTone(0, 0);  // Stop
+            Serial.println("Beep complete!");
         }
     }
 }

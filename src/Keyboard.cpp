@@ -133,7 +133,8 @@ char Keyboard::readKey() {
                 (ukey >= 0xB2 && ukey <= 0xB7) ||  // CardKB special keys
                 ukey == 0x0A || ukey == 0x0D ||    // Line feed / Carriage return (ENTER)
                 ukey == 0x08 || ukey == 0x7F ||    // Backspace / Delete
-                ukey == 0x09) {                    // Tab key
+                ukey == 0x09 ||                    // Tab key
+                ukey == 0x1B) {                    // ESC key
                 return key;
             } else {
                 Serial.print("[KB-READ] Invalid key code: 0x");
@@ -239,6 +240,10 @@ void Keyboard::update() {
             // Tab key
             Serial.println("[Keyboard] TAB pressed");
             // Don't return - keep currentKey set so isTabHeld() can detect it
+        } else if (key == 0x1B) {
+            // ESC key
+            Serial.println("[Keyboard] ESC pressed");
+            // Don't return - keep currentKey set so isEscPressed() can detect it
         } else if (key >= 32 && key <= 126) {
             // Printable ASCII character - add to buffer
             inputBuffer += key;
@@ -317,6 +322,14 @@ bool Keyboard::isLeftPressed() {
 
 bool Keyboard::isRightPressed() {
     bool pressed = (currentKey == CARDKB_RIGHT);
+    if (pressed) {
+        currentKey = 0;  // Consume the key
+    }
+    return pressed;
+}
+
+bool Keyboard::isEscPressed() {
+    bool pressed = (currentKey == 0x1B);
     if (pressed) {
         currentKey = 0;  // Consume the key
     }

@@ -20,6 +20,8 @@ enum UIState {
     STATE_SPLASH,
     STATE_VILLAGE_SELECT,
     STATE_MAIN_MENU,
+    STATE_SETTINGS_MENU,
+    STATE_RINGTONE_SELECT,
     STATE_WIFI_SETUP_MENU,
     STATE_WIFI_SSID_INPUT,
     STATE_WIFI_PASSWORD_INPUT,
@@ -67,6 +69,8 @@ private:
     String buildNumber;  // Build version to display
     float batteryVoltage;  // Current battery voltage
     int batteryPercent;    // Current battery percentage
+    bool ringtoneEnabled;  // Ringtone on/off setting
+    String ringtoneName;   // Current ringtone name
     
     // Callback to check if user is typing (defers display updates during typing)
     bool (*typingCheckCallback)();
@@ -74,6 +78,8 @@ private:
     void drawSplash();
     void drawVillageSelect();
     void drawMainMenu();
+    void drawSettingsMenu();
+    void drawRingtoneSelect();
     void drawWiFiSetupMenu();
     void drawWiFiSSIDInput();
     void drawWiFiPasswordInput();
@@ -141,6 +147,12 @@ public:
     // Battery display
     void setBatteryStatus(float voltage, int percent);
     void drawBatteryIcon(int x, int y, int percent);
+    
+    // Ringtone setting
+    void setRingtoneEnabled(bool enabled) { ringtoneEnabled = enabled; }
+    bool getRingtoneEnabled() const { return ringtoneEnabled; }
+    void setRingtoneName(const String& name) { ringtoneName = name; }
+    String getRingtoneName() const { return ringtoneName; }
     
     // Display helpers
     void showMessage(const String& title, const String& message, int durationMs = 2000);
