@@ -11,6 +11,12 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Strip leading 'v' if present (script adds it automatically)
+if ($Version -match '^v') {
+    $Version = $Version.Substring(1)
+    Write-Host "Note: Removed leading 'v' from version. Script expects version without 'v' prefix (e.g., '0.41.4')" -ForegroundColor Yellow
+}
+
 Write-Host "`n========================================" -ForegroundColor Cyan
 Write-Host "SmolTxt Release Process v$Version" -ForegroundColor Cyan
 Write-Host "========================================`n" -ForegroundColor Cyan
