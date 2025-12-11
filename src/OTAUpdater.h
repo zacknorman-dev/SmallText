@@ -9,10 +9,11 @@
 #include <WiFiClientSecure.h>
 #include "Logger.h"
 
-// Firmware version comes from build flags in platformio.ini
-#ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "0.39.1"
+// Firmware version - BUILD_NUMBER is defined in main.cpp
+#ifndef BUILD_NUMBER
+#define BUILD_NUMBER "v0.40.9"
 #endif
+#define FIRMWARE_VERSION BUILD_NUMBER
 
 enum UpdateStatus {
     UPDATE_IDLE,
