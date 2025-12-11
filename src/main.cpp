@@ -633,6 +633,11 @@ void setup() {
   smartDelay(1000);
   
   // Initialize buzzer
+  // First, explicitly detach GPIO 9 (old buzzer pin) to prevent dual activation
+  ledcDetachPin(9);
+  pinMode(9, INPUT);  // Set to high-impedance input to disable
+  
+  // Now set up the new buzzer on GPIO 40
   ledcSetup(BUZZER_CHANNEL, 2000, 8);  // 2000 Hz, 8-bit resolution
   ledcAttachPin(BUZZER_PIN, BUZZER_CHANNEL);
   Serial.print("[Buzzer] Initialized on GPIO ");
