@@ -91,12 +91,12 @@ Write-Host "      Tag v$Version ready" -ForegroundColor Green
 
 # Step 7: Push to GitHub
 Write-Host "`n[7/8] Pushing to GitHub..." -ForegroundColor Yellow
-git push origin main
+git push origin main 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "      Push to main failed!" -ForegroundColor Red
     exit 1
 }
-git push --force origin "v$Version" 2>$null
+git push --force origin "v$Version" 2>&1 | Out-Null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "      Tag push failed!" -ForegroundColor Red
     exit 1
