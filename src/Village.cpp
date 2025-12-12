@@ -483,7 +483,33 @@ bool Village::hasVillageInSlot(int slot) {
     if (!LittleFS.begin(true)) return false;
     
     String filename = "/village_" + String(slot) + ".dat";
-    return LittleFS.exists(filename);
+    if (!LittleFS.exists(filename)) return false;
+    
+    // CRITICAL: Verify file is actually readable and valid JSON
+    // This prevents menu misalignment when files are corrupted
+    File file = LittleFS.open(filename, "r");
+    if (!file) {
+        Serial.println("[Village] WARNING: File exists but cannot be opened: " + filename);
+        return false;
+    }
+    
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, file);
+    file.close();
+    
+    if (error) {
+        Serial.println("[Village] WARNING: File corrupted, JSON parse failed: " + filename);
+        Serial.println("[Village] Parse error: " + String(error.c_str()));
+        return false;
+    }
+    
+    // Verify critical fields exist
+    if (!doc.containsKey("villageId") || !doc.containsKey("villageName")) {
+        Serial.println("[Village] WARNING: File missing critical fields: " + filename);
+        return false;
+    }
+    
+    return true;
 }
 
 String Village::getVillageNameFromSlot(int slot) {

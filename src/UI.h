@@ -20,6 +20,7 @@ enum UIState {
     STATE_SPLASH,
     STATE_VILLAGE_SELECT,
     STATE_MAIN_MENU,
+    STATE_CONVERSATION_LIST,      // New: dynamic list of villages
     STATE_SETTINGS_MENU,
     STATE_RINGTONE_SELECT,
     STATE_WIFI_SETUP_MENU,
@@ -94,6 +95,7 @@ private:
     
     void drawSplash();
     void drawVillageSelect();
+    void drawConversationList();
     void drawMainMenu();
     void drawSettingsMenu();
     void drawRingtoneSelect();

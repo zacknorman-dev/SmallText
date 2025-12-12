@@ -45,6 +45,7 @@ OTAUpdater otaUpdater;
 // Application state
 enum AppState {
   APP_MAIN_MENU,
+  APP_CONVERSATION_LIST,       // New: dynamic list of all valid villages
   APP_SETTINGS_MENU,
   APP_RINGTONE_SELECT,
   APP_WIFI_SETUP_MENU,
@@ -74,6 +75,15 @@ String tempVillageName = "";  // Temp storage during village creation
 String tempWiFiSSID = "";     // Temp storage during WiFi setup
 String tempWiFiPassword = ""; // Temp storage during WiFi setup
 
+// Conversation list tracking
+struct ConversationEntry {
+  int slot;
+  String name;
+  String id;
+  unsigned long lastActivity;  // Timestamp of most recent message
+};
+std::vector<ConversationEntry> conversationList;
+
 // Helper function to delay while still polling keyboard frequently
 void smartDelay(unsigned long ms) {
   unsigned long start = millis();
@@ -92,6 +102,31 @@ unsigned long lastMessagingActivity = 0;  // Timestamp of last activity in messa
 const unsigned long MESSAGING_TIMEOUT = 300000;  // 5 minutes timeout
 int currentVillageSlot = -1;  // Track which village slot is currently active (-1 = none)
 bool isSyncing = false;  // Flag to track if we're currently syncing (skip status updates during sync)
+
+// Build conversation list from valid villages, sorted by most recent activity
+void buildConversationList() {
+  conversationList.clear();
+  
+  // Scan all 10 slots for valid villages
+  for (int i = 0; i < 10; i++) {
+    if (Village::hasVillageInSlot(i)) {
+      ConversationEntry entry;
+      entry.slot = i;
+      entry.name = Village::getVillageNameFromSlot(i);
+      entry.id = Village::getVillageIdFromSlot(i);
+      entry.lastActivity = 0;  // TODO: get from most recent message timestamp
+      conversationList.push_back(entry);
+    }
+  }
+  
+  // Sort by most recent activity (for now, just keep discovery order)
+  // TODO: Sort by lastActivity timestamp once we track message times
+  
+  Serial.println("[Conversations] Found " + String(conversationList.size()) + " valid villages");
+  for (const auto& conv : conversationList) {
+    Serial.println("  Slot " + String(conv.slot) + ": " + conv.name);
+  }
+}
 
 // Power management states
 enum PowerMode {
@@ -358,6 +393,7 @@ void enterDeepSleep() {
 
 // Forward declarations
 void handleMainMenu();
+void handleConversationList();
 void handleSettingsMenu();
 void handleRingtoneSelect();
 void handleWiFiSetupMenu();
@@ -1126,6 +1162,9 @@ void loop() {
       }
       handleMainMenu();
       break;
+    case APP_CONVERSATION_LIST:
+      handleConversationList();
+      break;
     case APP_SETTINGS_MENU:
       handleSettingsMenu();
       break;
@@ -1213,39 +1252,22 @@ void handleMainMenu() {
     Serial.println("[MainMenu] ENTER or RIGHT pressed - advancing to selection");
     int selection = ui.getMenuSelection();
     
-    // Count existing villages
-    int villageCount = 0;
-    int villageSlots[10];  // Track which slots have villages
-    for (int i = 0; i < 10; i++) {
-      if (Village::hasVillageInSlot(i)) {
-        villageSlots[villageCount] = i;
-        villageCount++;
-      }
-    }
+    // New simplified main menu:
+    // 0: My Conversations
+    // 1: New Village
+    // 2: Join Village
+    // 3: Settings
     
-    // Determine what was selected
-    if (selection < villageCount) {
-      // Selected an existing village - load it
-      int slot = villageSlots[selection];
-      Serial.println("[MainMenu] Loading village from slot " + String(slot));
-      
-      if (village.loadFromSlot(slot)) {
-        currentVillageSlot = slot;
-        ui.setExistingVillageName(village.getVillageName());
-        encryption.setKey(village.getEncryptionKey());
-        
-        // Set as active village for sending (already subscribed at boot)
-        mqttMessenger.setActiveVillage(village.getVillageId());
-        Serial.println("[MainMenu] Active village: " + village.getVillageName());
-        
-        // Go to village menu
-        keyboard.clearInput();
-        appState = APP_VILLAGE_MENU;
-        ui.setState(STATE_VILLAGE_MENU);
-        ui.resetMenuSelection();
-        ui.updateClean();  // Clean transition
-      }
-    } else if (selection == villageCount) {
+    if (selection == 0) {
+      // My Conversations - build list and show it
+      buildConversationList();
+      keyboard.clearInput();
+      appState = APP_CONVERSATION_LIST;
+      ui.setState(STATE_CONVERSATION_LIST);
+      ui.resetMenuSelection();
+      ui.updateClean();
+      Serial.println("[MainMenu] Opening conversation list");
+    } else if (selection == 1) {
       // Selected "New Village" - ask for village name first
       isCreatingVillage = true;
       keyboard.clearInput();
@@ -1253,7 +1275,7 @@ void handleMainMenu() {
       ui.setState(STATE_CREATE_VILLAGE);
       ui.setInputText("");
       ui.updateClean();  // Clean transition
-    } else if (selection == villageCount + 1) {
+    } else if (selection == 2) {
       // Selected "Join Village"
       isCreatingVillage = false;
       keyboard.clearInput();
@@ -1261,13 +1283,72 @@ void handleMainMenu() {
       ui.setState(STATE_JOIN_VILLAGE_PASSWORD);
       ui.setInputText("");
       ui.updateClean();  // Clean transition
-    } else if (selection == villageCount + 2) {
+    } else if (selection == 3) {
       // Selected "Settings"
       keyboard.clearInput();
       appState = APP_SETTINGS_MENU;
       ui.setState(STATE_SETTINGS_MENU);
       ui.resetMenuSelection();
       ui.updateClean();  // Clean transition
+    }
+    
+    smartDelay(300);
+  }
+}
+
+void handleConversationList() {
+  // Check for up/down navigation
+  if (keyboard.isUpPressed()) {
+    Serial.println("[ConversationList] UP pressed");
+    ui.menuUp();
+    ui.updatePartial();
+    smartDelay(200);
+  } else if (keyboard.isDownPressed()) {
+    Serial.println("[ConversationList] DOWN pressed");
+    ui.menuDown();
+    ui.updatePartial();
+    smartDelay(200);
+  }
+  
+  // Left arrow to go back to main menu
+  if (keyboard.isLeftPressed()) {
+    Serial.println("[ConversationList] LEFT pressed - back to main menu");
+    keyboard.clearInput();
+    appState = APP_MAIN_MENU;
+    ui.setState(STATE_VILLAGE_SELECT);
+    ui.resetMenuSelection();
+    ui.updateClean();
+    smartDelay(300);
+    return;
+  }
+  
+  // Enter or right arrow to select a conversation
+  if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
+    int selection = ui.getMenuSelection();
+    
+    if (selection >= 0 && selection < conversationList.size()) {
+      // Load the selected village
+      ConversationEntry& entry = conversationList[selection];
+      Serial.println("[ConversationList] Loading village from slot " + String(entry.slot) + ": " + entry.name);
+      
+      if (village.loadFromSlot(entry.slot)) {
+        currentVillageSlot = entry.slot;
+        ui.setExistingVillageName(village.getVillageName());
+        encryption.setKey(village.getEncryptionKey());
+        
+        // Set as active village for sending
+        mqttMessenger.setActiveVillage(village.getVillageId());
+        Serial.println("[ConversationList] Active village: " + village.getVillageName());
+        
+        // Go to village menu
+        keyboard.clearInput();
+        appState = APP_VILLAGE_MENU;
+        ui.setState(STATE_VILLAGE_MENU);
+        ui.resetMenuSelection();
+        ui.updateClean();
+      } else {
+        Serial.println("[ConversationList] ERROR: Failed to load village from slot " + String(entry.slot));
+      }
     }
     
     smartDelay(300);

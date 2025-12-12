@@ -1,5 +1,13 @@
 #include "UI.h"
 
+// Forward declaration for conversation list structure from main.cpp
+struct ConversationEntry {
+    int slot;
+    String name;
+    String id;
+    unsigned long lastActivity;
+};
+
 UI::UI() {
     displaySPI = nullptr;
     display = nullptr;
@@ -205,6 +213,7 @@ void UI::updateClean() {
     switch (currentState) {
         case STATE_SPLASH:          drawSplash(); break;
         case STATE_VILLAGE_SELECT:  drawVillageSelect(); break;
+        case STATE_CONVERSATION_LIST: drawConversationList(); break;
         case STATE_MAIN_MENU:       drawMainMenu(); break;
         case STATE_SETTINGS_MENU:   drawSettingsMenu(); break;
         case STATE_RINGTONE_SELECT: drawRingtoneSelect(); break;
@@ -241,6 +250,7 @@ void UI::updateFull() {
     switch (currentState) {
         case STATE_SPLASH:          drawSplash(); break;
         case STATE_VILLAGE_SELECT:  drawVillageSelect(); break;
+        case STATE_CONVERSATION_LIST: drawConversationList(); break;
         case STATE_MAIN_MENU:       drawMainMenu(); break;
         case STATE_SETTINGS_MENU:   drawSettingsMenu(); break;
         case STATE_RINGTONE_SELECT: drawRingtoneSelect(); break;
@@ -296,21 +306,41 @@ void UI::drawSplash() {
 }
 
 void UI::drawVillageSelect() {
-    drawMenuHeader("Select Conversation");
+    drawMenuHeader("Main Menu");
     
     int y = 35;
     int lineHeight = 18;
-    int item = 0;
-    int scrollOffset = 0;
     
-    // Count total items to determine scroll offset
-    int totalItems = 0;
-    for (int slot = 0; slot < 10; slot++) {
-        if (Village::getVillageNameFromSlot(slot).length() > 0) {
-            totalItems++;
+    // Simplified main menu: 4 static items
+    String menuItems[] = {
+        "My Conversations",
+        "New Village",
+        "Join Village",
+        "Settings"
+    };
+    
+    for (int i = 0; i < 4; i++) {
+        if (menuSelection == i) {
+            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+            display->setTextColor(GxEPD_WHITE);
         }
+        display->setCursor(10, y);
+        display->print(menuItems[i]);
+        if (menuSelection == i) {
+            display->setTextColor(GxEPD_BLACK);
+        }
+        y += lineHeight;
     }
-    totalItems += 3; // + New, Join, WiFi
+}
+
+void UI::drawConversationList() {
+    extern std::vector<ConversationEntry> conversationList;
+    
+    drawMenuHeader("My Conversations");
+    
+    int y = 35;
+    int lineHeight = 18;
+    int scrollOffset = 0;
     
     // Calculate scroll offset if selection is beyond visible area
     const int maxVisibleItems = 5;
@@ -318,74 +348,35 @@ void UI::drawVillageSelect() {
         scrollOffset = menuSelection - maxVisibleItems + 1;
     }
     
-    // List all saved villages from slots 0-9
-    for (int slot = 0; slot < 10; slot++) {
-        String villageName = Village::getVillageNameFromSlot(slot);
-        if (villageName.length() > 0) {
-            // Skip items that are scrolled off the top
-            if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-                if (menuSelection == item) {
-                    display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-                    display->setTextColor(GxEPD_WHITE);
-                }
-                display->setCursor(10, y);
-                display->print(villageName);
-                if (menuSelection == item) {
-                    display->setTextColor(GxEPD_BLACK);
-                }
-                y += lineHeight;
+    // Show message if no conversations
+    if (conversationList.empty()) {
+        display->setCursor(10, 60);
+        display->print("No conversations yet");
+        display->setCursor(10, 80);
+        display->print("Press LEFT to go back");
+        return;
+    }
+    
+    // List all valid conversations
+    for (int i = 0; i < conversationList.size(); i++) {
+        // Skip items that are scrolled off the top
+        if (i >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+            if (menuSelection == i) {
+                display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+                display->setTextColor(GxEPD_WHITE);
             }
-            item++;
+            display->setCursor(10, y);
+            display->print(conversationList[i].name);
+            if (menuSelection == i) {
+                display->setTextColor(GxEPD_BLACK);
+            }
+            y += lineHeight;
         }
     }
-    
-    // New Conversation
-    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-        if (menuSelection == item) {
-            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-            display->setTextColor(GxEPD_WHITE);
-        }
-        display->setCursor(10, y);
-        display->print("New Conversation");
-        if (menuSelection == item) {
-            display->setTextColor(GxEPD_BLACK);
-        }
-        y += lineHeight;
-    }
-    item++;
-    
-    // Join Conversation
-    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-        if (menuSelection == item) {
-            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-            display->setTextColor(GxEPD_WHITE);
-        }
-        display->setCursor(10, y);
-        display->print("Join Conversation");
-        if (menuSelection == item) {
-            display->setTextColor(GxEPD_BLACK);
-        }
-        y += lineHeight;
-    }
-    item++;
-    
-    // Settings
-    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-        if (menuSelection == item) {
-            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-            display->setTextColor(GxEPD_WHITE);
-        }
-        display->setCursor(10, y);
-        display->print("Settings");
-        if (menuSelection == item) {
-            display->setTextColor(GxEPD_BLACK);
-        }
-    }
-    item++;
     
     // Draw down-arrow if there are more items below the visible area
     int lastVisibleItem = scrollOffset + maxVisibleItems - 1;
-    if (totalItems > maxVisibleItems && lastVisibleItem < totalItems - 1) {
+    if (conversationList.size() > maxVisibleItems && lastVisibleItem < conversationList.size() - 1) {
         // Draw small equilateral triangle pointing down (10px wide, 10px high)
         int arrowX = 10;
         int arrowY = SCREEN_HEIGHT - 15;
