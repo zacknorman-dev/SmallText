@@ -296,18 +296,7 @@ void UI::drawSplash() {
 }
 
 void UI::drawVillageSelect() {
-    // Title - bold 9pt
-    display->setFont(&FreeSansBold9pt7b);
-    display->setCursor(10, 18);
-    display->print("Select Conversation");
-    
-    // Horizontal line under title
-    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
-    
-    // Battery icon at original position
-    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
-    
-    display->setFont(&FreeSans9pt7b);
+    drawMenuHeader("Select Conversation");
     
     int y = 35;
     int lineHeight = 18;
@@ -445,18 +434,7 @@ void UI::drawVillageMenu() {
 }
 
 void UI::drawSettingsMenu() {
-    // Title - bold 9pt
-    display->setFont(&FreeSansBold9pt7b);
-    display->setCursor(10, 18);
-    display->print("Settings");
-    
-    // Horizontal line under title
-    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
-    
-    // Battery icon
-    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
-    
-    display->setFont(&FreeSans9pt7b);
+    drawMenuHeader("Settings");
     
     int y = 35;
     int lineHeight = 18;
@@ -473,61 +451,26 @@ void UI::drawSettingsMenu() {
     
     // Ringtone
     if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-        if (menuSelection == item) {
-            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-            display->setTextColor(GxEPD_WHITE);
-        }
-        display->setCursor(10, y);
-        display->print("Ringtone: " + ringtoneName);
-        if (menuSelection == item) {
-            display->setTextColor(GxEPD_BLACK);
-        }
+        drawMenuItem("Ringtone: " + ringtoneName, y, menuSelection == item, lineHeight);
         y += lineHeight;
     }
     item++;
     
     // WiFi
     if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-        if (menuSelection == item) {
-            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-            display->setTextColor(GxEPD_WHITE);
-        }
-        display->setCursor(10, y);
-        display->print("WiFi");
-        if (menuSelection == item) {
-            display->setTextColor(GxEPD_BLACK);
-        }
+        drawMenuItem("WiFi", y, menuSelection == item, lineHeight);
         y += lineHeight;
     }
     item++;
     
     // Updates
     if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-        if (menuSelection == item) {
-            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-            display->setTextColor(GxEPD_WHITE);
-        }
-        display->setCursor(10, y);
-        display->print("Updates");
-        if (menuSelection == item) {
-            display->setTextColor(GxEPD_BLACK);
-        }
+        drawMenuItem("Updates", y, menuSelection == item, lineHeight);
     }
 }
 
 void UI::drawRingtoneSelect() {
-    // Title - bold 9pt
-    display->setFont(&FreeSansBold9pt7b);
-    display->setCursor(10, 18);
-    display->print("Select Ringtone");
-    
-    // Horizontal line under title
-    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
-    
-    // Battery icon
-    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
-    
-    display->setFont(&FreeSans9pt7b);
+    drawMenuHeader("Select Ringtone");
     
     int y = 35;
     int lineHeight = 18;
@@ -547,15 +490,7 @@ void UI::drawRingtoneSelect() {
     // Draw visible ringtone options
     for (int i = 0; i < totalItems; i++) {
         if (i >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-            if (menuSelection == i) {
-                display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-                display->setTextColor(GxEPD_WHITE);
-            }
-            display->setCursor(10, y);
-            display->print(ringtoneNames[i]);
-            if (menuSelection == i) {
-                display->setTextColor(GxEPD_BLACK);
-            }
+            drawMenuItem(ringtoneNames[i], y, menuSelection == i, lineHeight);
             y += lineHeight;
         }
     }
@@ -578,22 +513,8 @@ void UI::drawRingtoneSelect() {
 }
 
 void UI::drawWiFiSetupMenu() {
-    // Title - bold 9pt, show connection status
-    display->setFont(&FreeSansBold9pt7b);
-    display->setCursor(10, 18);
-    if (isWiFiConnected && connectedSSID.length() > 0) {
-        display->print("WiFi - " + connectedSSID);
-    } else {
-        display->print("WiFi - No Network");
-    }
-    
-    // Horizontal line under title
-    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
-    
-    // Battery icon
-    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
-    
-    display->setFont(&FreeSans9pt7b);
+    String title = (isWiFiConnected && connectedSSID.length() > 0) ? "WiFi - " + connectedSSID : "WiFi - No Network";
+    drawMenuHeader(title);
     
     int y = 35;
     int lineHeight = 18;
@@ -612,15 +533,7 @@ void UI::drawWiFiSetupMenu() {
     // If connected, show "Network Details" as first item
     if (isWiFiConnected) {
         if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-            if (menuSelection == item) {
-                display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-                display->setTextColor(GxEPD_WHITE);
-            }
-            display->setCursor(10, y);
-            display->print("Network Details");
-            if (menuSelection == item) {
-                display->setTextColor(GxEPD_BLACK);
-            }
+            drawMenuItem("Network Details", y, menuSelection == item, lineHeight);
             y += lineHeight;
         }
         item++;
@@ -628,31 +541,12 @@ void UI::drawWiFiSetupMenu() {
     
     // Always show "Scan Networks"
     if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-        if (menuSelection == item) {
-            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-            display->setTextColor(GxEPD_WHITE);
-        }
-        display->setCursor(10, y);
-        display->print("Scan Networks");
-        if (menuSelection == item) {
-            display->setTextColor(GxEPD_BLACK);
-        }
+        drawMenuItem("Scan Networks", y, menuSelection == item, lineHeight);
     }
 }
 
 void UI::drawWiFiNetworkList() {
-    // Title - bold 9pt
-    display->setFont(&FreeSansBold9pt7b);
-    display->setCursor(10, 18);
-    display->print("Available Networks");
-    
-    // Horizontal line under title
-    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
-    
-    // Battery icon
-    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
-    
-    display->setFont(&FreeSans9pt7b);
+    drawMenuHeader("Available Networks");
     
     int y = 35;
     int lineHeight = 18;
@@ -755,20 +649,9 @@ void UI::drawWiFiNetworkList() {
 }
 
 void UI::drawWiFiNetworkOptions() {
-    // Title - show selected network name
-    display->setFont(&FreeSansBold9pt7b);
-    display->setCursor(10, 18);
     String ssid = networkSSIDs.size() > menuSelection ? networkSSIDs[menuSelection] : "";
     if (ssid.length() > 20) ssid = ssid.substring(0, 20);
-    display->print(ssid);
-    
-    // Horizontal line under title
-    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
-    
-    // Battery icon
-    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
-    
-    display->setFont(&FreeSans9pt7b);
+    drawMenuHeader(ssid);
     
     int y = 45;
     int lineHeight = 22;
@@ -793,20 +676,9 @@ void UI::drawWiFiNetworkOptions() {
 }
 
 void UI::drawWiFiNetworkDetails() {
-    // Title - show connected network SSID
-    display->setFont(&FreeSansBold9pt7b);
-    display->setCursor(10, 18);
     String ssid = connectedSSID;
     if (ssid.length() > 20) ssid = ssid.substring(0, 20);
-    display->print(ssid);
-    
-    // Horizontal line under title
-    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
-    
-    // Battery icon
-    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
-    
-    display->setFont(&FreeSans9pt7b);
+    drawMenuHeader(ssid);
     
     int y = 45;
     int lineHeight = 20;
