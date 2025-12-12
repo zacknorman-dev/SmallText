@@ -54,6 +54,18 @@
 			"label": "PlatformIO Upload COM13",
 			"type": "shell",
 			"command": "platformio run --target upload --upload-port COM13"
+		},
+		{
+			"label": "PlatformIO: Build",
+			"type": "shell",
+			"command": "platformio",
+			"args": [
+				"run"
+			],
+			"problemMatcher": [
+				"$platformio"
+			],
+			"group": "build"
 		}
 	]
 }

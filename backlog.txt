@@ -14,3 +14,7 @@ SmolTxt Backlog
 - Clicking on already-connected network in scan list should go to Network Details page
 - Menu Overflow Boundary Bug still present - screen turns white when tapping down past last network
 
+## Power Management
+
+- Define the state of the app while it's charging (should it stay awake? show charging screen? what interactions are available?)
+

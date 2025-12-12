@@ -85,6 +85,29 @@ void smartDelay(unsigned long ms) {
   }
 }
 
+// Helper function for state transitions (consolidates repeated pattern)
+void transitionToState(UIState newState, bool cleanTransition = true, unsigned long delayMs = 300) {
+  ui.setState(newState);
+  if (cleanTransition) {
+    ui.updateClean();
+  } else {
+    ui.update();
+  }
+  if (delayMs > 0) {
+    smartDelay(delayMs);
+  }
+}
+
+// Helper function to return to main menu (consolidates error recovery)
+void returnToMainMenu() {
+  keyboard.clearInput();
+  appState = APP_MAIN_MENU;
+  ui.setState(STATE_VILLAGE_SELECT);
+  ui.resetMenuSelection();
+  ui.updateClean();
+  smartDelay(300);
+}
+
 String tempVillagePassword = "";  // Temp storage during village creation
 bool isCreatingVillage = true;  // Flag to track if creating (true) or joining (false) village
 bool inMessagingScreen = false;  // Flag to track if we're viewing the messaging screen
@@ -749,9 +772,7 @@ void setup() {
   
   // Show splash screen
   Serial.println("[Display] Showing splash...");
-  ui.setState(STATE_SPLASH);
-  ui.updateClean();  // Clean transition at launch
-  smartDelay(2000);
+  transitionToState(STATE_SPLASH, true, 2000);
   
   // Initialize I2C for keyboard
   Serial.println("[I2C] Initializing I2C bus...");
@@ -994,10 +1015,9 @@ void setup() {
   }
   
   appState = APP_MAIN_MENU;
-  ui.setState(STATE_VILLAGE_SELECT);
   ui.resetMenuSelection();
   Serial.println("[System] About to call ui.update() for village select...");
-  ui.updateClean();  // Clean transition to main menu
+  transitionToState(STATE_VILLAGE_SELECT, true, 0);
   Serial.println("[System] Village select displayed");
   
   Serial.println("[System] Setup complete!");
@@ -1241,36 +1261,30 @@ void handleMainMenu() {
         // Go to village menu
         keyboard.clearInput();
         appState = APP_VILLAGE_MENU;
-        ui.setState(STATE_VILLAGE_MENU);
         ui.resetMenuSelection();
-        ui.updateClean();  // Clean transition
+        transitionToState(STATE_VILLAGE_MENU);
       }
     } else if (selection == villageCount) {
       // Selected "New Village" - ask for village name first
       isCreatingVillage = true;
       keyboard.clearInput();
       appState = APP_VILLAGE_CREATE;
-      ui.setState(STATE_CREATE_VILLAGE);
       ui.setInputText("");
-      ui.updateClean();  // Clean transition
+      transitionToState(STATE_CREATE_VILLAGE);
     } else if (selection == villageCount + 1) {
       // Selected "Join Village"
       isCreatingVillage = false;
       keyboard.clearInput();
       appState = APP_VILLAGE_JOIN_PASSWORD;
-      ui.setState(STATE_JOIN_VILLAGE_PASSWORD);
       ui.setInputText("");
-      ui.updateClean();  // Clean transition
+      transitionToState(STATE_JOIN_VILLAGE_PASSWORD);
     } else if (selection == villageCount + 2) {
       // Selected "Settings"
       keyboard.clearInput();
       appState = APP_SETTINGS_MENU;
-      ui.setState(STATE_SETTINGS_MENU);
       ui.resetMenuSelection();
-      ui.updateClean();  // Clean transition
+      transitionToState(STATE_SETTINGS_MENU);
     }
-    
-    smartDelay(300);
   }
 }
 
@@ -1288,11 +1302,7 @@ void handleVillageMenu() {
   // Left arrow to go back to main menu
   if (keyboard.isLeftPressed()) {
     keyboard.clearInput();
-    appState = APP_MAIN_MENU;
-    ui.setState(STATE_VILLAGE_SELECT);
-    ui.resetMenuSelection();
-    ui.updateClean();  // Clean transition
-    smartDelay(300);
+    returnToMainMenu();
     return;
   }
   
@@ -1380,9 +1390,8 @@ void handleVillageMenu() {
     } else if (selection == 2) {
       // View Members
       appState = APP_VIEW_MEMBERS;
-      ui.setState(STATE_VIEW_MEMBERS);
       ui.setMemberList(village.getMemberList());
-      ui.updateClean();  // Clean transition
+      transitionToState(STATE_VIEW_MEMBERS, true, 0);
     } else if (selection == 3) {
       // Leave Village
       ui.showMessage("Leave Village?", "Press ENTER to confirm\nor LEFT to cancel", 0);
@@ -1407,14 +1416,10 @@ void handleVillageMenu() {
           ui.showMessage("Village", "Left village", 1500);
           smartDelay(1500);
           
-          appState = APP_MAIN_MENU;
-          ui.setState(STATE_VILLAGE_SELECT);
-          ui.resetMenuSelection();
-          ui.updateClean();  // Clean transition
+          returnToMainMenu();
           break;
         } else if (keyboard.isLeftPressed()) {
-          ui.setState(STATE_VILLAGE_MENU);
-          ui.updateClean();  // Clean transition
+          transitionToState(STATE_VILLAGE_MENU, true, 0);
           break;
         }
         smartDelay(50);
@@ -1431,10 +1436,8 @@ void handleViewMembers() {
   // Left arrow to go back to village menu
   if (keyboard.isLeftPressed()) {
     appState = APP_VILLAGE_MENU;
-    ui.setState(STATE_VILLAGE_MENU);
     ui.resetMenuSelection();
-    ui.updateClean();  // Clean transition
-    smartDelay(300);
+    transitionToState(STATE_VILLAGE_MENU);
   }
 }
 
@@ -2118,12 +2121,7 @@ void handleSettingsMenu() {
   
   // Left arrow to go back
   if (keyboard.isLeftPressed()) {
-    keyboard.clearInput();
-    appState = APP_MAIN_MENU;
-    ui.setState(STATE_VILLAGE_SELECT);
-    ui.resetMenuSelection();
-    ui.updateClean();
-    smartDelay(300);
+    returnToMainMenu();
     return;
   }
   
@@ -2135,9 +2133,8 @@ void handleSettingsMenu() {
       // Open Ringtone selection menu
       keyboard.clearInput();
       appState = APP_RINGTONE_SELECT;
-      ui.setState(STATE_RINGTONE_SELECT);
       ui.resetMenuSelection();
-      ui.updateClean();
+      transitionToState(STATE_RINGTONE_SELECT, true, 0);
     } else if (selection == 1) {
       // Open WiFi menu
       keyboard.clearInput();
@@ -2150,9 +2147,8 @@ void handleSettingsMenu() {
       }
       
       appState = APP_WIFI_SETUP_MENU;
-      ui.setState(STATE_WIFI_SETUP_MENU);
       ui.resetMenuSelection();
-      ui.updateClean();
+      transitionToState(STATE_WIFI_SETUP_MENU, true, 0);
     } else if (selection == 2) {
       // Check for Updates
       keyboard.clearInput();
@@ -2224,10 +2220,8 @@ void handleRingtoneSelect() {
     
     keyboard.clearInput();
     appState = APP_SETTINGS_MENU;
-    ui.setState(STATE_SETTINGS_MENU);
     ui.resetMenuSelection();
-    ui.updateClean();
-    smartDelay(300);
+    transitionToState(STATE_SETTINGS_MENU);
   }
 }
 
@@ -2246,10 +2240,8 @@ void handleWiFiSetupMenu() {
   if (keyboard.isLeftPressed()) {
     keyboard.clearInput();
     appState = APP_SETTINGS_MENU;
-    ui.setState(STATE_SETTINGS_MENU);
     ui.resetMenuSelection();
-    ui.updateClean();
-    smartDelay(300);
+    transitionToState(STATE_SETTINGS_MENU);
     return;
   }
   
@@ -2264,7 +2256,6 @@ void handleWiFiSetupMenu() {
       // Network Details
       keyboard.clearInput();
       appState = APP_WIFI_NETWORK_DETAILS;
-      ui.setState(STATE_WIFI_NETWORK_DETAILS);
       
       // Format network details
       String details = "IP Address\n";
@@ -2272,7 +2263,7 @@ void handleWiFiSetupMenu() {
       details += "Signal\n";
       details += String(wifiManager.getSignalStrength()) + " dBm";
       ui.setInputText(details);
-      ui.updateClean();
+      transitionToState(STATE_WIFI_NETWORK_DETAILS, true, 0);
     } else if ((isConnected && selection == 1) || (!isConnected && selection == 0)) {
       // Scan for networks
       Serial.println("[WiFi] Scanning for networks...");
@@ -2297,12 +2288,9 @@ void handleWiFiSetupMenu() {
       
       keyboard.clearInput();
       appState = APP_WIFI_NETWORK_LIST;
-      ui.setState(STATE_WIFI_NETWORK_LIST);
       ui.resetMenuSelection();
-      ui.updateClean();
+      transitionToState(STATE_WIFI_NETWORK_LIST);
     }
-    
-    smartDelay(300);
   }
 }
 
@@ -2321,10 +2309,8 @@ void handleWiFiNetworkList() {
   if (keyboard.isLeftPressed()) {
     keyboard.clearInput();
     appState = APP_WIFI_SETUP_MENU;
-    ui.setState(STATE_WIFI_SETUP_MENU);
     ui.resetMenuSelection();
-    ui.updateClean();
-    smartDelay(300);
+    transitionToState(STATE_WIFI_SETUP_MENU);
     return;
   }
   
@@ -2354,14 +2340,13 @@ void handleWiFiNetworkList() {
         // Show connect/forget options
         keyboard.clearInput();
         appState = APP_WIFI_NETWORK_OPTIONS;
-        ui.setState(STATE_WIFI_NETWORK_OPTIONS);
-        ui.updateClean();
+        transitionToState(STATE_WIFI_NETWORK_OPTIONS, true, 0);
       } else {
         // New network - go to password input
         keyboard.clearInput();
         appState = APP_WIFI_PASSWORD_INPUT;
-        ui.setState(STATE_WIFI_PASSWORD_INPUT);
         ui.setInputText("");
+        ui.setState(STATE_WIFI_PASSWORD_INPUT);
         ui.update();
       }
     }
@@ -2375,9 +2360,7 @@ void handleWiFiNetworkOptions() {
   if (keyboard.isLeftPressed()) {
     keyboard.clearInput();
     appState = APP_WIFI_NETWORK_LIST;
-    ui.setState(STATE_WIFI_NETWORK_LIST);
-    ui.updateClean();
-    smartDelay(300);
+    transitionToState(STATE_WIFI_NETWORK_LIST);
     return;
   }
   
@@ -2406,10 +2389,8 @@ void handleWiFiNetworkOptions() {
     
     keyboard.clearInput();
     appState = APP_WIFI_SETUP_MENU;
-    ui.setState(STATE_WIFI_SETUP_MENU);
     ui.resetMenuSelection();
-    ui.updateClean();
-    smartDelay(300);
+    transitionToState(STATE_WIFI_SETUP_MENU);
     return;
   }
   
@@ -2422,10 +2403,8 @@ void handleWiFiNetworkOptions() {
     
     keyboard.clearInput();
     appState = APP_WIFI_NETWORK_LIST;
-    ui.setState(STATE_WIFI_NETWORK_LIST);
     ui.resetMenuSelection();
-    ui.updateClean();
-    smartDelay(300);
+    transitionToState(STATE_WIFI_NETWORK_LIST);
   }
 }
 
@@ -2526,11 +2505,9 @@ void handleWiFiPasswordInput() {
       // Go back to network list
       keyboard.clearInput();
       appState = APP_WIFI_NETWORK_LIST;
-      ui.setState(STATE_WIFI_NETWORK_LIST);
       ui.resetMenuSelection();
-      ui.updateClean();
+      transitionToState(STATE_WIFI_NETWORK_LIST);
     }
-    smartDelay(300);
     return;
   }
   
@@ -2557,10 +2534,8 @@ void handleWiFiNetworkDetails() {
   if (keyboard.isLeftPressed()) {
     keyboard.clearInput();
     appState = APP_WIFI_SETUP_MENU;
-    ui.setState(STATE_WIFI_SETUP_MENU);
     ui.resetMenuSelection();
-    ui.updateClean();
-    smartDelay(300);
+    transitionToState(STATE_WIFI_SETUP_MENU);
   }
 }
 
