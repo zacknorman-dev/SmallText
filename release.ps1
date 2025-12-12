@@ -129,8 +129,8 @@ $Message
 - **MCU**: ESP32-S3
 "@
     
-    # Check if release already exists
-    $releaseExists = gh release view "v$Version" 2>&1
+    # Check if release already exists (suppress error output)
+    $releaseExists = gh release view "v$Version" 2>&1 | Out-String
     
     if ($releaseExists -notmatch "release not found") {
         # Release exists, just upload the binary and ensure it's published
