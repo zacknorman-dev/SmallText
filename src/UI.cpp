@@ -1583,11 +1583,7 @@ void UI::showPoweringDown() {
 
 void UI::showSleepScreen() {
     setState(STATE_SLEEPING);
-    display->setFullWindow();
-    display->firstPage();
-    do {
-        drawSleeping();
-    } while (display->nextPage());
+    updateFull();  // Full refresh for sleep screen to ensure clean display
 }
 
 void UI::showNappingScreen(float batteryVoltage, bool hasWiFi) {

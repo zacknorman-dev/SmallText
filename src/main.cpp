@@ -788,7 +788,7 @@ void setup() {
   // Show splash screen
   Serial.println("[Display] Showing splash...");
   ui.setState(STATE_SPLASH);
-  ui.updateClean();  // Clean transition at launch
+  ui.updateFull();  // Full refresh at boot for clean initial display
   smartDelay(2000);
   
   // Initialize I2C for keyboard
@@ -1239,6 +1239,13 @@ void loop() {
 }
 
 void handleMainMenu() {
+  // First time displaying main menu - use full refresh
+  static bool firstMainMenuDisplay = true;
+  if (firstMainMenuDisplay) {
+    ui.updateFull();
+    firstMainMenuDisplay = false;
+  }
+  
   // Check for up/down navigation with arrow keys
   if (keyboard.isUpPressed()) {
     Serial.println("[MainMenu] UP pressed");
