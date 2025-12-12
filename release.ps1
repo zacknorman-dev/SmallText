@@ -128,8 +128,8 @@ $Message
 - **MCU**: ESP32-S3
 "@
     
-    # Create release with binary - use simple notes to avoid escaping issues
-    gh release create "v$Version" $releaseFirmware --title "SmolTxt v$Version" --notes "$Message"
+    # Create release with binary - explicitly publish (not draft)
+    gh release create "v$Version" $releaseFirmware --title "SmolTxt v$Version" --notes "$Message" --draft=false
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host "      GitHub Release created successfully!" -ForegroundColor Green
