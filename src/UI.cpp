@@ -673,29 +673,48 @@ void UI::drawWiFiNetworkDetails() {
     if (ssid.length() > 20) ssid = ssid.substring(0, 20);
     drawMenuHeader(ssid);
     
-    int y = 45;
-    int lineHeight = 20;
-    
-    // Display connection details from inputText
-    // Expected format: "IP Address\n192.168.1.100\nSignal\n-65 dBm"
+    // Parse details from inputText: "IP\n192.168.1.100\nSignal\n-65 dBm"
+    String ip = "";
+    String signal = "";
     int lineStart = 0;
-    String detailsText = inputText;
-    for (int i = 0; i <= detailsText.length(); i++) {
-        if (i == detailsText.length() || detailsText[i] == '\n') {
-            String line = detailsText.substring(lineStart, i);
-            if (line.length() > 0) {
-                display->setCursor(10, y);
-                display->print(line);
-                y += lineHeight;
-            }
+    int lineNum = 0;
+    for (int i = 0; i <= inputText.length(); i++) {
+        if (i == inputText.length() || inputText[i] == '\n') {
+            String line = inputText.substring(lineStart, i);
+            if (lineNum == 1) ip = line;
+            if (lineNum == 3) signal = line;
             lineStart = i + 1;
+            lineNum++;
         }
+    }
+    
+    // Display IP and Signal on separate lines
+    int y = 45;
+    display->setCursor(10, y);
+    display->print("IP: " + ip);
+    display->setCursor(10, y + 18);
+    display->print("Signal: " + signal);
+    
+    // Horizontal line separator
+    y += 40;
+    display->drawLine(5, y, SCREEN_WIDTH - 5, y, GxEPD_BLACK);
+    
+    // Menu option: Forget Network
+    y += 25;
+    if (menuSelection == 0) {
+        display->fillRect(5, y - 13, SCREEN_WIDTH - 10, 18, GxEPD_BLACK);
+        display->setTextColor(GxEPD_WHITE);
+    }
+    display->setCursor(10, y);
+    display->print("Forget Network");
+    if (menuSelection == 0) {
+        display->setTextColor(GxEPD_BLACK);
     }
     
     // Footer hint
     display->setFont();
     display->setCursor(5, SCREEN_HEIGHT - 8);
-    display->print("LEFT:back");
+    display->print("LEFT:back  RIGHT:select");
 }
 
 void UI::drawWiFiSSIDInput() {

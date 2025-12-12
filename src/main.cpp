@@ -2642,6 +2642,29 @@ void handleWiFiNetworkDetails() {
     ui.resetMenuSelection();
     ui.updateClean();
     smartDelay(300);
+    return;
+  }
+  
+  // RIGHT/ENTER to forget network
+  if (keyboard.isRightPressed() || keyboard.isEnterPressed()) {
+    if (ui.getMenuSelection() == 0) {  // Forget Network option
+      String currentSSID = wifiManager.getConnectedSSID();
+      Serial.println("[WiFi] Forgetting network: " + currentSSID);
+      
+      // Disconnect and forget
+      wifiManager.disconnect();
+      wifiManager.removeNetwork(currentSSID);
+      
+      ui.showMessage("WiFi", "Network forgotten", 2000);
+      
+      keyboard.clearInput();
+      appState = APP_WIFI_SETUP_MENU;
+      ui.setState(STATE_WIFI_SETUP_MENU);
+      ui.resetMenuSelection();
+      smartDelay(2000);
+      ui.updateClean();
+    }
+    smartDelay(300);
   }
 }
 
