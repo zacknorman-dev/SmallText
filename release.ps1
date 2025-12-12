@@ -129,15 +129,31 @@ $Message
 - **MCU**: ESP32-S3
 "@
     
-    # Create release with binary - explicitly publish (not draft)
-    gh release create "v$Version" $releaseFirmware --title "SmolTxt v$Version" --notes "$Message" --draft=false
+    # Check if release already exists
+    $releaseExists = gh release view "v$Version" 2>$null
     
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "      GitHub Release created successfully!" -ForegroundColor Green
-        Write-Host "      View at: https://github.com/zacknorman-dev/SmallText/releases/tag/v$Version" -ForegroundColor Cyan
+        # Release exists, just upload the binary
+        Write-Host "      Release already exists, uploading binary..." -ForegroundColor Cyan
+        gh release upload "v$Version" $releaseFirmware --clobber
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "      Binary uploaded successfully!" -ForegroundColor Green
+            Write-Host "      View at: https://github.com/zacknorman-dev/SmallText/releases/tag/v$Version" -ForegroundColor Cyan
+        } else {
+            Write-Host "      Binary upload failed!" -ForegroundColor Red
+        }
     } else {
-        Write-Host "      GitHub CLI failed, opening browser instead..." -ForegroundColor Yellow
-        Start-Process "https://github.com/zacknorman-dev/SmallText/releases/new?tag=v$Version"
+        # Create new release with binary
+        Write-Host "      Creating new release..." -ForegroundColor Cyan
+        gh release create "v$Version" $releaseFirmware --title "SmolTxt v$Version" --notes "$Message" --draft=false
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "      GitHub Release created successfully!" -ForegroundColor Green
+            Write-Host "      View at: https://github.com/zacknorman-dev/SmallText/releases/tag/v$Version" -ForegroundColor Cyan
+        } else {
+            Write-Host "      GitHub CLI failed, opening browser instead..." -ForegroundColor Yellow
+            Start-Process "https://github.com/zacknorman-dev/SmallText/releases/new?tag=v$Version"
+        }
     }
 } else {
     # Fallback to browser
