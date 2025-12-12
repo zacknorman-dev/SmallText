@@ -133,19 +133,20 @@ $Message
     $releaseExists = gh release view "v$Version" 2>&1
     
     if ($releaseExists -notmatch "release not found") {
-        # Release exists, just upload the binary
-        Write-Host "      Release already exists, uploading binary..." -ForegroundColor Cyan
+        # Release exists, just upload the binary and ensure it's published
+        Write-Host "      Release already exists, uploading binary and publishing..." -ForegroundColor Cyan
         gh release upload "v$Version" $releaseFirmware --clobber
+        gh release edit "v$Version" --draft=false
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "      Binary uploaded successfully!" -ForegroundColor Green
+            Write-Host "      Binary uploaded and release published successfully!" -ForegroundColor Green
             Write-Host "      View at: https://github.com/zacknorman-dev/SmallText/releases/tag/v$Version" -ForegroundColor Cyan
         } else {
             Write-Host "      Binary upload failed!" -ForegroundColor Red
         }
     } else {
-        # Create new release with binary
+        # Create new release with binary (published, not draft)
         Write-Host "      Creating new release..." -ForegroundColor Cyan
-        gh release create "v$Version" $releaseFirmware --title "SmolTxt v$Version" --notes "$Message" --draft=false
+        gh release create "v$Version" $releaseFirmware --title "SmolTxt v$Version" --notes "$Message" --draft=false --latest
         
         if ($LASTEXITCODE -eq 0) {
             Write-Host "      GitHub Release created successfully!" -ForegroundColor Green
