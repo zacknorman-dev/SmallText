@@ -34,7 +34,8 @@ Write-Host "========================================`n" -ForegroundColor Cyan
 Write-Host "[1/8] Updating version in version.h..." -ForegroundColor Yellow
 $versionPath = "src\version.h"
 $content = Get-Content $versionPath -Raw
-$content = $content -replace '#define BUILD_NUMBER "v[\d\.]+"', "#define BUILD_NUMBER `"v$Version`""
+$newVersionLine = "#define BUILD_NUMBER ""v$Version"""
+$content = $content -replace '#define BUILD_NUMBER "v[\d\.]+"', $newVersionLine
 Set-Content $versionPath $content -NoNewline
 Write-Host "      Version updated to v$Version" -ForegroundColor Green
 

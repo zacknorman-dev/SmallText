@@ -34,6 +34,11 @@ enum UIState {
     STATE_OTA_CHECK,
     STATE_OTA_UPDATE,
     STATE_CREATE_VILLAGE,
+    STATE_VILLAGE_CREATED,        // New: Invite/Back menu after creation
+    STATE_INVITE_EXPLAIN,         // New: Pre-generate explanation screen
+    STATE_INVITE_CODE_DISPLAY,    // New: Show 8-digit code with timer
+    STATE_JOIN_EXPLAIN,           // New: Pre-enter explanation screen
+    STATE_JOIN_CODE_INPUT,        // New: Enter 8-digit code field
     STATE_JOIN_VILLAGE_NAME,
     STATE_JOIN_VILLAGE_PASSWORD,
     STATE_INPUT_PASSWORD,
@@ -89,6 +94,10 @@ private:
     int savedNetworkCount;  // Number of saved networks
     bool isNetworkActive;   // Track if displayed network is currently connected
     
+    // Invite code system
+    String inviteCode;        // 8-digit code for inviting
+    unsigned long inviteExpiry;  // Timestamp when code expires
+    
     // Callback to check if user is typing (defers display updates during typing)
     bool (*typingCheckCallback)();
     
@@ -113,6 +122,11 @@ private:
     void drawOTACheck();
     void drawOTAUpdate();
     void drawCreateVillage();
+    void drawVillageCreated();       // New: Invite/Back menu
+    void drawInviteExplain();        // New: Pre-generate explanation
+    void drawInviteCodeDisplay();    // New: Show code with timer
+    void drawJoinExplain();          // New: Pre-enter explanation
+    void drawJoinCodeInput();        // New: Code input field
     void drawJoinVillage();
     void drawVillageMenu();
     void drawAddMember();
@@ -195,6 +209,12 @@ public:
     int getSavedNetworkCount() const { return savedNetworkCount; }
     void setNetworkActive(bool active) { isNetworkActive = active; }
     bool getNetworkActive() const { return isNetworkActive; }
+    
+    // Invite code management
+    void setInviteCode(const String& code, unsigned long expiryTime) { inviteCode = code; inviteExpiry = expiryTime; }
+    String getInviteCode() const { return inviteCode; }
+    unsigned long getInviteExpiry() const { return inviteExpiry; }
+    void clearInviteCode() { inviteCode = ""; inviteExpiry = 0; }
     
     // Display helpers
     void showMessage(const String& title, const String& message, int durationMs = 2000);

@@ -61,6 +61,11 @@ enum AppState {
   APP_OTA_UPDATING,
   APP_VILLAGE_MENU,
   APP_VILLAGE_CREATE,
+  APP_VILLAGE_CREATED,
+  APP_INVITE_EXPLAIN,
+  APP_INVITE_CODE_DISPLAY,
+  APP_JOIN_EXPLAIN,
+  APP_JOIN_CODE_INPUT,
   APP_VILLAGE_JOIN_NAME,
   APP_VILLAGE_JOIN_PASSWORD,
   APP_PASSWORD_INPUT,
@@ -410,6 +415,11 @@ void handleOTAChecking();
 void handleOTAUpdating();
 void handleVillageMenu();
 void handleVillageCreate();
+void handleVillageCreated();
+void handleInviteExplain();
+void handleInviteCodeDisplay();
+void handleJoinExplain();
+void handleJoinCodeInput();
 void handleVillageJoinName();
 void handleVillageJoinPassword();
 void handlePasswordInput();
@@ -1212,6 +1222,21 @@ void loop() {
     case APP_VILLAGE_CREATE:
       handleVillageCreate();
       break;
+    case APP_VILLAGE_CREATED:
+      handleVillageCreated();
+      break;
+    case APP_INVITE_EXPLAIN:
+      handleInviteExplain();
+      break;
+    case APP_INVITE_CODE_DISPLAY:
+      handleInviteCodeDisplay();
+      break;
+    case APP_JOIN_EXPLAIN:
+      handleJoinExplain();
+      break;
+    case APP_JOIN_CODE_INPUT:
+      handleJoinCodeInput();
+      break;
     case APP_VILLAGE_JOIN_PASSWORD:
       handleVillageJoinPassword();
       break;
@@ -1288,12 +1313,12 @@ void handleMainMenu() {
       ui.setInputText("");
       ui.updateClean();  // Clean transition
     } else if (selection == 2) {
-      // Selected "Join Village"
+      // Selected "Join Conversation"
       isCreatingVillage = false;
       keyboard.clearInput();
-      appState = APP_VILLAGE_JOIN_PASSWORD;
-      ui.setState(STATE_JOIN_VILLAGE_PASSWORD);
-      ui.setInputText("");
+      appState = APP_JOIN_EXPLAIN;
+      ui.setState(STATE_JOIN_EXPLAIN);
+      ui.resetMenuSelection();
       ui.updateClean();  // Clean transition
     } else if (selection == 3) {
       // Selected "Settings"
@@ -1864,21 +1889,13 @@ void handleUsernameInput() {
           Serial.println("[Village] Announced village name: " + village.getVillageName());
         }
         
-        // Show passphrase for creators
-        String infoMsg = "The secret passphrase for\nthis village is:\n\n";
-        infoMsg += tempVillagePassword + "\n\n";
-        infoMsg += "Only friends you tell it to\ncan join.\n\n";
-        infoMsg += "Press ENTER to continue";
-        
-        ui.showMessage("Village Created!", infoMsg, 0);
-        
-        // Wait for enter key to continue
-        while (!keyboard.isEnterPressed() && !keyboard.isRightPressed()) {
-          keyboard.update();
-          smartDelay(50);
-        }
-        
-        Serial.println("[Village] Creator acknowledged passphrase, going to messaging");
+        // Go to village created menu
+        appState = APP_VILLAGE_CREATED;
+        ui.setState(STATE_VILLAGE_CREATED);
+        ui.resetMenuSelection();
+        ui.update();
+        smartDelay(300);
+        return;
       } else {
         // Joiner: Wait briefly for village name announcement
         Serial.println("[Village] Waiting for village name announcement...");
@@ -1983,6 +2000,259 @@ void handleUsernameInput() {
     String input = keyboard.getInput();
     for (char c : input) {
       if (c >= 32 && c < 127 && ui.getInputText().length() < 20) {
+        ui.addInputChar(c);
+      }
+    }
+    keyboard.clearInput();
+    ui.updatePartial();
+  }
+}
+
+void handleVillageCreated() {
+  keyboard.update();
+  
+  // Left arrow to go back
+  if (keyboard.isLeftPressed()) {
+    appState = APP_MESSAGING;
+    inMessagingScreen = true;
+    ui.setState(STATE_MESSAGING);
+    ui.update();
+    smartDelay(300);
+    return;
+  }
+  
+  // Up/Down navigation
+  if (keyboard.isUpPressed()) {
+    ui.menuUp();
+    ui.updatePartial();
+    smartDelay(150);
+    return;
+  }
+  
+  if (keyboard.isDownPressed()) {
+    ui.menuDown();
+    ui.updatePartial();
+    smartDelay(150);
+    return;
+  }
+  
+  // Enter to select
+  if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
+    int selection = ui.getMenuSelection();
+    if (selection == 0) {  // Invite a Friend
+      appState = APP_INVITE_EXPLAIN;
+      ui.setState(STATE_INVITE_EXPLAIN);
+      ui.resetMenuSelection();
+      ui.update();
+    } else if (selection == 1) {  // Back
+      appState = APP_MESSAGING;
+      inMessagingScreen = true;
+      ui.setState(STATE_MESSAGING);
+      ui.update();
+    }
+    smartDelay(300);
+    return;
+  }
+}
+
+void handleInviteExplain() {
+  keyboard.update();
+  
+  // Left arrow to go back
+  if (keyboard.isLeftPressed()) {
+    appState = APP_VILLAGE_CREATED;
+    ui.setState(STATE_VILLAGE_CREATED);
+    ui.resetMenuSelection();
+    ui.update();
+    smartDelay(300);
+    return;
+  }
+  
+  // Up/Down navigation
+  if (keyboard.isUpPressed()) {
+    ui.menuUp();
+    ui.updatePartial();
+    smartDelay(150);
+    return;
+  }
+  
+  if (keyboard.isDownPressed()) {
+    ui.menuDown();
+    ui.updatePartial();
+    smartDelay(150);
+    return;
+  }
+  
+  // Enter to select
+  if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
+    int selection = ui.getMenuSelection();
+    if (selection == 0) {  // Generate A Code
+      // Generate 8-digit code
+      String code = String(random(10000000, 100000000));  // 8 digits: 10000000-99999999
+      unsigned long expiry = millis() + 300000;  // 5 minutes from now
+      ui.setInviteCode(code, expiry);
+      
+      // TODO: Publish invite code to MQTT
+      // mqttMessenger.publishInvite(code, village.getVillageId(), village.getEncryptionKey());
+      
+      appState = APP_INVITE_CODE_DISPLAY;
+      ui.setState(STATE_INVITE_CODE_DISPLAY);
+      ui.update();
+    } else if (selection == 1) {  // Cancel
+      appState = APP_VILLAGE_CREATED;
+      ui.setState(STATE_VILLAGE_CREATED);
+      ui.resetMenuSelection();
+      ui.update();
+    }
+    smartDelay(300);
+    return;
+  }
+}
+
+void handleInviteCodeDisplay() {
+  keyboard.update();
+  
+  // Check if code expired
+  if (millis() > ui.getInviteExpiry()) {
+    ui.clearInviteCode();
+    // TODO: Unpublish invite code from MQTT
+    // mqttMessenger.unpublishInvite(code);
+    
+    String infoMsg = "The invite code has\nexpired.\n\nPress ENTER to continue";
+    ui.showMessage("Code Expired", infoMsg, 0);
+    while (!keyboard.isEnterPressed() && !keyboard.isRightPressed()) {
+      keyboard.update();
+      smartDelay(50);
+    }
+    
+    appState = APP_VILLAGE_CREATED;
+    ui.setState(STATE_VILLAGE_CREATED);
+    ui.resetMenuSelection();
+    ui.update();
+    smartDelay(300);
+    return;
+  }
+  
+  // Any key pressed - cancel and go back
+  if (keyboard.hasInput() || keyboard.isEnterPressed() || keyboard.isLeftPressed()) {
+    ui.clearInviteCode();
+    // TODO: Unpublish invite code from MQTT
+    // mqttMessenger.unpublishInvite(code);
+    
+    appState = APP_VILLAGE_CREATED;
+    ui.setState(STATE_VILLAGE_CREATED);
+    ui.resetMenuSelection();
+    ui.update();
+    keyboard.clearInput();
+    smartDelay(300);
+    return;
+  }
+  
+  // Refresh display to update countdown timer every second
+  static unsigned long lastRefresh = 0;
+  if (millis() - lastRefresh > 1000) {
+    ui.updatePartial();
+    lastRefresh = millis();
+  }
+}
+
+void handleJoinExplain() {
+  keyboard.update();
+  
+  // Left arrow to go back
+  if (keyboard.isLeftPressed()) {
+    appState = APP_MAIN_MENU;
+    ui.setState(STATE_VILLAGE_SELECT);
+    ui.resetMenuSelection();
+    ui.update();
+    smartDelay(300);
+    return;
+  }
+  
+  // Up/Down navigation
+  if (keyboard.isUpPressed()) {
+    ui.menuUp();
+    ui.updatePartial();
+    smartDelay(150);
+    return;
+  }
+  
+  if (keyboard.isDownPressed()) {
+    ui.menuDown();
+    ui.updatePartial();
+    smartDelay(150);
+    return;
+  }
+  
+  // Enter to select
+  if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
+    int selection = ui.getMenuSelection();
+    if (selection == 0) {  // Enter a Code
+      appState = APP_JOIN_CODE_INPUT;
+      ui.setState(STATE_JOIN_CODE_INPUT);
+      ui.setInputText("");
+      ui.update();
+    } else if (selection == 1) {  // Cancel
+      appState = APP_MAIN_MENU;
+      ui.setState(STATE_VILLAGE_SELECT);
+      ui.resetMenuSelection();
+      ui.update();
+    }
+    smartDelay(300);
+    return;
+  }
+}
+
+void handleJoinCodeInput() {
+  keyboard.update();
+  
+  // Left arrow to go back
+  if (keyboard.isLeftPressed()) {
+    appState = APP_JOIN_EXPLAIN;
+    ui.setState(STATE_JOIN_EXPLAIN);
+    ui.resetMenuSelection();
+    ui.update();
+    smartDelay(300);
+    return;
+  }
+  
+  // Handle backspace
+  if (keyboard.isBackspacePressed()) {
+    if (ui.getInputText().length() > 0) {
+      ui.removeInputChar();
+      ui.updatePartial();
+    }
+    smartDelay(150);
+    return;
+  }
+  
+  // Handle enter - validate code
+  if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
+    String code = ui.getInputText();
+    if (code.length() == 8) {
+      // TODO: Look up invite code in MQTT and join village
+      // For now, show error message
+      String infoMsg = "Invite code lookup not\nyet implemented.\n\nPress ENTER to continue";
+      ui.showMessage("Not Available", infoMsg, 0);
+      while (!keyboard.isEnterPressed() && !keyboard.isRightPressed()) {
+        keyboard.update();
+        smartDelay(50);
+      }
+      
+      appState = APP_JOIN_EXPLAIN;
+      ui.setState(STATE_JOIN_EXPLAIN);
+      ui.resetMenuSelection();
+      ui.update();
+    }
+    smartDelay(300);
+    return;
+  }
+  
+  // Only accept numeric input, max 8 digits
+  if (keyboard.hasInput()) {
+    String input = keyboard.getInput();
+    for (char c : input) {
+      if (c >= '0' && c <= '9' && ui.getInputText().length() < 8) {
         ui.addInputChar(c);
       }
     }

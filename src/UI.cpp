@@ -94,6 +94,21 @@ void UI::update() {
         case STATE_CREATE_VILLAGE:
             drawInputPrompt("Village name:");
             break;
+        case STATE_VILLAGE_CREATED:
+            drawVillageCreated();
+            break;
+        case STATE_INVITE_EXPLAIN:
+            drawInviteExplain();
+            break;
+        case STATE_INVITE_CODE_DISPLAY:
+            drawInviteCodeDisplay();
+            break;
+        case STATE_JOIN_EXPLAIN:
+            drawJoinExplain();
+            break;
+        case STATE_JOIN_CODE_INPUT:
+            drawJoinCodeInput();
+            break;
         case STATE_JOIN_VILLAGE_NAME:
             drawInputPrompt("Village to join:");
             break;
@@ -183,6 +198,21 @@ void UI::updatePartial() {
         case STATE_CREATE_VILLAGE:
             drawInputPrompt("Village name:");
             break;
+        case STATE_VILLAGE_CREATED:
+            drawVillageCreated();
+            break;
+        case STATE_INVITE_EXPLAIN:
+            drawInviteExplain();
+            break;
+        case STATE_INVITE_CODE_DISPLAY:
+            drawInviteCodeDisplay();
+            break;
+        case STATE_JOIN_EXPLAIN:
+            drawJoinExplain();
+            break;
+        case STATE_JOIN_CODE_INPUT:
+            drawJoinCodeInput();
+            break;
         case STATE_JOIN_VILLAGE_NAME:
             drawInputPrompt("Village to join:");
             break;
@@ -236,6 +266,11 @@ void UI::updateClean() {
         case STATE_OTA_CHECK:       drawOTACheck(); break;
         case STATE_OTA_UPDATE:      drawOTAUpdate(); break;
         case STATE_CREATE_VILLAGE:  drawInputPrompt("Village name:"); break;
+        case STATE_VILLAGE_CREATED:  drawVillageCreated(); break;
+        case STATE_INVITE_EXPLAIN:  drawInviteExplain(); break;
+        case STATE_INVITE_CODE_DISPLAY:  drawInviteCodeDisplay(); break;
+        case STATE_JOIN_EXPLAIN:  drawJoinExplain(); break;
+        case STATE_JOIN_CODE_INPUT:  drawJoinCodeInput(); break;
         case STATE_JOIN_VILLAGE_NAME: drawInputPrompt("Village to join:"); break;
         case STATE_JOIN_VILLAGE_PASSWORD: drawInputPrompt("Enter secret passphrase:"); break;
         case STATE_INPUT_PASSWORD:  drawInputPrompt("Village password:"); break;
@@ -274,6 +309,11 @@ void UI::updateFull() {
         case STATE_OTA_CHECK:       drawOTACheck(); break;
         case STATE_OTA_UPDATE:      drawOTAUpdate(); break;
         case STATE_CREATE_VILLAGE:  drawInputPrompt("Village name:"); break;
+        case STATE_VILLAGE_CREATED:  drawVillageCreated(); break;
+        case STATE_INVITE_EXPLAIN:  drawInviteExplain(); break;
+        case STATE_INVITE_CODE_DISPLAY:  drawInviteCodeDisplay(); break;
+        case STATE_JOIN_EXPLAIN:  drawJoinExplain(); break;
+        case STATE_JOIN_CODE_INPUT:  drawJoinCodeInput(); break;
         case STATE_JOIN_VILLAGE_NAME: drawInputPrompt("Village to join:"); break;
         case STATE_JOIN_VILLAGE_PASSWORD: drawInputPrompt("Enter secret passphrase:"); break;
         case STATE_INPUT_PASSWORD:  drawInputPrompt("Village password:"); break;
@@ -321,8 +361,8 @@ void UI::drawVillageSelect() {
     // Simplified main menu: 4 static items
     String menuItems[] = {
         "My Conversations",
-        "New Village",
-        "Join Village",
+        "New Conversation",
+        "Join Conversation",
         "Settings"
     };
     
@@ -1681,6 +1721,102 @@ void UI::drawSleeping() {
     display->print("Hold Tab 3s to sleep");
     display->setCursor(10, 95);
     display->print("Press reset to wake");
+}
+
+void UI::drawVillageCreated() {
+    drawMenuHeader("Conversation Created");
+    
+    String items[] = {"Invite a Friend", "Back"};
+    int y = 38;
+    int lineHeight = 20;
+    
+    for (int i = 0; i < 2; i++) {
+        drawMenuItem(items[i], y, i == menuSelection, lineHeight);
+        y += lineHeight;
+    }
+}
+
+void UI::drawInviteExplain() {
+    drawMenuHeader("Invite a Friend");
+    
+    display->setFont(&FreeSans9pt7b);
+    display->setCursor(10, 45);
+    display->print("Generate a code to");
+    display->setCursor(10, 65);
+    display->print("share with your friend.");
+    
+    display->setCursor(10, 90);
+    display->print("They'll have 5 minutes");
+    display->setCursor(10, 110);
+    display->print("to enter it.");
+    
+    String items[] = {"Generate A Code", "Cancel"};
+    int y = 128 - 20;
+    int lineHeight = 20;
+    
+    for (int i = 0; i < 2; i++) {
+        if (i == 0) y = 128 - 40;  // Position buttons at bottom
+        drawMenuItem(items[i], y, i == menuSelection, lineHeight);
+        y += lineHeight;
+    }
+}
+
+void UI::drawInviteCodeDisplay() {
+    drawMenuHeader("Share This Code");
+    
+    // Draw the 8-digit code in large font
+    display->setFont(&FreeSansBold12pt7b);
+    String code = getInviteCode();
+    int codeWidth = code.length() * 18;  // Approximate width
+    int codeX = (SCREEN_WIDTH - codeWidth) / 2;
+    display->setCursor(codeX, 60);
+    display->print(code);
+    
+    // Calculate remaining time
+    unsigned long remaining = (getInviteExpiry() - millis()) / 1000;
+    int minutes = remaining / 60;
+    int seconds = remaining % 60;
+    
+    // Draw countdown timer
+    display->setFont(&FreeSans9pt7b);
+    String timeStr = String(minutes) + ":" + (seconds < 10 ? "0" : "") + String(seconds);
+    int timeX = (SCREEN_WIDTH - timeStr.length() * 11) / 2;
+    display->setCursor(timeX, 85);
+    display->print(timeStr);
+    
+    // Draw instructions
+    display->setFont(&FreeSans9pt7b);
+    display->setCursor(10, 110);
+    display->print("Press any key to cancel");
+}
+
+void UI::drawJoinExplain() {
+    drawMenuHeader("Join Conversation");
+    
+    display->setFont(&FreeSans9pt7b);
+    display->setCursor(10, 45);
+    display->print("Ask your friend for");
+    display->setCursor(10, 65);
+    display->print("their invite code.");
+    
+    display->setCursor(10, 90);
+    display->print("You'll need to enter");
+    display->setCursor(10, 110);
+    display->print("it within 5 minutes.");
+    
+    String items[] = {"Enter a Code", "Cancel"};
+    int y = 128 - 20;
+    int lineHeight = 20;
+    
+    for (int i = 0; i < 2; i++) {
+        if (i == 0) y = 128 - 40;  // Position buttons at bottom
+        drawMenuItem(items[i], y, i == menuSelection, lineHeight);
+        y += lineHeight;
+    }
+}
+
+void UI::drawJoinCodeInput() {
+    drawInputPrompt("Enter 8-digit code:");
 }
 
 // Battery display
