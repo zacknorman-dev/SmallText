@@ -87,6 +87,7 @@ private:
     String connectedSSID;
     bool isWiFiConnected;
     int savedNetworkCount;  // Number of saved networks
+    bool isNetworkActive;   // Track if displayed network is currently connected
     
     // Callback to check if user is typing (defers display updates during typing)
     bool (*typingCheckCallback)();
@@ -192,6 +193,8 @@ public:
     void setConnectedSSID(const String& ssid) { connectedSSID = ssid; }  // For viewing saved network details
     void setSavedNetworkCount(int count) { savedNetworkCount = count; }
     int getSavedNetworkCount() const { return savedNetworkCount; }
+    void setNetworkActive(bool active) { isNetworkActive = active; }
+    bool getNetworkActive() const { return isNetworkActive; }
     
     // Display helpers
     void showMessage(const String& title, const String& message, int durationMs = 2000);

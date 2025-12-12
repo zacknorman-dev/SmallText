@@ -800,15 +800,33 @@ void UI::drawWiFiNetworkDetails() {
     y += 40;
     display->drawLine(5, y, SCREEN_WIDTH - 5, y, GxEPD_BLACK);
     
-    // Menu option: Forget Network
+    // Menu options
     y += 25;
-    if (menuSelection == 0) {
+    int menuItem = 0;
+    
+    // Show "Join Network" only if not currently connected
+    if (!isNetworkActive) {
+        if (menuSelection == menuItem) {
+            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, 18, GxEPD_BLACK);
+            display->setTextColor(GxEPD_WHITE);
+        }
+        display->setCursor(10, y);
+        display->print("Join Network");
+        if (menuSelection == menuItem) {
+            display->setTextColor(GxEPD_BLACK);
+        }
+        y += 20;
+        menuItem++;
+    }
+    
+    // Forget Network option
+    if (menuSelection == menuItem) {
         display->fillRect(5, y - 13, SCREEN_WIDTH - 10, 18, GxEPD_BLACK);
         display->setTextColor(GxEPD_WHITE);
     }
     display->setCursor(10, y);
     display->print("Forget Network");
-    if (menuSelection == 0) {
+    if (menuSelection == menuItem) {
         display->setTextColor(GxEPD_BLACK);
     }
     

@@ -1396,6 +1396,7 @@ void handleVillageMenu() {
       // Messages
       Serial.println("[App] Entering messaging. Messages in history: " + String(ui.getMessageCount()));
       keyboard.clearInput();  // Clear buffer to prevent typing detection freeze
+      ui.setInputText("");  // Clear any leftover text from other screens (WiFi details, etc.)
       appState = APP_MESSAGING;
       inMessagingScreen = true;  // Set flag - we're now viewing messages
       lastMessagingActivity = millis();  // Record activity time
@@ -1914,6 +1915,7 @@ void handleUsernameInput() {
       Serial.println("[App] ============================================");
       
       keyboard.clearInput();  // Clear buffer to prevent typing detection freeze
+      ui.setInputText("");  // Clear any leftover text from other screens (WiFi details, etc.)
       appState = APP_MESSAGING;
       inMessagingScreen = true;  // Set flag - we're now viewing messages
       lastMessagingActivity = millis();  // Record activity time
@@ -2539,6 +2541,7 @@ void handleWiFiSavedNetworks() {
       details += isConnected ? (String(wifiManager.getSignalStrength()) + " dBm") : "---";
       ui.setInputText(details);
       ui.setConnectedSSID(selectedSSID);
+      ui.setNetworkActive(isConnected);
       ui.updateClean();
     }
     
@@ -2755,20 +2758,59 @@ void handleWiFiNetworkDetails() {
     return;
   }
   
-  // RIGHT/ENTER to forget network
+  // UP/DOWN navigation
+  if (keyboard.isUpPressed()) {
+    ui.menuUp();
+    ui.updateClean();
+    smartDelay(200);
+    return;
+  } else if (keyboard.isDownPressed()) {
+    ui.menuDown();
+    ui.updateClean();
+    smartDelay(200);
+    return;
+  }
+  
+  // RIGHT/ENTER to select option
   if (keyboard.isRightPressed() || keyboard.isEnterPressed()) {
-    if (ui.getMenuSelection() == 0) {  // Forget Network option
-      // Use connectedSSID from UI (which is set in handleWiFiSavedNetworks for saved networks)
-      String ssidToForget = ui.getConnectedSSID();
-      Serial.println("[WiFi] Forgetting network: " + ssidToForget);
+    String ssid = ui.getConnectedSSID();
+    bool isActive = ui.getNetworkActive();
+    int selection = ui.getMenuSelection();
+    
+    // If network is not active, first menu item is "Join Network"
+    if (!isActive && selection == 0) {
+      // Join this network
+      Serial.println("[WiFi] Joining saved network: " + ssid);
+      
+      ui.showMessage("WiFi", "Connecting to\n" + ssid, 0);
+      smartDelay(500);
+      
+      bool success = wifiManager.connectToNetwork(ssid);
+      
+      if (success) {
+        ui.showMessage("WiFi", "Connected!", 2000);
+      } else {
+        ui.showMessage("WiFi", "Connection failed", 2000);
+      }
+      
+      keyboard.clearInput();
+      appState = APP_WIFI_SETUP_MENU;
+      ui.setState(STATE_WIFI_SETUP_MENU);
+      ui.resetMenuSelection();
+      smartDelay(2000);
+      ui.updateClean();
+    }
+    // Forget Network option (menu item 0 if active, 1 if not active)
+    else if ((isActive && selection == 0) || (!isActive && selection == 1)) {
+      Serial.println("[WiFi] Forgetting network: " + ssid);
       
       // Disconnect if it's the currently connected network
-      if (wifiManager.isConnected() && wifiManager.getConnectedSSID() == ssidToForget) {
+      if (wifiManager.isConnected() && wifiManager.getConnectedSSID() == ssid) {
         wifiManager.disconnect();
       }
       
       // Remove from saved networks
-      wifiManager.removeNetwork(ssidToForget);
+      wifiManager.removeNetwork(ssid);
       
       ui.showMessage("WiFi", "Network forgotten", 2000);
       
