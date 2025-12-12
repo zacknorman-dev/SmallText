@@ -51,7 +51,8 @@ enum AppState {
   APP_WIFI_SETUP_MENU,
   APP_WIFI_NETWORK_LIST,      // New: show scanned networks
   APP_WIFI_NETWORK_OPTIONS,   // New: connect/forget for selected network
-  APP_WIFI_NETWORK_DETAILS,   // New: show details of connected network
+  APP_WIFI_NETWORK_DETAILS,   // New: show details of connected/saved network
+  APP_WIFI_SAVED_NETWORKS,    // New: list all saved networks
   APP_WIFI_SSID_INPUT,
   APP_WIFI_PASSWORD_INPUT,
   APP_WIFI_CONNECTING,
@@ -398,6 +399,7 @@ void handleSettingsMenu();
 void handleRingtoneSelect();
 void handleWiFiSetupMenu();
 void handleWiFiNetworkList();
+void handleWiFiSavedNetworks();
 void handleWiFiNetworkOptions();
 void handleWiFiSSIDInput();
 void handleWiFiPasswordInput();
@@ -1176,6 +1178,9 @@ void loop() {
       break;
     case APP_WIFI_NETWORK_LIST:
       handleWiFiNetworkList();
+      break;
+    case APP_WIFI_SAVED_NETWORKS:
+      handleWiFiSavedNetworks();
       break;
     case APP_WIFI_NETWORK_OPTIONS:
       handleWiFiNetworkOptions();
@@ -2229,6 +2234,7 @@ void handleSettingsMenu() {
       } else {
         ui.setWiFiConnected(false, "");
       }
+      ui.setSavedNetworkCount(wifiManager.getSavedNetworkCount());
       
       appState = APP_WIFI_SETUP_MENU;
       ui.setState(STATE_WIFI_SETUP_MENU);
@@ -2336,25 +2342,58 @@ void handleWiFiSetupMenu() {
   
   if (keyboard.isRightPressed()) {
     int selection = ui.getMenuSelection();
-    bool isConnected = wifiManager.isConnected();
+    int savedCount = wifiManager.getSavedNetworkCount();
     
-    // If connected: item 0 = Network Details, item 1 = Scan Networks
-    // If not connected: item 0 = Scan Networks
+    // If we have saved networks: item 0 = Network Details or Saved Networks, item 1 = Scan Networks
+    // If no saved networks: item 0 = Scan Networks
     
-    if (isConnected && selection == 0) {
-      // Network Details
+    if (savedCount > 0 && selection == 0) {
       keyboard.clearInput();
-      appState = APP_WIFI_NETWORK_DETAILS;
-      ui.setState(STATE_WIFI_NETWORK_DETAILS);
       
-      // Format network details
-      String details = "IP Address\n";
-      details += wifiManager.getIPAddress() + "\n";
-      details += "Signal\n";
-      details += String(wifiManager.getSignalStrength()) + " dBm";
-      ui.setInputText(details);
-      ui.updateClean();
-    } else if ((isConnected && selection == 1) || (!isConnected && selection == 0)) {
+      if (savedCount == 1) {
+        // Single saved network - go directly to Network Details
+        appState = APP_WIFI_NETWORK_DETAILS;
+        ui.setState(STATE_WIFI_NETWORK_DETAILS);
+        
+        // Get the saved network
+        auto savedNets = wifiManager.getSavedNetworks();
+        String savedSSID = savedNets[0].ssid;
+        bool isConnected = wifiManager.isConnected() && wifiManager.getConnectedSSID() == savedSSID;
+        
+        // Format network details
+        String details = "IP Address\n";
+        details += isConnected ? wifiManager.getIPAddress() : "---\n";
+        details += "Signal\n";
+        details += isConnected ? (String(wifiManager.getSignalStrength()) + " dBm") : "---";
+        ui.setInputText(details);
+        ui.setConnectedSSID(savedSSID);
+        ui.updateClean();
+      } else {
+        // Multiple saved networks - show list
+        appState = APP_WIFI_SAVED_NETWORKS;
+        ui.setState(STATE_WIFI_SAVED_NETWORKS);
+        
+        // Build network list for UI
+        auto savedNets = wifiManager.getSavedNetworks();
+        std::vector<String> ssids;
+        std::vector<int> rssis;
+        std::vector<bool> encrypted;
+        std::vector<bool> saved;
+        
+        for (const auto& net : savedNets) {
+          ssids.push_back(net.ssid);
+          // Check if this network is currently connected
+          bool isConnected = wifiManager.isConnected() && wifiManager.getConnectedSSID() == net.ssid;
+          rssis.push_back(isConnected ? wifiManager.getSignalStrength() : -999);  // -999 = inactive
+          encrypted.push_back(true);  // All saved networks have passwords
+          saved.push_back(true);
+        }
+        
+        ui.setNetworkList(ssids, rssis, encrypted, saved);
+        ui.resetMenuSelection();
+        ui.updateClean();
+      }
+    } else if ((savedCount > 0 && selection == 1) || (savedCount == 0 && selection == 0)) {
       // Scan for networks
       Serial.println("[WiFi] Scanning for networks...");
       ui.showMessage("WiFi", "Scanning...", 1000);
@@ -2445,6 +2484,55 @@ void handleWiFiNetworkList() {
         ui.setInputText("");
         ui.update();
       }
+    }
+    
+    smartDelay(300);
+  }
+}
+
+void handleWiFiSavedNetworks() {
+  if (keyboard.isUpPressed()) {
+    ui.menuUp();
+    ui.updateClean();
+    smartDelay(200);
+  } else if (keyboard.isDownPressed()) {
+    ui.menuDown();
+    ui.updateClean();
+    smartDelay(200);
+  }
+  
+  // Left arrow to go back to WiFi menu
+  if (keyboard.isLeftPressed()) {
+    keyboard.clearInput();
+    appState = APP_WIFI_SETUP_MENU;
+    ui.setState(STATE_WIFI_SETUP_MENU);
+    ui.resetMenuSelection();
+    ui.updateClean();
+    smartDelay(300);
+    return;
+  }
+  
+  // Right arrow to view network details
+  if (keyboard.isRightPressed()) {
+    int selection = ui.getMenuSelection();
+    String selectedSSID = ui.getNetworkSSID(selection);
+    
+    if (selectedSSID.length() > 0) {
+      keyboard.clearInput();
+      appState = APP_WIFI_NETWORK_DETAILS;
+      ui.setState(STATE_WIFI_NETWORK_DETAILS);
+      
+      // Check if this network is currently connected
+      bool isConnected = wifiManager.isConnected() && selectedSSID == wifiManager.getConnectedSSID();
+      
+      // Format network details
+      String details = "IP Address\n";
+      details += isConnected ? wifiManager.getIPAddress() : "---\n";
+      details += "Signal\n";
+      details += isConnected ? (String(wifiManager.getSignalStrength()) + " dBm") : "---";
+      ui.setInputText(details);
+      ui.setConnectedSSID(selectedSSID);
+      ui.updateClean();
     }
     
     smartDelay(300);
@@ -2585,6 +2673,21 @@ void handleWiFiPasswordInput() {
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     tempWiFiPassword = ui.getInputText();
     if (tempWiFiPassword.length() > 0) {
+      // Check if network limit is reached (only for new networks)
+      if (!wifiManager.hasNetwork(tempWiFiSSID) && wifiManager.getSavedNetworkCount() >= 10) {
+        // Show warning message
+        ui.showMessage("WiFi", "Max networks reached\nForget a network first", 3000);
+        smartDelay(3000);
+        
+        // Go back to network list
+        keyboard.clearInput();
+        appState = APP_WIFI_NETWORK_LIST;
+        ui.setState(STATE_WIFI_NETWORK_LIST);
+        ui.resetMenuSelection();
+        ui.updateClean();
+        return;
+      }
+      
       // Show connecting message
       ui.showMessage("WiFi", "Connecting...", 1000);
       
@@ -2648,12 +2751,17 @@ void handleWiFiNetworkDetails() {
   // RIGHT/ENTER to forget network
   if (keyboard.isRightPressed() || keyboard.isEnterPressed()) {
     if (ui.getMenuSelection() == 0) {  // Forget Network option
-      String currentSSID = wifiManager.getConnectedSSID();
-      Serial.println("[WiFi] Forgetting network: " + currentSSID);
+      // Use connectedSSID from UI (which is set in handleWiFiSavedNetworks for saved networks)
+      String ssidToForget = ui.getConnectedSSID();
+      Serial.println("[WiFi] Forgetting network: " + ssidToForget);
       
-      // Disconnect and forget
-      wifiManager.disconnect();
-      wifiManager.removeNetwork(currentSSID);
+      // Disconnect if it's the currently connected network
+      if (wifiManager.isConnected() && wifiManager.getConnectedSSID() == ssidToForget) {
+        wifiManager.disconnect();
+      }
+      
+      // Remove from saved networks
+      wifiManager.removeNetwork(ssidToForget);
       
       ui.showMessage("WiFi", "Network forgotten", 2000);
       

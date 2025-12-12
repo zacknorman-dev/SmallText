@@ -21,6 +21,8 @@ UI::UI() {
     batteryPercent = 0;
     ringtoneEnabled = true;  // Default to on
     ringtoneName = "Rising Tone";  // Default ringtone name
+    savedNetworkCount = 0;  // No saved networks initially
+    isWiFiConnected = false;
 }
 
 bool UI::begin(int8_t sck, int8_t miso, int8_t mosi, int8_t cs, int8_t dc, int8_t rst, int8_t busy) {
@@ -154,6 +156,9 @@ void UI::updatePartial() {
         case STATE_WIFI_SETUP_MENU:
             drawWiFiSetupMenu();
             break;
+        case STATE_WIFI_SAVED_NETWORKS:
+            drawWiFiSavedNetworks();
+            break;
         case STATE_WIFI_NETWORK_DETAILS:
             drawWiFiNetworkDetails();
             break;
@@ -222,6 +227,7 @@ void UI::updateClean() {
         case STATE_RINGTONE_SELECT: drawRingtoneSelect(); break;
         case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
         case STATE_WIFI_NETWORK_LIST: drawWiFiNetworkList(); break;
+        case STATE_WIFI_SAVED_NETWORKS: drawWiFiSavedNetworks(); break;
         case STATE_WIFI_NETWORK_OPTIONS: drawWiFiNetworkOptions(); break;
         case STATE_WIFI_NETWORK_DETAILS: drawWiFiNetworkDetails(); break;
         case STATE_WIFI_SSID_INPUT: drawWiFiSSIDInput(); break;
@@ -259,6 +265,7 @@ void UI::updateFull() {
         case STATE_RINGTONE_SELECT: drawRingtoneSelect(); break;
         case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
         case STATE_WIFI_NETWORK_LIST: drawWiFiNetworkList(); break;
+        case STATE_WIFI_SAVED_NETWORKS: drawWiFiSavedNetworks(); break;
         case STATE_WIFI_NETWORK_OPTIONS: drawWiFiNetworkOptions(); break;
         case STATE_WIFI_NETWORK_DETAILS: drawWiFiNetworkDetails(); break;
         case STATE_WIFI_SSID_INPUT: drawWiFiSSIDInput(); break;
@@ -514,8 +521,9 @@ void UI::drawWiFiSetupMenu() {
     int item = 0;
     int scrollOffset = 0;
     
-    // Menu items depend on connection status
-    int totalItems = isWiFiConnected ? 2 : 1;  // Connected: 2 items, Not connected: 1 item
+    // savedNetworkCount is set by main.cpp via UI methods
+    // Menu items depend on saved network count
+    int totalItems = (savedNetworkCount > 0) ? 2 : 1;
     const int maxVisibleItems = 5;
     
     // Calculate scroll offset
@@ -523,10 +531,12 @@ void UI::drawWiFiSetupMenu() {
         scrollOffset = menuSelection - maxVisibleItems + 1;
     }
     
-    // If connected, show "Network Details" as first item
-    if (isWiFiConnected) {
+    // If we have saved networks, show appropriate menu item
+    if (savedNetworkCount > 0) {
         if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-            drawMenuItem("Network Details", y, menuSelection == item, lineHeight);
+            // Show "Network Details" if 1 network, "Saved Networks" if 2+
+            String menuText = (savedNetworkCount == 1) ? "Network Details" : "Saved Networks";
+            drawMenuItem(menuText, y, menuSelection == item, lineHeight);
             y += lineHeight;
         }
         item++;
@@ -665,6 +675,100 @@ void UI::drawWiFiNetworkOptions() {
         // Enter password option
         display->setCursor(10, y);
         display->print("Enter Password");
+    }
+}
+
+void UI::drawWiFiSavedNetworks() {
+    drawMenuHeader("Saved Networks");
+    
+    int y = 35;
+    int lineHeight = 18;
+    int item = 0;
+    int scrollOffset = 0;
+    
+    // Count total items
+    int totalItems = networkSSIDs.size();
+    
+    // Calculate scroll offset if selection is beyond visible area
+    const int maxVisibleItems = 5;
+    if (menuSelection >= maxVisibleItems) {
+        scrollOffset = menuSelection - maxVisibleItems + 1;
+    }
+    
+    if (totalItems == 0) {
+        display->setCursor(10, 60);
+        display->print("No saved networks");
+        display->setCursor(10, 85);
+        display->print("Press LEFT to go back");
+        return;
+    }
+    
+    // Draw visible network items
+    for (int i = 0; i < totalItems; i++) {
+        if (i >= scrollOffset && y <= SCREEN_HEIGHT - 20 && item < totalItems) {
+            String ssid = networkSSIDs[i];
+            if (ssid.length() > 22) ssid = ssid.substring(0, 22);
+            
+            // Highlight selected item
+            if (menuSelection == item) {
+                display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+                display->setTextColor(GxEPD_WHITE);
+            }
+            
+            display->setCursor(10, y);
+            display->print(ssid);
+            
+            // Check if this network is active (RSSI != -999)
+            if (i < networkRSSIs.size()) {
+                int rssi = networkRSSIs[i];
+                
+                if (rssi != -999) {
+                    // Active network - show signal strength
+                    int signalX = SCREEN_WIDTH - 50;
+                    int bars = 0;
+                    if (rssi >= -50) bars = 4;
+                    else if (rssi >= -60) bars = 3;
+                    else if (rssi >= -70) bars = 2;
+                    else if (rssi >= -80) bars = 1;
+                    
+                    // Draw signal bars
+                    for (int b = 0; b < bars; b++) {
+                        int barHeight = 3 + (b * 2);
+                        int barX = signalX + (b * 3);
+                        int barY = y - barHeight;
+                        display->fillRect(barX, barY, 2, barHeight, 
+                                        menuSelection == item ? GxEPD_WHITE : GxEPD_BLACK);
+                    }
+                } else {
+                    // Inactive network - show "---"
+                    display->setCursor(SCREEN_WIDTH - 35, y);
+                    display->print("---");
+                }
+            }
+            
+            if (menuSelection == item) {
+                display->setTextColor(GxEPD_BLACK);
+            }
+            
+            y += lineHeight;
+        }
+        item++;
+    }
+    
+    // Draw down-arrow if there are more items below the visible area
+    int lastVisibleItem = scrollOffset + maxVisibleItems - 1;
+    if (totalItems > maxVisibleItems && lastVisibleItem < totalItems - 1) {
+        int arrowX = 10;
+        int arrowY = SCREEN_HEIGHT - 15;
+        int arrowWidth = 10;
+        int arrowHeight = 10;
+        
+        display->fillTriangle(
+            arrowX, arrowY,
+            arrowX + arrowWidth, arrowY,
+            arrowX + arrowWidth/2, arrowY + arrowHeight,
+            GxEPD_BLACK
+        );
     }
 }
 
@@ -1286,11 +1390,12 @@ void UI::menuDown() {
             maxItems = 3;
             break;
         case STATE_WIFI_SETUP_MENU:
-            // If connected: Network Details, Scan Networks (0-1)
-            // If not connected: Scan Networks only (0)
-            maxItems = isWiFiConnected ? 1 : 0;
+            // If we have saved networks: Network Details/Saved Networks, Scan Networks (0-1)
+            // If no saved networks: Scan Networks only (0)
+            maxItems = savedNetworkCount > 0 ? 1 : 0;
             break;
         case STATE_WIFI_NETWORK_LIST:
+        case STATE_WIFI_SAVED_NETWORKS:
             // Use network count from the stored list
             maxItems = networkSSIDs.size() > 0 ? networkSSIDs.size() - 1 : 0;
             break;

@@ -26,7 +26,8 @@ enum UIState {
     STATE_WIFI_SETUP_MENU,
     STATE_WIFI_NETWORK_LIST,      // New: show scanned networks
     STATE_WIFI_NETWORK_OPTIONS,   // New: connect/forget menu
-    STATE_WIFI_NETWORK_DETAILS,   // New: show details of connected network
+    STATE_WIFI_NETWORK_DETAILS,   // New: show details of connected/saved network
+    STATE_WIFI_SAVED_NETWORKS,    // New: list all saved networks
     STATE_WIFI_SSID_INPUT,
     STATE_WIFI_PASSWORD_INPUT,
     STATE_WIFI_STATUS,
@@ -85,6 +86,7 @@ private:
     // WiFi connection status
     String connectedSSID;
     bool isWiFiConnected;
+    int savedNetworkCount;  // Number of saved networks
     
     // Callback to check if user is typing (defers display updates during typing)
     bool (*typingCheckCallback)();
@@ -103,6 +105,7 @@ private:
     void drawWiFiNetworkList();
     void drawWiFiNetworkOptions();
     void drawWiFiNetworkDetails();
+    void drawWiFiSavedNetworks();
     void drawWiFiSSIDInput();
     void drawWiFiPasswordInput();
     void drawWiFiStatus();
@@ -186,6 +189,9 @@ public:
     void setWiFiConnected(bool connected, const String& ssid = "") { isWiFiConnected = connected; connectedSSID = ssid; }
     bool getWiFiConnected() const { return isWiFiConnected; }
     String getConnectedSSID() const { return connectedSSID; }
+    void setConnectedSSID(const String& ssid) { connectedSSID = ssid; }  // For viewing saved network details
+    void setSavedNetworkCount(int count) { savedNetworkCount = count; }
+    int getSavedNetworkCount() const { return savedNetworkCount; }
     
     // Display helpers
     void showMessage(const String& title, const String& message, int durationMs = 2000);
