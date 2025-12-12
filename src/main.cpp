@@ -48,6 +48,8 @@ enum AppState {
   APP_SETTINGS_MENU,
   APP_RINGTONE_SELECT,
   APP_WIFI_SETUP_MENU,
+  APP_WIFI_NETWORK_LIST,      // New: show scanned networks
+  APP_WIFI_NETWORK_OPTIONS,   // New: connect/forget for selected network
   APP_WIFI_SSID_INPUT,
   APP_WIFI_PASSWORD_INPUT,
   APP_WIFI_CONNECTING,
@@ -358,6 +360,8 @@ void handleMainMenu();
 void handleSettingsMenu();
 void handleRingtoneSelect();
 void handleWiFiSetupMenu();
+void handleWiFiNetworkList();
+void handleWiFiNetworkOptions();
 void handleWiFiSSIDInput();
 void handleWiFiPasswordInput();
 void handleWiFiConnecting();
@@ -1128,6 +1132,12 @@ void loop() {
       break;
     case APP_WIFI_SETUP_MENU:
       handleWiFiSetupMenu();
+      break;
+    case APP_WIFI_NETWORK_LIST:
+      handleWiFiNetworkList();
+      break;
+    case APP_WIFI_NETWORK_OPTIONS:
+      handleWiFiNetworkOptions();
       break;
     case APP_WIFI_SSID_INPUT:
       handleWiFiSSIDInput();
@@ -2234,12 +2244,32 @@ void handleWiFiSetupMenu() {
     int selection = ui.getMenuSelection();
     
     if (selection == 0) {
-      // Configure WiFi
+      // Scan for networks
+      Serial.println("[WiFi] Scanning for networks...");
+      ui.showMessage("WiFi", "Scanning...", 1000);
+      
+      auto networks = wifiManager.scanNetworks();
+      
+      // Convert to vectors for UI
+      std::vector<String> ssids;
+      std::vector<int> rssis;
+      std::vector<bool> encrypted;
+      std::vector<bool> saved;
+      
+      for (const auto& net : networks) {
+        ssids.push_back(net.ssid);
+        rssis.push_back(net.rssi);
+        encrypted.push_back(net.encrypted);
+        saved.push_back(net.saved);
+      }
+      
+      ui.setNetworkList(ssids, rssis, encrypted, saved);
+      
       keyboard.clearInput();
-      appState = APP_WIFI_SSID_INPUT;
-      ui.setState(STATE_WIFI_SSID_INPUT);
-      ui.setInputText("");
-      ui.update();
+      appState = APP_WIFI_NETWORK_LIST;
+      ui.setState(STATE_WIFI_NETWORK_LIST);
+      ui.resetMenuSelection();
+      ui.updateClean();
     } else if (selection == 1) {
       // Check Connection
       keyboard.clearInput();
@@ -2249,6 +2279,7 @@ void handleWiFiSetupMenu() {
       // Format status info
       String status = wifiManager.getStatusString() + "\n";
       if (wifiManager.isConnected()) {
+        status += wifiManager.getConnectedSSID() + "\n";
         status += wifiManager.getIPAddress() + "\n";
         status += String(wifiManager.getSignalStrength()) + " dBm";
       } else {
@@ -2258,6 +2289,131 @@ void handleWiFiSetupMenu() {
       ui.update();
     }
     
+    smartDelay(300);
+  }
+}
+
+void handleWiFiNetworkList() {
+  if (keyboard.isUpPressed()) {
+    ui.menuUp();
+    ui.updatePartial();
+    smartDelay(200);
+  } else if (keyboard.isDownPressed()) {
+    ui.menuDown();
+    ui.updatePartial();
+    smartDelay(200);
+  }
+  
+  // Left arrow to rescan
+  if (keyboard.isLeftPressed()) {
+    Serial.println("[WiFi] Rescanning...");
+    ui.showMessage("WiFi", "Scanning...", 1000);
+    
+    auto networks = wifiManager.scanNetworks();
+    
+    std::vector<String> ssids;
+    std::vector<int> rssis;
+    std::vector<bool> encrypted;
+    std::vector<bool> saved;
+    
+    for (const auto& net : networks) {
+      ssids.push_back(net.ssid);
+      rssis.push_back(net.rssi);
+      encrypted.push_back(net.encrypted);
+      saved.push_back(net.saved);
+    }
+    
+    ui.setNetworkList(ssids, rssis, encrypted, saved);
+    ui.resetMenuSelection();
+    ui.updateClean();
+    smartDelay(300);
+    return;
+  }
+  
+  // RIGHT/ENTER to select network
+  if (keyboard.isRightPressed() || keyboard.isEnterPressed()) {
+    int selection = ui.getMenuSelection();
+    String selectedSSID = ui.getNetworkSSID(selection);
+    
+    if (selectedSSID.length() > 0) {
+      tempWiFiSSID = selectedSSID;
+      
+      // Check if network is already saved
+      if (wifiManager.hasNetwork(selectedSSID)) {
+        // Show connect/forget options
+        keyboard.clearInput();
+        appState = APP_WIFI_NETWORK_OPTIONS;
+        ui.setState(STATE_WIFI_NETWORK_OPTIONS);
+        ui.updateClean();
+      } else {
+        // New network - go to password input
+        keyboard.clearInput();
+        appState = APP_WIFI_PASSWORD_INPUT;
+        ui.setState(STATE_WIFI_PASSWORD_INPUT);
+        ui.setInputText("");
+        ui.update();
+      }
+    }
+    
+    smartDelay(300);
+  }
+}
+
+void handleWiFiNetworkOptions() {
+  // LEFT to go back
+  if (keyboard.isLeftPressed()) {
+    keyboard.clearInput();
+    appState = APP_WIFI_NETWORK_LIST;
+    ui.setState(STATE_WIFI_NETWORK_LIST);
+    ui.updateClean();
+    smartDelay(300);
+    return;
+  }
+  
+  // Show simple menu - just text for now
+  if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
+    // For saved networks: option 0 = connect, option 1 = forget
+    // Simplified: ENTER to connect, BACKSPACE to forget
+  }
+  
+  // ENTER/RIGHT to connect
+  if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
+    Serial.println("[WiFi] Connecting to: " + tempWiFiSSID);
+    ui.showMessage("WiFi", "Connecting...", 1000);
+    
+    if (wifiManager.connectToNetwork(tempWiFiSSID)) {
+      logger.info("WiFi connected: " + tempWiFiSSID);
+      ui.showMessage("WiFi", "Connected!", 2000);
+      
+      // Reconnect MQTT if needed
+      if (!mqttMessenger.isConnected()) {
+        mqttMessenger.begin();
+      }
+    } else {
+      ui.showMessage("WiFi", "Connection failed", 2000);
+    }
+    
+    keyboard.clearInput();
+    appState = APP_WIFI_SETUP_MENU;
+    ui.setState(STATE_WIFI_SETUP_MENU);
+    ui.resetMenuSelection();
+    ui.updateClean();
+    smartDelay(300);
+    return;
+  }
+  
+  // BACKSPACE to forget network
+  if (keyboard.isBackspacePressed()) {
+    Serial.println("[WiFi] Forgetting network: " + tempWiFiSSID);
+    wifiManager.removeNetwork(tempWiFiSSID);
+    logger.info("WiFi network forgotten: " + tempWiFiSSID);
+    ui.showMessage("WiFi", "Network forgotten", 1500);
+    
+    keyboard.clearInput();
+    appState = APP_WIFI_NETWORK_LIST;
+    ui.setState(STATE_WIFI_NETWORK_LIST);
+    ui.resetMenuSelection();
+    ui.updateClean();
     smartDelay(300);
   }
 }
@@ -2337,31 +2493,31 @@ void handleWiFiPasswordInput() {
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     tempWiFiPassword = ui.getInputText();
     if (tempWiFiPassword.length() > 0) {
-      // Save credentials
-      wifiManager.saveCredentials(tempWiFiSSID, tempWiFiPassword);
-      
-      // Go to connecting state
-      keyboard.clearInput();
-      appState = APP_WIFI_CONNECTING;
-      ui.setState(STATE_WIFI_STATUS);
-      ui.setInputText("Connecting to\n" + tempWiFiSSID + "...");
-      ui.update();
+      // Show connecting message
+      ui.showMessage("WiFi", "Connecting...", 1000);
       
       // Attempt connection
       if (wifiManager.connectWithCredentials(tempWiFiSSID, tempWiFiPassword)) {
-        String status = "Connected!\n";
-        status += wifiManager.getIPAddress() + "\n";
-        status += String(wifiManager.getSignalStrength()) + " dBm";
-        ui.setInputText(status);
-        logger.info("WiFi connected: " + wifiManager.getIPAddress());
+        // Save network only after successful connection
+        wifiManager.saveNetwork(tempWiFiSSID, tempWiFiPassword);
+        logger.info("WiFi connected and saved: " + tempWiFiSSID);
+        ui.showMessage("WiFi", "Connected!", 2000);
+        
+        // Reconnect MQTT if needed
+        if (!mqttMessenger.isConnected()) {
+          mqttMessenger.begin();
+        }
       } else {
-        ui.setInputText("Connection Failed\nCheck credentials");
+        ui.showMessage("WiFi", "Connection failed", 2000);
         logger.error("WiFi connection failed");
       }
-      ui.update();
       
-      // Wait for user acknowledgment
-      appState = APP_WIFI_STATUS;
+      // Go back to network list
+      keyboard.clearInput();
+      appState = APP_WIFI_NETWORK_LIST;
+      ui.setState(STATE_WIFI_NETWORK_LIST);
+      ui.resetMenuSelection();
+      ui.updateClean();
     }
     smartDelay(300);
     return;

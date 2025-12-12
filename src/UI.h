@@ -23,6 +23,8 @@ enum UIState {
     STATE_SETTINGS_MENU,
     STATE_RINGTONE_SELECT,
     STATE_WIFI_SETUP_MENU,
+    STATE_WIFI_NETWORK_LIST,      // New: show scanned networks
+    STATE_WIFI_NETWORK_OPTIONS,   // New: connect/forget menu
     STATE_WIFI_SSID_INPUT,
     STATE_WIFI_PASSWORD_INPUT,
     STATE_WIFI_STATUS,
@@ -72,6 +74,12 @@ private:
     bool ringtoneEnabled;  // Ringtone on/off setting
     String ringtoneName;   // Current ringtone name
     
+    // WiFi network list storage
+    std::vector<String> networkSSIDs;
+    std::vector<int> networkRSSIs;
+    std::vector<bool> networkEncrypted;
+    std::vector<bool> networkSaved;
+    
     // Callback to check if user is typing (defers display updates during typing)
     bool (*typingCheckCallback)();
     
@@ -81,6 +89,8 @@ private:
     void drawSettingsMenu();
     void drawRingtoneSelect();
     void drawWiFiSetupMenu();
+    void drawWiFiNetworkList();
+    void drawWiFiNetworkOptions();
     void drawWiFiSSIDInput();
     void drawWiFiPasswordInput();
     void drawWiFiStatus();
@@ -153,6 +163,12 @@ public:
     bool getRingtoneEnabled() const { return ringtoneEnabled; }
     void setRingtoneName(const String& name) { ringtoneName = name; }
     String getRingtoneName() const { return ringtoneName; }
+    
+    // WiFi network list
+    void setNetworkList(const std::vector<String>& ssids, const std::vector<int>& rssis, 
+                        const std::vector<bool>& encrypted, const std::vector<bool>& saved);
+    int getNetworkCount() const { return networkSSIDs.size(); }
+    String getNetworkSSID(int index) const { return (index >= 0 && index < networkSSIDs.size()) ? networkSSIDs[index] : ""; }
     
     // Display helpers
     void showMessage(const String& title, const String& message, int durationMs = 2000);

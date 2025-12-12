@@ -1,5 +1,14 @@
 # SmolTxt Release Script
-# Usage: .\release.ps1 -Version "0.40.5" -Message "Description of changes"
+# 
+# USAGE:
+#   If execution policy blocks you, run:
+#   powershell -ExecutionPolicy Bypass -File .\release.ps1 -Version "0.42.5" -Message "Your changes"
+#
+# EXPLANATION:
+#   -ExecutionPolicy Bypass  = Temporarily disable script execution restrictions (only for this command)
+#   -File                    = Execute the specified script file
+#   -Version                 = Version number without 'v' prefix (e.g., "0.42.5")
+#   -Message                 = Release description
 
 param(
     [Parameter(Mandatory=$true)]

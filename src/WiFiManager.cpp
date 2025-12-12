@@ -20,48 +20,250 @@ bool WiFiManager::begin() {
         return false;
     }
     
-    Serial.println("[WiFi] WiFiManager initialized");
+    // Load saved networks from preferences
+    loadSavedNetworks();
+    
+    Serial.println("[WiFi] WiFiManager initialized with " + String(savedNetworks.size()) + " saved networks");
     return true;
 }
 
-bool WiFiManager::hasCredentials() {
-    String ssid = prefs.getString("ssid", "");
-    return ssid.length() > 0;
+// Load saved networks from Preferences
+void WiFiManager::loadSavedNetworks() {
+    savedNetworks.clear();
+    
+    int count = prefs.getInt("count", 0);
+    Serial.println("[WiFi] Loading " + String(count) + " saved networks");
+    
+    for (int i = 0; i < count && i < MAX_SAVED_NETWORKS; i++) {
+        String ssidKey = "ssid" + String(i);
+        String passKey = "pass" + String(i);
+        
+        String ssid = prefs.getString(ssidKey.c_str(), "");
+        String password = prefs.getString(passKey.c_str(), "");
+        
+        if (ssid.length() > 0) {
+            SavedNetwork net;
+            net.ssid = ssid;
+            net.password = password;
+            savedNetworks.push_back(net);
+            Serial.println("[WiFi]   - " + ssid);
+        }
+    }
 }
 
-bool WiFiManager::saveCredentials(const String& ssid, const String& password) {
+// Save all networks to Preferences
+void WiFiManager::saveSavedNetworks() {
+    // Clear old entries first
+    prefs.clear();
+    
+    int count = min((int)savedNetworks.size(), MAX_SAVED_NETWORKS);
+    prefs.putInt("count", count);
+    
+    Serial.println("[WiFi] Saving " + String(count) + " networks");
+    
+    for (int i = 0; i < count; i++) {
+        String ssidKey = "ssid" + String(i);
+        String passKey = "pass" + String(i);
+        
+        prefs.putString(ssidKey.c_str(), savedNetworks[i].ssid);
+        prefs.putString(passKey.c_str(), savedNetworks[i].password);
+        Serial.println("[WiFi]   - " + savedNetworks[i].ssid);
+    }
+}
+
+// Save a network (add to list or update existing)
+bool WiFiManager::saveNetwork(const String& ssid, const String& password) {
     if (ssid.length() == 0) {
         Serial.println("[WiFi] Cannot save empty SSID");
         return false;
     }
     
-    prefs.putString("ssid", ssid);
-    prefs.putString("password", password);
+    // Check if network already exists - update it
+    for (auto& net : savedNetworks) {
+        if (net.ssid == ssid) {
+            net.password = password;
+            Serial.println("[WiFi] Updated network: " + ssid);
+            saveSavedNetworks();
+            return true;
+        }
+    }
     
-    Serial.println("[WiFi] Credentials saved for SSID: " + ssid);
+    // Add new network
+    if (savedNetworks.size() >= MAX_SAVED_NETWORKS) {
+        Serial.println("[WiFi] Maximum networks reached (" + String(MAX_SAVED_NETWORKS) + ")");
+        return false;
+    }
+    
+    SavedNetwork net;
+    net.ssid = ssid;
+    net.password = password;
+    savedNetworks.push_back(net);
+    
+    Serial.println("[WiFi] Saved new network: " + ssid);
+    saveSavedNetworks();
     return true;
 }
 
+// Remove a network from saved list
+bool WiFiManager::removeNetwork(const String& ssid) {
+    for (auto it = savedNetworks.begin(); it != savedNetworks.end(); ++it) {
+        if (it->ssid == ssid) {
+            Serial.println("[WiFi] Removing network: " + ssid);
+            savedNetworks.erase(it);
+            saveSavedNetworks();
+            return true;
+        }
+    }
+    
+    Serial.println("[WiFi] Network not found: " + ssid);
+    return false;
+}
+
+// Check if a specific network is saved
+bool WiFiManager::hasNetwork(const String& ssid) {
+    for (const auto& net : savedNetworks) {
+        if (net.ssid == ssid) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Get all saved networks
+std::vector<SavedNetwork> WiFiManager::getSavedNetworks() {
+    return savedNetworks;
+}
+
+// Get count of saved networks
+int WiFiManager::getSavedNetworkCount() {
+    return savedNetworks.size();
+}
+
+// Scan for available WiFi networks
+std::vector<ScannedNetwork> WiFiManager::scanNetworks() {
+    scannedNetworks.clear();
+    
+    Serial.println("[WiFi] Scanning for networks...");
+    int n = WiFi.scanNetworks();
+    
+    if (n == 0) {
+        Serial.println("[WiFi] No networks found");
+        return scannedNetworks;
+    }
+    
+    Serial.println("[WiFi] Found " + String(n) + " networks:");
+    
+    for (int i = 0; i < n; i++) {
+        ScannedNetwork net;
+        net.ssid = WiFi.SSID(i);
+        net.rssi = WiFi.RSSI(i);
+        net.encrypted = (WiFi.encryptionType(i) != WIFI_AUTH_OPEN);
+        net.saved = hasNetwork(net.ssid);
+        
+        scannedNetworks.push_back(net);
+        
+        Serial.print("[WiFi]   ");
+        Serial.print(i + 1);
+        Serial.print(": ");
+        Serial.print(net.ssid);
+        Serial.print(" (");
+        Serial.print(net.rssi);
+        Serial.print(" dBm) ");
+        Serial.print(net.encrypted ? "[Secured]" : "[Open]");
+        Serial.println(net.saved ? " [Saved]" : "");
+    }
+    
+    return scannedNetworks;
+}
+
+int WiFiManager::getScannedNetworkCount() {
+    return scannedNetworks.size();
+}
+
+// Legacy methods for backward compatibility
+bool WiFiManager::hasCredentials() {
+    return savedNetworks.size() > 0;
+}
+
+bool WiFiManager::saveCredentials(const String& ssid, const String& password) {
+    return saveNetwork(ssid, password);
+}
+
 void WiFiManager::clearCredentials() {
-    prefs.clear();
-    Serial.println("[WiFi] Credentials cleared");
+    savedNetworks.clear();
+    saveSavedNetworks();
+    Serial.println("[WiFi] All credentials cleared");
 }
 
 String WiFiManager::getSavedSSID() {
-    return prefs.getString("ssid", "");
+    if (savedNetworks.size() > 0) {
+        return savedNetworks[0].ssid;
+    }
+    return "";
 }
 
+// Save/retrieve last successfully connected SSID
+void WiFiManager::saveLastConnectedSSID(const String& ssid) {
+    prefs.putString("last", ssid);
+}
+
+String WiFiManager::getLastConnectedSSID() {
+    return prefs.getString("last", "");
+}
+
+// Waterfall connection: try last successful, then all saved networks
 bool WiFiManager::connect() {
-    String ssid = prefs.getString("ssid", "");
-    String password = prefs.getString("password", "");
-    
-    if (ssid.length() == 0) {
-        Serial.println("[WiFi] No saved credentials");
+    if (savedNetworks.size() == 0) {
+        Serial.println("[WiFi] No saved networks");
         state = WIFI_FAILED;
         return false;
     }
     
-    return connectWithCredentials(ssid, password);
+    // Try last successful network first for faster reconnect
+    String lastSSID = getLastConnectedSSID();
+    if (lastSSID.length() > 0) {
+        Serial.println("[WiFi] Trying last connected network: " + lastSSID);
+        if (connectToNetwork(lastSSID)) {
+            return true;
+        }
+    }
+    
+    // Try all saved networks in order
+    Serial.println("[WiFi] Waterfall connecting through " + String(savedNetworks.size()) + " saved networks");
+    
+    for (const auto& net : savedNetworks) {
+        if (net.ssid == lastSSID) continue;  // Already tried this one
+        
+        Serial.println("[WiFi] Trying: " + net.ssid);
+        if (connectToSavedNetwork(net)) {
+            return true;
+        }
+    }
+    
+    Serial.println("[WiFi] Failed to connect to any saved network");
+    state = WIFI_FAILED;
+    return false;
+}
+
+// Connect to a specific saved network by SSID
+bool WiFiManager::connectToNetwork(const String& ssid) {
+    for (const auto& net : savedNetworks) {
+        if (net.ssid == ssid) {
+            return connectToSavedNetwork(net);
+        }
+    }
+    
+    Serial.println("[WiFi] Network not in saved list: " + ssid);
+    return false;
+}
+
+// Internal: connect to a SavedNetwork struct
+bool WiFiManager::connectToSavedNetwork(const SavedNetwork& network) {
+    bool success = connectWithCredentials(network.ssid, network.password);
+    if (success) {
+        saveLastConnectedSSID(network.ssid);
+    }
+    return success;
 }
 
 bool WiFiManager::connectWithCredentials(const String& ssid, const String& password) {
@@ -114,6 +316,13 @@ void WiFiManager::disconnect() {
 
 bool WiFiManager::isConnected() {
     return WiFi.status() == WL_CONNECTED;
+}
+
+String WiFiManager::getConnectedSSID() {
+    if (isConnected()) {
+        return WiFi.SSID();
+    }
+    return "";
 }
 
 WiFiConnectionState WiFiManager::getState() {
