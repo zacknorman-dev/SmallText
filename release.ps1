@@ -130,9 +130,9 @@ $Message
 "@
     
     # Check if release already exists
-    $releaseExists = gh release view "v$Version" 2>$null
+    $releaseExists = gh release view "v$Version" 2>&1
     
-    if ($LASTEXITCODE -eq 0) {
+    if ($releaseExists -notmatch "release not found") {
         # Release exists, just upload the binary
         Write-Host "      Release already exists, uploading binary..." -ForegroundColor Cyan
         gh release upload "v$Version" $releaseFirmware --clobber
