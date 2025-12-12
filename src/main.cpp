@@ -586,7 +586,7 @@ void onCommandReceived(const String& command) {
         updateInfo += "Current: " + otaUpdater.getCurrentVersion() + "\n\n";
         updateInfo += "Press RIGHT to continue";
         ui.setInputText(updateInfo);
-        ui.update();
+        ui.updateFull();
       } else {
         logger.info("OTA: No update available");
       }
@@ -927,7 +927,7 @@ void setup() {
       updateInfo += "Current: " + otaUpdater.getCurrentVersion() + "\n\n";
       updateInfo += "Press RIGHT to update\nPress LEFT to skip";
       ui.setInputText(updateInfo);
-      ui.update();
+      ui.updateFull();
       Serial.println("[System] Showing update screen");
       return; // Stay in setup, will continue in loop
     }
@@ -2255,7 +2255,7 @@ void handleSettingsMenu() {
       appState = APP_OTA_CHECKING;
       ui.setState(STATE_OTA_CHECK);
       ui.setInputText("Checking...\nCurrent: " + String(FIRMWARE_VERSION));
-      ui.update();
+      ui.updateFull();
       
       // Perform check (blocking)
       if (otaUpdater.checkForUpdate()) {

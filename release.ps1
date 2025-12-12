@@ -143,18 +143,22 @@ $Message
 - **MCU**: ESP32-S3
 "@
     
-    # Check if release already exists (suppress error output)
+    # Check if release already exists
     $ErrorActionPreference = "SilentlyContinue"
     $releaseCheck = gh release view "v$Version" 2>&1
+    $checkResult = $LASTEXITCODE
     $ErrorActionPreference = "Stop"
-    $releaseExists = $releaseCheck | Out-String
     
-    if ($releaseExists -notmatch "release not found") {
+    if ($checkResult -eq 0) {
         # Release exists, just upload the binary and ensure it's published
         Write-Host "      Release already exists, uploading binary and publishing..." -ForegroundColor Cyan
-        gh release upload "v$Version" $releaseFirmware --clobber
-        gh release edit "v$Version" --draft=false
-        if ($LASTEXITCODE -eq 0) {
+        $ErrorActionPreference = "SilentlyContinue"
+        gh release upload "v$Version" $releaseFirmware --clobber 2>&1 | Out-Null
+        gh release edit "v$Version" --draft=false 2>&1 | Out-Null
+        $uploadResult = $LASTEXITCODE
+        $ErrorActionPreference = "Stop"
+        
+        if ($uploadResult -eq 0) {
             Write-Host "      Binary uploaded and release published successfully!" -ForegroundColor Green
             Write-Host "      View at: https://github.com/zacknorman-dev/SmallText/releases/tag/v$Version" -ForegroundColor Cyan
         } else {
@@ -163,9 +167,12 @@ $Message
     } else {
         # Create new release with binary (published, not draft)
         Write-Host "      Creating new release..." -ForegroundColor Cyan
-        gh release create "v$Version" $releaseFirmware --title "SmolTxt v$Version" --notes "$Message" --draft=false --latest
+        $ErrorActionPreference = "SilentlyContinue"
+        gh release create "v$Version" $releaseFirmware --title "SmolTxt v$Version" --notes "$Message" --latest 2>&1 | Out-Null
+        $createResult = $LASTEXITCODE
+        $ErrorActionPreference = "Stop"
         
-        if ($LASTEXITCODE -eq 0) {
+        if ($createResult -eq 0) {
             Write-Host "      GitHub Release created successfully!" -ForegroundColor Green
             Write-Host "      View at: https://github.com/zacknorman-dev/SmallText/releases/tag/v$Version" -ForegroundColor Cyan
         } else {

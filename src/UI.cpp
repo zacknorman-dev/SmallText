@@ -420,7 +420,7 @@ void UI::drawMainMenu() {
 void UI::drawVillageMenu() {
     drawMenuHeader(existingVillageName);
     
-    String items[] = {"Messages", "Add Member", "View Members", "Delete Group"};
+    String items[] = {"View Messages", "Add Member", "View Members", "Delete Group"};
     int y = 38;
     int lineHeight = 20;
     
