@@ -310,9 +310,6 @@ void UI::drawSplash() {
     display->setFont(&FreeSans9pt7b);
     display->setCursor(72, 85);
     display->print("Safe text for kids");
-    
-    // Battery icon in upper right
-    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
 }
 
 void UI::drawVillageSelect() {
