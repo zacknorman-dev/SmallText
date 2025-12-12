@@ -1408,6 +1408,10 @@ void UI::menuDown() {
         case STATE_WIFI_SETUP_MENU:
             maxItems = 1;  // Configure WiFi, Check Connection (0-1)
             break;
+        case STATE_WIFI_NETWORK_LIST:
+            // Use network count from the stored list
+            maxItems = networkSSIDs.size() > 0 ? networkSSIDs.size() - 1 : 0;
+            break;
         default:
             maxItems = 0;
     }

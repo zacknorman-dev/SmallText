@@ -2294,36 +2294,31 @@ void handleWiFiSetupMenu() {
 }
 
 void handleWiFiNetworkList() {
+  // Fix Menu Overflow Boundary Bug: limit menu navigation to valid range
+  int networkCount = ui.getNetworkCount();
+  
   if (keyboard.isUpPressed()) {
-    ui.menuUp();
-    ui.updatePartial();
+    if (networkCount > 0) {
+      ui.menuUp();
+      ui.updatePartial();
+    }
     smartDelay(200);
   } else if (keyboard.isDownPressed()) {
-    ui.menuDown();
-    ui.updatePartial();
+    if (networkCount > 0) {
+      int currentSelection = ui.getMenuSelection();
+      if (currentSelection < networkCount - 1) {
+        ui.menuDown();
+        ui.updatePartial();
+      }
+    }
     smartDelay(200);
   }
   
-  // Left arrow to rescan
+  // Left arrow to go back to WiFi menu
   if (keyboard.isLeftPressed()) {
-    Serial.println("[WiFi] Rescanning...");
-    ui.showMessage("WiFi", "Scanning...", 1000);
-    
-    auto networks = wifiManager.scanNetworks();
-    
-    std::vector<String> ssids;
-    std::vector<int> rssis;
-    std::vector<bool> encrypted;
-    std::vector<bool> saved;
-    
-    for (const auto& net : networks) {
-      ssids.push_back(net.ssid);
-      rssis.push_back(net.rssi);
-      encrypted.push_back(net.encrypted);
-      saved.push_back(net.saved);
-    }
-    
-    ui.setNetworkList(ssids, rssis, encrypted, saved);
+    keyboard.clearInput();
+    appState = APP_WIFI_SETUP_MENU;
+    ui.setState(STATE_WIFI_SETUP_MENU);
     ui.resetMenuSelection();
     ui.updateClean();
     smartDelay(300);

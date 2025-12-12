@@ -153,6 +153,7 @@ std::vector<ScannedNetwork> WiFiManager::scanNetworks() {
     
     Serial.println("[WiFi] Found " + String(n) + " networks:");
     
+    // Build list, filtering duplicates (keep strongest signal)
     for (int i = 0; i < n; i++) {
         ScannedNetwork net;
         net.ssid = WiFi.SSID(i);
@@ -160,7 +161,23 @@ std::vector<ScannedNetwork> WiFiManager::scanNetworks() {
         net.encrypted = (WiFi.encryptionType(i) != WIFI_AUTH_OPEN);
         net.saved = hasNetwork(net.ssid);
         
-        scannedNetworks.push_back(net);
+        // Check if we already have this SSID
+        bool found = false;
+        for (auto& existing : scannedNetworks) {
+            if (existing.ssid == net.ssid) {
+                // Keep the one with stronger signal
+                if (net.rssi > existing.rssi) {
+                    existing.rssi = net.rssi;
+                    existing.encrypted = net.encrypted;
+                }
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            scannedNetworks.push_back(net);
+        }
         
         Serial.print("[WiFi]   ");
         Serial.print(i + 1);
