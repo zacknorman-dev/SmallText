@@ -139,6 +139,9 @@ void UI::updatePartial() {
         case STATE_VILLAGE_SELECT:
             drawVillageSelect();
             break;
+        case STATE_CONVERSATION_LIST:
+            drawConversationList();
+            break;
         case STATE_MAIN_MENU:
             drawMainMenu();
             break;
