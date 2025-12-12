@@ -460,7 +460,7 @@ void UI::drawMainMenu() {
 void UI::drawVillageMenu() {
     drawMenuHeader(existingVillageName);
     
-    String items[] = {"View Messages", "Add Member", "View Members", "Delete Group"};
+    String items[] = {"View Messages", "Invite a Friend", "View Members", "Delete Group"};
     int y = 38;
     int lineHeight = 20;
     
@@ -1764,13 +1764,18 @@ void UI::drawInviteExplain() {
 void UI::drawInviteCodeDisplay() {
     drawMenuHeader("Share This Code");
     
-    // Draw the 8-digit code in large font
+    // Draw the 8-digit code in large font with spaces between digits
     display->setFont(&FreeSansBold12pt7b);
     String code = getInviteCode();
-    int codeWidth = code.length() * 18;  // Approximate width
+    String spacedCode = "";
+    for (int i = 0; i < code.length(); i++) {
+        spacedCode += code[i];
+        if (i < code.length() - 1) spacedCode += " ";
+    }
+    int codeWidth = spacedCode.length() * 14;  // Approximate width with spacing
     int codeX = (SCREEN_WIDTH - codeWidth) / 2;
     display->setCursor(codeX, 60);
-    display->print(code);
+    display->print(spacedCode);
     
     // Calculate remaining time
     unsigned long remaining = (getInviteExpiry() - millis()) / 1000;

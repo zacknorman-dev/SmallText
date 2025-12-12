@@ -76,6 +76,7 @@ enum AppState {
 };
 
 AppState appState = APP_MAIN_MENU;
+AppState returnToState = APP_MAIN_MENU;  // Track where to return from invite flow
 String messageComposingText = "";
 String tempVillageName = "";  // Temp storage during village creation
 String tempWiFiSSID = "";     // Temp storage during WiFi setup
@@ -1494,8 +1495,12 @@ void handleVillageMenu() {
       
       ui.update();  // Always refresh to show any messages received
     } else if (selection == 1) {
-      // Add Member (owner only)
-      // TODO: Implement add member screen
+      // Invite a Friend - go to invite flow
+      returnToState = APP_VILLAGE_MENU;
+      appState = APP_INVITE_EXPLAIN;
+      ui.setState(STATE_INVITE_EXPLAIN);
+      ui.resetMenuSelection();
+      ui.updateClean();  // Clean transition
     } else if (selection == 2) {
       // View Members
       appState = APP_VIEW_MEMBERS;
@@ -2040,6 +2045,7 @@ void handleVillageCreated() {
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     int selection = ui.getMenuSelection();
     if (selection == 0) {  // Invite a Friend
+      returnToState = APP_VILLAGE_CREATED;
       appState = APP_INVITE_EXPLAIN;
       ui.setState(STATE_INVITE_EXPLAIN);
       ui.resetMenuSelection();
@@ -2060,8 +2066,8 @@ void handleInviteExplain() {
   
   // Left arrow to go back
   if (keyboard.isLeftPressed()) {
-    appState = APP_VILLAGE_CREATED;
-    ui.setState(STATE_VILLAGE_CREATED);
+    appState = returnToState;
+    ui.setState(returnToState == APP_VILLAGE_MENU ? STATE_VILLAGE_MENU : STATE_VILLAGE_CREATED);
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
@@ -2099,8 +2105,8 @@ void handleInviteExplain() {
       ui.setState(STATE_INVITE_CODE_DISPLAY);
       ui.update();
     } else if (selection == 1) {  // Cancel
-      appState = APP_VILLAGE_CREATED;
-      ui.setState(STATE_VILLAGE_CREATED);
+      appState = returnToState;
+      ui.setState(returnToState == APP_VILLAGE_MENU ? STATE_VILLAGE_MENU : STATE_VILLAGE_CREATED);
       ui.resetMenuSelection();
       ui.update();
     }
@@ -2125,8 +2131,8 @@ void handleInviteCodeDisplay() {
       smartDelay(50);
     }
     
-    appState = APP_VILLAGE_CREATED;
-    ui.setState(STATE_VILLAGE_CREATED);
+    appState = returnToState;
+    ui.setState(returnToState == APP_VILLAGE_MENU ? STATE_VILLAGE_MENU : STATE_VILLAGE_CREATED);
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
@@ -2139,8 +2145,8 @@ void handleInviteCodeDisplay() {
     // TODO: Unpublish invite code from MQTT
     // mqttMessenger.unpublishInvite(code);
     
-    appState = APP_VILLAGE_CREATED;
-    ui.setState(STATE_VILLAGE_CREATED);
+    appState = returnToState;
+    ui.setState(returnToState == APP_VILLAGE_MENU ? STATE_VILLAGE_MENU : STATE_VILLAGE_CREATED);
     ui.resetMenuSelection();
     ui.update();
     keyboard.clearInput();
