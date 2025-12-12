@@ -130,7 +130,10 @@ $Message
 "@
     
     # Check if release already exists (suppress error output)
-    $releaseExists = gh release view "v$Version" 2>&1 | Out-String
+    $ErrorActionPreference = "SilentlyContinue"
+    $releaseCheck = gh release view "v$Version" 2>&1
+    $ErrorActionPreference = "Stop"
+    $releaseExists = $releaseCheck | Out-String
     
     if ($releaseExists -notmatch "release not found") {
         # Release exists, just upload the binary and ensure it's published
