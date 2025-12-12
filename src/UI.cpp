@@ -1425,7 +1425,7 @@ void UI::showSleepScreen() {
     } while (display->nextPage());
 }
 
-void UI::showNappingScreen(float batteryVoltage) {
+void UI::showNappingScreen(float batteryVoltage, bool hasWiFi) {
     setState(STATE_SLEEPING);
     display->init();  // Re-initialize display to clear any partial mode state
     display->setFullWindow();
@@ -1438,12 +1438,22 @@ void UI::showNappingScreen(float batteryVoltage) {
         display->print("SmolTxt Napping");
         
         display->setFont(&FreeSans9pt7b);
-        display->setCursor(5, 60);
-        display->print("Wake every 15 min to");
-        display->setCursor(5, 80);
-        display->print("check messages & alert");
-        display->setCursor(5, 100);
-        display->print("Press any key to wake");
+        
+        if (!hasWiFi) {
+            // Show WiFi warning if disconnected
+            display->setCursor(5, 60);
+            display->print("No network");
+            display->setCursor(5, 80);
+            display->print("Press any key to wake");
+        } else {
+            // Normal napping text
+            display->setCursor(5, 60);
+            display->print("Wake every 15 min to");
+            display->setCursor(5, 80);
+            display->print("check messages & alert");
+            display->setCursor(5, 100);
+            display->print("Press any key to wake");
+        }
         
         // Show battery voltage in corner
         display->setFont();

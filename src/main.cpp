@@ -321,7 +321,7 @@ void enterDeepSleep() {
   // For napping mode, show napping screen with battery info
   if (powerMode == POWER_NAPPING) {
     logger.info("Power: Entering nap mode");
-    ui.showNappingScreen(currentVoltage);
+    ui.showNappingScreen(currentVoltage, wifiManager.isConnected());
     smartDelay(2000);
   } else {
     // Manual sleep via Tab key
@@ -912,6 +912,23 @@ void setup() {
   if (wokeFromNap && wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
     Serial.println("[Power] Nap timer wake - checking for new messages");
     
+    // Try to reconnect WiFi if we have credentials but not connected
+    if (wifiManager.hasCredentials() && !wifiManager.isConnected()) {
+      Serial.println("[Power] WiFi disconnected - attempting reconnect...");
+      if (wifiManager.connect()) {
+        Serial.println("[Power] WiFi reconnected: " + wifiManager.getIPAddress());
+        logger.info("WiFi auto-reconnect on wake: " + wifiManager.getIPAddress());
+        
+        // Reconnect MQTT if WiFi came back
+        if (!mqttMessenger.isConnected()) {
+          Serial.println("[Power] Reconnecting MQTT...");
+          mqttMessenger.begin();
+        }
+      } else {
+        Serial.println("[Power] WiFi reconnect failed");
+      }
+    }
+    
     // Give more time for MQTT messages to arrive if WiFi is connected
     if (mqttMessenger.isConnected()) {
       Serial.println("[Power] Waiting for messages to arrive...");
@@ -960,7 +977,7 @@ void setup() {
     
     // Show napping screen before going back to sleep
     Serial.println("[Power] Showing napping screen");
-    ui.showNappingScreen(battery.getVoltage());
+    ui.showNappingScreen(battery.getVoltage(), wifiManager.isConnected());
     smartDelay(1000);
     
     // Go back to sleep
