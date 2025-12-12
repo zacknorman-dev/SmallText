@@ -81,11 +81,13 @@ Write-Host "      Changes committed" -ForegroundColor Green
 
 # Step 6: Create annotated tag
 Write-Host "`n[6/8] Creating Git tag..." -ForegroundColor Yellow
-git tag -a "v$Version" -m "Release v$Version`n`n$Message" 2>$null
+$ErrorActionPreference = "SilentlyContinue"
+git tag -a "v$Version" -m "Release v$Version`n`n$Message"
+$ErrorActionPreference = "Stop"
 if ($LASTEXITCODE -ne 0) {
     Write-Host "      Tag already exists, deleting and recreating..." -ForegroundColor Yellow
-    git tag -d "v$Version" 2>$null
-    git push origin ":refs/tags/v$Version" 2>$null
+    git tag -d "v$Version" | Out-Null
+    git push origin ":refs/tags/v$Version" 2>&1 | Out-Null
     git tag -a "v$Version" -m "Release v$Version`n`n$Message"
 }
 Write-Host "      Tag v$Version ready" -ForegroundColor Green
