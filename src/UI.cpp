@@ -338,7 +338,7 @@ void UI::drawConversationList() {
     
     drawMenuHeader("My Conversations");
     
-    int y = 35;
+    int y = 45;
     int lineHeight = 18;
     int scrollOffset = 0;
     
@@ -358,20 +358,19 @@ void UI::drawConversationList() {
     }
     
     // List all valid conversations
-    for (int i = 0; i < conversationList.size(); i++) {
-        // Skip items that are scrolled off the top
-        if (i >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-            if (menuSelection == i) {
-                display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-                display->setTextColor(GxEPD_WHITE);
-            }
-            display->setCursor(10, y);
-            display->print(conversationList[i].name);
-            if (menuSelection == i) {
-                display->setTextColor(GxEPD_BLACK);
-            }
-            y += lineHeight;
+    int visibleCount = 0;
+    for (int i = scrollOffset; i < conversationList.size() && visibleCount < maxVisibleItems; i++) {
+        if (menuSelection == i) {
+            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+            display->setTextColor(GxEPD_WHITE);
         }
+        display->setCursor(10, y);
+        display->print(conversationList[i].name);
+        if (menuSelection == i) {
+            display->setTextColor(GxEPD_BLACK);
+        }
+        y += lineHeight;
+        visibleCount++;
     }
     
     // Draw down-arrow if there are more items below the visible area

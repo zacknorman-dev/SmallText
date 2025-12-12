@@ -71,6 +71,7 @@ Write-Host "      Copied to $releaseFirmware" -ForegroundColor Green
 # Step 5: Stage and commit changes
 Write-Host "`n[5/8] Committing changes..." -ForegroundColor Yellow
 git add -A
+git add -f $releaseFirmware
 git commit -m "Release v$Version - $Message"
 if ($LASTEXITCODE -ne 0) {
     Write-Host "      Commit failed (may already be committed)" -ForegroundColor Yellow
