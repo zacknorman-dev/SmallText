@@ -50,6 +50,7 @@ enum AppState {
   APP_WIFI_SETUP_MENU,
   APP_WIFI_NETWORK_LIST,      // New: show scanned networks
   APP_WIFI_NETWORK_OPTIONS,   // New: connect/forget for selected network
+  APP_WIFI_NETWORK_DETAILS,   // New: show details of connected network
   APP_WIFI_SSID_INPUT,
   APP_WIFI_PASSWORD_INPUT,
   APP_WIFI_CONNECTING,
@@ -365,6 +366,7 @@ void handleWiFiNetworkOptions();
 void handleWiFiSSIDInput();
 void handleWiFiPasswordInput();
 void handleWiFiConnecting();
+void handleWiFiNetworkDetails();
 void handleWiFiStatus();
 void handleOTAChecking();
 void handleOTAUpdating();
@@ -1147,6 +1149,9 @@ void loop() {
       break;
     case APP_WIFI_CONNECTING:
       handleWiFiConnecting();
+      break;
+    case APP_WIFI_NETWORK_DETAILS:
+      handleWiFiNetworkDetails();
       break;
     case APP_WIFI_STATUS:
       handleWiFiStatus();
@@ -2136,6 +2141,14 @@ void handleSettingsMenu() {
     } else if (selection == 1) {
       // Open WiFi menu
       keyboard.clearInput();
+      
+      // Update WiFi connection status in UI
+      if (wifiManager.isConnected()) {
+        ui.setWiFiConnected(true, wifiManager.getConnectedSSID());
+      } else {
+        ui.setWiFiConnected(false, "");
+      }
+      
       appState = APP_WIFI_SETUP_MENU;
       ui.setState(STATE_WIFI_SETUP_MENU);
       ui.resetMenuSelection();
@@ -2242,8 +2255,25 @@ void handleWiFiSetupMenu() {
   
   if (keyboard.isRightPressed()) {
     int selection = ui.getMenuSelection();
+    bool isConnected = wifiManager.isConnected();
     
-    if (selection == 0) {
+    // If connected: item 0 = Network Details, item 1 = Scan Networks
+    // If not connected: item 0 = Scan Networks
+    
+    if (isConnected && selection == 0) {
+      // Network Details
+      keyboard.clearInput();
+      appState = APP_WIFI_NETWORK_DETAILS;
+      ui.setState(STATE_WIFI_NETWORK_DETAILS);
+      
+      // Format network details
+      String details = "IP Address\n";
+      details += wifiManager.getIPAddress() + "\n";
+      details += "Signal\n";
+      details += String(wifiManager.getSignalStrength()) + " dBm";
+      ui.setInputText(details);
+      ui.updateClean();
+    } else if ((isConnected && selection == 1) || (!isConnected && selection == 0)) {
       // Scan for networks
       Serial.println("[WiFi] Scanning for networks...");
       ui.showMessage("WiFi", "Scanning...", 1000);
@@ -2270,23 +2300,6 @@ void handleWiFiSetupMenu() {
       ui.setState(STATE_WIFI_NETWORK_LIST);
       ui.resetMenuSelection();
       ui.updateClean();
-    } else if (selection == 1) {
-      // Check Connection
-      keyboard.clearInput();
-      appState = APP_WIFI_STATUS;
-      ui.setState(STATE_WIFI_STATUS);
-      
-      // Format status info
-      String status = wifiManager.getStatusString() + "\n";
-      if (wifiManager.isConnected()) {
-        status += wifiManager.getConnectedSSID() + "\n";
-        status += wifiManager.getIPAddress() + "\n";
-        status += String(wifiManager.getSignalStrength()) + " dBm";
-      } else {
-        status += "Not connected";
-      }
-      ui.setInputText(status);
-      ui.update();
     }
     
     smartDelay(300);
@@ -2323,8 +2336,21 @@ void handleWiFiNetworkList() {
     if (selectedSSID.length() > 0) {
       tempWiFiSSID = selectedSSID;
       
-      // Check if network is already saved
-      if (wifiManager.hasNetwork(selectedSSID)) {
+      // Check if this is the currently connected network
+      if (wifiManager.isConnected() && selectedSSID == wifiManager.getConnectedSSID()) {
+        // Show network details
+        keyboard.clearInput();
+        appState = APP_WIFI_NETWORK_DETAILS;
+        ui.setState(STATE_WIFI_NETWORK_DETAILS);
+        
+        // Format network details
+        String details = "IP Address\\n";
+        details += wifiManager.getIPAddress() + "\\n";
+        details += "Signal\\n";
+        details += String(wifiManager.getSignalStrength()) + " dBm";
+        ui.setInputText(details);
+        ui.updateClean();
+      } else if (wifiManager.hasNetwork(selectedSSID)) {
         // Show connect/forget options
         keyboard.clearInput();
         appState = APP_WIFI_NETWORK_OPTIONS;
@@ -2524,6 +2550,18 @@ void handleWiFiPasswordInput() {
 void handleWiFiConnecting() {
   // Just wait - should transition automatically in handleWiFiPasswordInput
   smartDelay(100);
+}
+
+void handleWiFiNetworkDetails() {
+  // Left arrow to go back
+  if (keyboard.isLeftPressed()) {
+    keyboard.clearInput();
+    appState = APP_WIFI_SETUP_MENU;
+    ui.setState(STATE_WIFI_SETUP_MENU);
+    ui.resetMenuSelection();
+    ui.updateClean();
+    smartDelay(300);
+  }
 }
 
 void handleWiFiStatus() {

@@ -60,6 +60,9 @@ void UI::update() {
         case STATE_WIFI_SETUP_MENU:
             drawWiFiSetupMenu();
             break;
+        case STATE_WIFI_NETWORK_DETAILS:
+            drawWiFiNetworkDetails();
+            break;
         case STATE_WIFI_SSID_INPUT:
             drawWiFiSSIDInput();
             break;
@@ -140,6 +143,9 @@ void UI::updatePartial() {
         case STATE_WIFI_SETUP_MENU:
             drawWiFiSetupMenu();
             break;
+        case STATE_WIFI_NETWORK_DETAILS:
+            drawWiFiNetworkDetails();
+            break;
         case STATE_WIFI_SSID_INPUT:
             drawWiFiSSIDInput();
             break;
@@ -205,6 +211,7 @@ void UI::updateClean() {
         case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
         case STATE_WIFI_NETWORK_LIST: drawWiFiNetworkList(); break;
         case STATE_WIFI_NETWORK_OPTIONS: drawWiFiNetworkOptions(); break;
+        case STATE_WIFI_NETWORK_DETAILS: drawWiFiNetworkDetails(); break;
         case STATE_WIFI_SSID_INPUT: drawWiFiSSIDInput(); break;
         case STATE_WIFI_PASSWORD_INPUT: drawWiFiPasswordInput(); break;
         case STATE_WIFI_STATUS:     drawWiFiStatus(); break;
@@ -240,6 +247,7 @@ void UI::updateFull() {
         case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
         case STATE_WIFI_NETWORK_LIST: drawWiFiNetworkList(); break;
         case STATE_WIFI_NETWORK_OPTIONS: drawWiFiNetworkOptions(); break;
+        case STATE_WIFI_NETWORK_DETAILS: drawWiFiNetworkDetails(); break;
         case STATE_WIFI_SSID_INPUT: drawWiFiSSIDInput(); break;
         case STATE_WIFI_PASSWORD_INPUT: drawWiFiPasswordInput(); break;
         case STATE_WIFI_STATUS:     drawWiFiStatus(); break;
@@ -642,10 +650,14 @@ void UI::drawRingtoneSelect() {
 }
 
 void UI::drawWiFiSetupMenu() {
-    // Title - bold 9pt
+    // Title - bold 9pt, show connection status
     display->setFont(&FreeSansBold9pt7b);
     display->setCursor(10, 18);
-    display->print("WiFi");
+    if (isWiFiConnected && connectedSSID.length() > 0) {
+        display->print("WiFi - " + connectedSSID);
+    } else {
+        display->print("WiFi - No Network");
+    }
     
     // Horizontal line under title
     display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
@@ -660,7 +672,8 @@ void UI::drawWiFiSetupMenu() {
     int item = 0;
     int scrollOffset = 0;
     
-    const int totalItems = 2;
+    // Menu items depend on connection status
+    int totalItems = isWiFiConnected ? 2 : 1;  // Connected: 2 items, Not connected: 1 item
     const int maxVisibleItems = 5;
     
     // Calculate scroll offset
@@ -668,7 +681,24 @@ void UI::drawWiFiSetupMenu() {
         scrollOffset = menuSelection - maxVisibleItems + 1;
     }
     
-    // Configure WiFi
+    // If connected, show "Network Details" as first item
+    if (isWiFiConnected) {
+        if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+            if (menuSelection == item) {
+                display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+                display->setTextColor(GxEPD_WHITE);
+            }
+            display->setCursor(10, y);
+            display->print("Network Details");
+            if (menuSelection == item) {
+                display->setTextColor(GxEPD_BLACK);
+            }
+            y += lineHeight;
+        }
+        item++;
+    }
+    
+    // Always show "Scan Networks"
     if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
         if (menuSelection == item) {
             display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
@@ -676,21 +706,6 @@ void UI::drawWiFiSetupMenu() {
         }
         display->setCursor(10, y);
         display->print("Scan Networks");
-        if (menuSelection == item) {
-            display->setTextColor(GxEPD_BLACK);
-        }
-        y += lineHeight;
-    }
-    item++;
-    
-    // Check Connection
-    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
-        if (menuSelection == item) {
-            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-            display->setTextColor(GxEPD_WHITE);
-        }
-        display->setCursor(10, y);
-        display->print("Check Connection");
         if (menuSelection == item) {
             display->setTextColor(GxEPD_BLACK);
         }
@@ -847,6 +862,47 @@ void UI::drawWiFiNetworkOptions() {
         display->setCursor(10, y);
         display->print("Enter Password");
     }
+}
+
+void UI::drawWiFiNetworkDetails() {
+    // Title - show connected network SSID
+    display->setFont(&FreeSansBold9pt7b);
+    display->setCursor(10, 18);
+    String ssid = connectedSSID;
+    if (ssid.length() > 20) ssid = ssid.substring(0, 20);
+    display->print(ssid);
+    
+    // Horizontal line under title
+    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
+    
+    // Battery icon
+    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
+    
+    display->setFont(&FreeSans9pt7b);
+    
+    int y = 45;
+    int lineHeight = 20;
+    
+    // Display connection details from inputText
+    // Expected format: "IP Address\n192.168.1.100\nSignal\n-65 dBm"
+    int lineStart = 0;
+    String detailsText = inputText;
+    for (int i = 0; i <= detailsText.length(); i++) {
+        if (i == detailsText.length() || detailsText[i] == '\n') {
+            String line = detailsText.substring(lineStart, i);
+            if (line.length() > 0) {
+                display->setCursor(10, y);
+                display->print(line);
+                y += lineHeight;
+            }
+            lineStart = i + 1;
+        }
+    }
+    
+    // Footer hint
+    display->setFont();
+    display->setCursor(5, SCREEN_HEIGHT - 8);
+    display->print("LEFT:back");
 }
 
 void UI::drawWiFiSSIDInput() {
@@ -1418,7 +1474,9 @@ void UI::menuDown() {
             maxItems = 3;
             break;
         case STATE_WIFI_SETUP_MENU:
-            maxItems = 1;  // Configure WiFi, Check Connection (0-1)
+            // If connected: Network Details, Scan Networks (0-1)
+            // If not connected: Scan Networks only (0)
+            maxItems = isWiFiConnected ? 1 : 0;
             break;
         case STATE_WIFI_NETWORK_LIST:
             // Use network count from the stored list

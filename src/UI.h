@@ -25,6 +25,7 @@ enum UIState {
     STATE_WIFI_SETUP_MENU,
     STATE_WIFI_NETWORK_LIST,      // New: show scanned networks
     STATE_WIFI_NETWORK_OPTIONS,   // New: connect/forget menu
+    STATE_WIFI_NETWORK_DETAILS,   // New: show details of connected network
     STATE_WIFI_SSID_INPUT,
     STATE_WIFI_PASSWORD_INPUT,
     STATE_WIFI_STATUS,
@@ -80,6 +81,10 @@ private:
     std::vector<bool> networkEncrypted;
     std::vector<bool> networkSaved;
     
+    // WiFi connection status
+    String connectedSSID;
+    bool isWiFiConnected;
+    
     // Callback to check if user is typing (defers display updates during typing)
     bool (*typingCheckCallback)();
     
@@ -91,6 +96,7 @@ private:
     void drawWiFiSetupMenu();
     void drawWiFiNetworkList();
     void drawWiFiNetworkOptions();
+    void drawWiFiNetworkDetails();
     void drawWiFiSSIDInput();
     void drawWiFiPasswordInput();
     void drawWiFiStatus();
@@ -169,6 +175,11 @@ public:
                         const std::vector<bool>& encrypted, const std::vector<bool>& saved);
     int getNetworkCount() const { return networkSSIDs.size(); }
     String getNetworkSSID(int index) const { return (index >= 0 && index < networkSSIDs.size()) ? networkSSIDs[index] : ""; }
+    
+    // WiFi connection status
+    void setWiFiConnected(bool connected, const String& ssid = "") { isWiFiConnected = connected; connectedSSID = ssid; }
+    bool getWiFiConnected() const { return isWiFiConnected; }
+    String getConnectedSSID() const { return connectedSSID; }
     
     // Display helpers
     void showMessage(const String& title, const String& message, int durationMs = 2000);
