@@ -1242,14 +1242,14 @@ void UI::menuDown() {
     int maxItems = 0;
     switch (currentState) {
         case STATE_VILLAGE_SELECT: {
-            // Count saved villages + "New Village" + "Join Village" + "WiFi & Updates"
-            int villageCount = 0;
-            for (int i = 0; i < 10; i++) {
-                if (Village::hasVillageInSlot(i)) {
-                    villageCount++;
-                }
-            }
-            maxItems = villageCount + 2;  // +2 for "New Village", "Join Village", and "WiFi & Updates" (last index)
+            // Main menu has 4 static items: My Conversations, New Village, Join Village, Settings
+            maxItems = 3;  // 0-3 (4 items)
+            break;
+        }
+        case STATE_CONVERSATION_LIST: {
+            // Dynamic conversation list
+            extern std::vector<ConversationEntry> conversationList;
+            maxItems = conversationList.size() > 0 ? conversationList.size() - 1 : 0;
             break;
         }
         case STATE_MAIN_MENU:
