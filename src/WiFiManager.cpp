@@ -13,6 +13,7 @@ WiFiManager::WiFiManager() {
 bool WiFiManager::begin() {
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect(false); // We'll handle reconnection ourselves
+    WiFi.setHostname("SmolTxt"); // Set device hostname for network identification
     
     // Open preferences for WiFi credentials
     if (!prefs.begin("wifi", false)) {

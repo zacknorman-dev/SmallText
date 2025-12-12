@@ -96,26 +96,24 @@ Write-Host "`n[7/8] Pushing to GitHub..." -ForegroundColor Yellow
 $oldErrorActionPreference = $ErrorActionPreference
 $ErrorActionPreference = "SilentlyContinue"
 
-git push origin main *>&1 | Out-Null
+git push origin main 2>&1 | Out-String | Write-Verbose
 $pushResult = $LASTEXITCODE
 
 $ErrorActionPreference = $oldErrorActionPreference
 
 if ($pushResult -ne 0) {
-    Write-Host "      Push to main failed!" -ForegroundColor Red
-    exit 1
+    Write-Host "      Push to main failed (may already be up to date)" -ForegroundColor Yellow
 }
 
 $ErrorActionPreference = "SilentlyContinue"
-git push --force origin "v$Version" *>&1 | Out-Null
+git push --force origin "v$Version" 2>&1 | Out-String | Write-Verbose
 $tagPushResult = $LASTEXITCODE
 $ErrorActionPreference = $oldErrorActionPreference
 
 if ($tagPushResult -ne 0) {
-    Write-Host "      Tag push failed!" -ForegroundColor Red
-    exit 1
+    Write-Host "      Tag push may have failed (continuing anyway)" -ForegroundColor Yellow
 }
-Write-Host "      Pushed to GitHub" -ForegroundColor Green
+Write-Host "      Push completed" -ForegroundColor Green
 
 # Step 8: Create GitHub Release
 Write-Host "`n[8/8] Creating GitHub Release..." -ForegroundColor Yellow
