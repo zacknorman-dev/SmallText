@@ -687,6 +687,7 @@ Settings → Mesh Networking
 4. **Message History Persistence**: Save chat history to flash (currently RAM-only)
 5. **Typing Indicators**: Show when someone is composing (more radio traffic)
 6. **File Sharing**: Images, audio clips (LoRa bandwidth too limited)
+7. **No Network Warning**: Display "No network" on napping screen when disconnected (implemented in v0.42.5)
 
 ### Upgrade Path: Ed25519 Signatures
 If MAC spoofing attacks are observed:

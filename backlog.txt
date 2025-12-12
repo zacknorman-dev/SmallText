@@ -6,4 +6,11 @@ SmolTxt Backlog
 - Update screen shows "Please wait" twice during firmware download - should only show once
 - Remove battery indicator from splash screen
 - Remove "Enter: Continue/Update | Back to Cancel" text from bottom of Check for Update screen
+- No network warning in other places (not just napping screen)
+
+## WiFi Issues
+
+- WiFi menu title shows connected network name (e.g. "WiFi - Fomalhaut2.4G") instead of just "WiFi"
+- Clicking on already-connected network in scan list should go to Network Details page
+- Menu Overflow Boundary Bug still present - screen turns white when tapping down past last network
 

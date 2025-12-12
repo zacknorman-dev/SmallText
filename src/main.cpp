@@ -2294,23 +2294,13 @@ void handleWiFiSetupMenu() {
 }
 
 void handleWiFiNetworkList() {
-  // Fix Menu Overflow Boundary Bug: limit menu navigation to valid range
-  int networkCount = ui.getNetworkCount();
-  
   if (keyboard.isUpPressed()) {
-    if (networkCount > 0) {
-      ui.menuUp();
-      ui.updatePartial();
-    }
+    ui.menuUp();
+    ui.updateClean();
     smartDelay(200);
   } else if (keyboard.isDownPressed()) {
-    if (networkCount > 0) {
-      int currentSelection = ui.getMenuSelection();
-      if (currentSelection < networkCount - 1) {
-        ui.menuDown();
-        ui.updatePartial();
-      }
-    }
+    ui.menuDown();
+    ui.updateClean();
     smartDelay(200);
   }
   

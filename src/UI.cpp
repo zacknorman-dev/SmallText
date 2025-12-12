@@ -713,89 +713,101 @@ void UI::drawWiFiNetworkList() {
     
     int y = 35;
     int lineHeight = 18;
+    int item = 0;
     int scrollOffset = 0;
     
-    // Calculate scroll offset
+    // Count total items
+    int totalItems = networkSSIDs.size();
+    
+    // Calculate scroll offset if selection is beyond visible area
     const int maxVisibleItems = 5;
     if (menuSelection >= maxVisibleItems) {
         scrollOffset = menuSelection - maxVisibleItems + 1;
     }
     
-    if (networkSSIDs.size() == 0) {
+    if (totalItems == 0) {
         display->setCursor(10, 60);
         display->print("No networks found");
         display->setCursor(10, 85);
-        display->print("Press LEFT to rescan");
+        display->print("Press LEFT to go back");
         return;
     }
     
-    // Draw each visible network
-    for (int i = scrollOffset; i < networkSSIDs.size() && y <= SCREEN_HEIGHT - 5; i++) {
-        if (menuSelection == i) {
-            display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-            display->setTextColor(GxEPD_WHITE);
+    // Draw each network
+    for (int i = 0; i < networkSSIDs.size(); i++) {
+        // Skip items that are scrolled off the top
+        if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+            if (menuSelection == item) {
+                display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+                display->setTextColor(GxEPD_WHITE);
+            }
+            
+            // Draw SSID (truncate if needed)
+            String ssid = networkSSIDs[i];
+            if (ssid.length() > 18) {
+                ssid = ssid.substring(0, 18);
+            }
+            display->setCursor(10, y);
+            display->print(ssid);
+            
+            // Draw signal strength indicator (right side)
+            int signalX = SCREEN_WIDTH - 50;
+            int rssi = networkRSSIs[i];
+            int bars = 0;
+            if (rssi >= -50) bars = 4;
+            else if (rssi >= -60) bars = 3;
+            else if (rssi >= -70) bars = 2;
+            else if (rssi >= -80) bars = 1;
+            
+            // Draw signal bars
+            for (int b = 0; b < bars; b++) {
+                int barHeight = 3 + (b * 2);
+                int barX = signalX + (b * 3);
+                int barY = y - barHeight;
+                display->fillRect(barX, barY, 2, barHeight, 
+                                menuSelection == item ? GxEPD_WHITE : GxEPD_BLACK);
+            }
+            
+            // Draw lock icon if encrypted (next to signal)
+            if (networkEncrypted[i]) {
+                int lockX = signalX - 10;
+                display->setCursor(lockX, y);
+                display->setFont();  // Default font for symbol
+                display->print(menuSelection == item ? (char)2 : (char)3);  // Lock symbol
+                display->setFont(&FreeSans9pt7b);
+            }
+            
+            // Draw checkmark if saved (far right)
+            if (networkSaved[i]) {
+                display->setCursor(SCREEN_WIDTH - 15, y);
+                display->setFont();  // Default font for symbol
+                display->print(menuSelection == item ? (char)251 : (char)251);  // Checkmark
+                display->setFont(&FreeSans9pt7b);
+            }
+            
+            if (menuSelection == item) {
+                display->setTextColor(GxEPD_BLACK);
+            }
+            
+            y += lineHeight;
         }
-        
-        // Draw SSID (truncate if needed)
-        String ssid = networkSSIDs[i];
-        if (ssid.length() > 18) {
-            ssid = ssid.substring(0, 18);
-        }
-        display->setCursor(10, y);
-        display->print(ssid);
-        
-        // Draw signal strength indicator (right side)
-        int signalX = SCREEN_WIDTH - 50;
-        int rssi = networkRSSIs[i];
-        int bars = 0;
-        if (rssi >= -50) bars = 4;
-        else if (rssi >= -60) bars = 3;
-        else if (rssi >= -70) bars = 2;
-        else if (rssi >= -80) bars = 1;
-        
-        // Draw signal bars
-        for (int b = 0; b < bars; b++) {
-            int barHeight = 3 + (b * 2);
-            int barX = signalX + (b * 3);
-            int barY = y - barHeight;
-            display->fillRect(barX, barY, 2, barHeight, 
-                            menuSelection == i ? GxEPD_WHITE : GxEPD_BLACK);
-        }
-        
-        // Draw lock icon if encrypted (next to signal)
-        if (networkEncrypted[i]) {
-            int lockX = signalX - 10;
-            display->setCursor(lockX, y);
-            display->setFont();  // Default font for symbol
-            display->print(menuSelection == i ? (char)2 : (char)3);  // Lock symbol
-            display->setFont(&FreeSans9pt7b);
-        }
-        
-        // Draw checkmark if saved (far right)
-        if (networkSaved[i]) {
-            display->setCursor(SCREEN_WIDTH - 15, y);
-            display->setFont();  // Default font for symbol
-            display->print(menuSelection == i ? (char)251 : (char)251);  // Checkmark
-            display->setFont(&FreeSans9pt7b);
-        }
-        
-        if (menuSelection == i) {
-            display->setTextColor(GxEPD_BLACK);
-        }
-        
-        y += lineHeight;
+        item++;
     }
     
-    // Draw scroll indicator if needed
-    if (networkSSIDs.size() > maxVisibleItems) {
-        int lastVisibleItem = scrollOffset + maxVisibleItems - 1;
-        if (lastVisibleItem < networkSSIDs.size() - 1) {
-            // Down arrow
-            int arrowX = 10;
-            int arrowY = SCREEN_HEIGHT - 15;
-            display->fillTriangle(arrowX, arrowY, arrowX + 10, arrowY, 
-                                arrowX + 5, arrowY + 10, GxEPD_BLACK);
-        }
+    // Draw down-arrow if there are more items below the visible area
+    int lastVisibleItem = scrollOffset + maxVisibleItems - 1;
+    if (totalItems > maxVisibleItems && lastVisibleItem < totalItems - 1) {
+        int arrowX = 10;
+        int arrowY = SCREEN_HEIGHT - 15;
+        int arrowWidth = 10;
+        int arrowHeight = 10;
+        
+        display->fillTriangle(
+            arrowX, arrowY,
+            arrowX + arrowWidth, arrowY,
+            arrowX + arrowWidth/2, arrowY + arrowHeight,
+            GxEPD_BLACK
+        );
     }
 }
 
