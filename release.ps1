@@ -80,12 +80,14 @@ Write-Host "      Changes committed" -ForegroundColor Green
 
 # Step 6: Create annotated tag
 Write-Host "`n[6/8] Creating Git tag..." -ForegroundColor Yellow
-git tag -a "v$Version" -m "Release v$Version`n`n$Message"
+git tag -a "v$Version" -m "Release v$Version`n`n$Message" 2>$null
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "      Tag creation failed (tag may already exist)" -ForegroundColor Red
-    exit 1
+    Write-Host "      Tag already exists, deleting and recreating..." -ForegroundColor Yellow
+    git tag -d "v$Version" 2>$null
+    git push origin ":refs/tags/v$Version" 2>$null
+    git tag -a "v$Version" -m "Release v$Version`n`n$Message"
 }
-Write-Host "      Tag v$Version created" -ForegroundColor Green
+Write-Host "      Tag v$Version ready" -ForegroundColor Green
 
 # Step 7: Push to GitHub
 Write-Host "`n[7/8] Pushing to GitHub..." -ForegroundColor Yellow
@@ -94,7 +96,7 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "      Push to main failed!" -ForegroundColor Red
     exit 1
 }
-git push --force origin "v$Version"
+git push --force origin "v$Version" 2>$null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "      Tag push failed!" -ForegroundColor Red
     exit 1
