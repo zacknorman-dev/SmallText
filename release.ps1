@@ -92,15 +92,26 @@ Write-Host "      Tag v$Version ready" -ForegroundColor Green
 # Step 7: Push to GitHub
 Write-Host "`n[7/8] Pushing to GitHub..." -ForegroundColor Yellow
 
-# Suppress all output and only check exit code
-$null = git push origin main 2>&1
-if ($LASTEXITCODE -ne 0) {
+# Temporarily disable error action preference for git commands (they write to stderr even on success)
+$oldErrorActionPreference = $ErrorActionPreference
+$ErrorActionPreference = "SilentlyContinue"
+
+git push origin main *>&1 | Out-Null
+$pushResult = $LASTEXITCODE
+
+$ErrorActionPreference = $oldErrorActionPreference
+
+if ($pushResult -ne 0) {
     Write-Host "      Push to main failed!" -ForegroundColor Red
     exit 1
 }
 
-$null = git push --force origin "v$Version" 2>&1
-if ($LASTEXITCODE -ne 0) {
+$ErrorActionPreference = "SilentlyContinue"
+git push --force origin "v$Version" *>&1 | Out-Null
+$tagPushResult = $LASTEXITCODE
+$ErrorActionPreference = $oldErrorActionPreference
+
+if ($tagPushResult -ne 0) {
     Write-Host "      Tag push failed!" -ForegroundColor Red
     exit 1
 }
