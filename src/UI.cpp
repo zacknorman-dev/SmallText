@@ -418,101 +418,29 @@ void UI::drawMainMenu() {
     display->setFont(&FreeSansBold12pt7b);
     display->setCursor(80, 20);
     display->print("MAIN MENU");
-    
-    // Battery icon in upper right
     drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
-    
     display->setFont(&FreeSans9pt7b);
     
+    String items[] = {"Create Village", "Join Village"};
     int y = 50;
     int lineHeight = 25;
     
-    // Create Village
-    if (menuSelection == 0) {
-        display->fillRect(5, y - 18, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
-    }
-    display->setCursor(10, y);
-    display->print("Create Village");
-    if (menuSelection == 0) {
-        display->setTextColor(GxEPD_BLACK);
-    }
-    y += lineHeight;
-    
-    // Join Village
-    if (menuSelection == 1) {
-        display->fillRect(5, y - 18, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
-    }
-    display->setCursor(10, y);
-    display->print("Join Village");
-    if (menuSelection == 1) {
-        display->setTextColor(GxEPD_BLACK);
+    for (int i = 0; i < 2; i++) {
+        drawMenuItem(items[i], y, i == menuSelection, lineHeight);
+        y += lineHeight;
     }
 }
 
 void UI::drawVillageMenu() {
-    // Title - show conversation name in bold 9pt
-    display->setFont(&FreeSansBold9pt7b);
-    display->setCursor(10, 18);
-    display->print(existingVillageName);  // Show conversation name instead of "VILLAGE MENU"
+    drawMenuHeader(existingVillageName);
     
-    // Horizontal line under title
-    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
-    
-    // Battery icon at original position
-    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
-    
-    display->setFont(&FreeSans9pt7b);
-    
+    String items[] = {"Messages", "Add Member", "View Members", "Delete Group"};
     int y = 38;
     int lineHeight = 20;
     
-    // Messages
-    if (menuSelection == 0) {
-        display->fillRect(5, y - 15, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
-    }
-    display->setCursor(10, y);
-    display->print("Messages");
-    if (menuSelection == 0) {
-        display->setTextColor(GxEPD_BLACK);
-    }
-    y += lineHeight;
-    
-    // Add Member
-    if (menuSelection == 1) {
-        display->fillRect(5, y - 15, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
-    }
-    display->setCursor(10, y);
-    display->print("Add Member");
-    if (menuSelection == 1) {
-        display->setTextColor(GxEPD_BLACK);
-    }
-    y += lineHeight;
-    
-    // View Members
-    if (menuSelection == 2) {
-        display->fillRect(5, y - 15, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
-    }
-    display->setCursor(10, y);
-    display->print("View Members");
-    if (menuSelection == 2) {
-        display->setTextColor(GxEPD_BLACK);
-    }
-    y += lineHeight;
-    
-    // Delete Group
-    if (menuSelection == 3) {
-        display->fillRect(5, y - 15, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
-        display->setTextColor(GxEPD_WHITE);
-    }
-    display->setCursor(10, y);
-    display->print("Delete Group");
-    if (menuSelection == 3) {
-        display->setTextColor(GxEPD_BLACK);
+    for (int i = 0; i < 4; i++) {
+        drawMenuItem(items[i], y, i == menuSelection, lineHeight);
+        y += lineHeight;
     }
 }
 
@@ -1635,6 +1563,28 @@ void UI::showMessage(const String& title, const String& message, int durationMs)
 
 void UI::clear() {
     display->fillScreen(GxEPD_WHITE);
+}
+
+// Menu Helper Functions
+void UI::drawMenuHeader(const String& title) {
+    display->setFont(&FreeSansBold9pt7b);
+    display->setCursor(10, 18);
+    display->print(title);
+    display->drawLine(0, 22, SCREEN_WIDTH, 22, GxEPD_BLACK);
+    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
+    display->setFont(&FreeSans9pt7b);
+}
+
+void UI::drawMenuItem(const String& text, int y, bool selected, int lineHeight) {
+    if (selected) {
+        display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+        display->setTextColor(GxEPD_WHITE);
+    }
+    display->setCursor(10, y);
+    display->print(text);
+    if (selected) {
+        display->setTextColor(GxEPD_BLACK);
+    }
 }
 
 void UI::showPoweringDown() {

@@ -88,6 +88,10 @@ private:
     // Callback to check if user is typing (defers display updates during typing)
     bool (*typingCheckCallback)();
     
+    // Menu helper functions
+    void drawMenuHeader(const String& title);
+    void drawMenuItem(const String& text, int y, bool selected, int lineHeight = 18);
+    
     void drawSplash();
     void drawVillageSelect();
     void drawMainMenu();
