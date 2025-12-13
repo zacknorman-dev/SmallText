@@ -671,6 +671,42 @@ String MQTTMessenger::sendShout(const String& message) {
     }
 }
 
+String MQTTMessenger::sendSystemMessage(const String& message, const String& systemName) {
+    if (!isConnected() || !encryption) {
+        Serial.println("[MQTT] Not connected or no encryption");
+        return "";
+    }
+    
+    String msgId = generateMessageId();
+    
+    // Format: SHOUT:villageId:*:systemName:system:msgId:content:0:0
+    // Use "system" as MAC address to indicate it's a system message
+    String formatted = "SHOUT:" + currentVillageId + ":*:" + systemName + ":system:" + 
+                      msgId + ":" + message + ":0:0";
+    
+    // Encrypt
+    uint8_t encrypted[MAX_CIPHERTEXT];
+    size_t encryptedLen;
+    if (!encryption->encryptString(formatted, encrypted, MAX_CIPHERTEXT, &encryptedLen)) {
+        Serial.println("[MQTT] Encryption failed");
+        return "";
+    }
+    
+    // Publish to shout topic with QoS 1
+    String topic = generateTopic("shout");
+    int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), (const char*)encrypted, 
+                                        encryptedLen, 1, 0);  // QoS 1, retain=0
+    
+    if (msg_id >= 0) {
+        Serial.println("[MQTT] SYSTEM message sent from " + systemName + ": " + message);
+        logger.info("MQTT SYSTEM sent: " + message);
+        return msgId;
+    } else {
+        Serial.println("[MQTT] Publish failed");
+        return "";
+    }
+}
+
 String MQTTMessenger::sendWhisper(const String& recipientMAC, const String& message) {
     if (!isConnected() || !encryption) {
         Serial.println("[MQTT] Not connected or no encryption");
@@ -1226,6 +1262,26 @@ bool MQTTMessenger::publishInvite(const String& inviteCode, const String& villag
     } else {
         Serial.println("[MQTT] Invite publish failed");
         logger.error("Invite publish failed");
+        return false;
+    }
+}
+
+bool MQTTMessenger::unpublishInvite(const String& inviteCode) {
+    if (!connected || !mqttClient) {
+        Serial.println("[MQTT] Cannot unpublish invite - not connected");
+        return false;
+    }
+    
+    // Publish empty retained message to clear it
+    String topic = "smoltxt/invites/" + inviteCode;
+    int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), "", 0, 1, 1);  // QoS 1, retain=1, empty payload
+    
+    if (msg_id >= 0) {
+        Serial.println("[MQTT] Invite unpublished (cleared): " + inviteCode);
+        logger.info("Invite unpublished: code=" + inviteCode);
+        return true;
+    } else {
+        Serial.println("[MQTT] Invite unpublish failed");
         return false;
     }
 }

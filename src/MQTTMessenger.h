@@ -110,11 +110,13 @@ public:
     
     // Invite code system
     bool publishInvite(const String& inviteCode, const String& villageId, const String& villageName, const uint8_t* encryptionKey);
+    bool unpublishInvite(const String& inviteCode);
     bool subscribeToInvite(const String& inviteCode);
     bool unsubscribeFromInvite(const String& inviteCode);
     
     // Messaging API (matches LoRaMessenger)
     String sendShout(const String& message);
+    String sendSystemMessage(const String& message, const String& systemName);
     String sendWhisper(const String& recipientMAC, const String& message);
     bool sendAck(const String& messageId, const String& targetMAC, const String& villageId);
     bool sendReadReceipt(const String& messageId, const String& targetMAC);

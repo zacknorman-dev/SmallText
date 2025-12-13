@@ -1916,6 +1916,20 @@ void handleUsernameInput() {
           Serial.println("[Village] Announced village name: " + village.getVillageName());
         }
         
+        // Send initial message to the conversation from SmolTxt
+        String username = village.getUsername();
+        if (username.isEmpty()) {
+          username = "Creator";
+        }
+        String joinMsg = username + " joined the conversation";
+        
+        // Send as system message from SmolTxt
+        String systemMsgId = mqttMessenger.sendSystemMessage(joinMsg, "SmolTxt");
+        if (systemMsgId.isEmpty()) {
+          // Fallback if system message not available
+          mqttMessenger.sendShout(joinMsg);
+        }
+        
         // Go to village created menu
         appState = APP_VILLAGE_CREATED;
         ui.setState(STATE_VILLAGE_CREATED);
@@ -2153,9 +2167,11 @@ void handleInviteCodeDisplay() {
   
   // Check if code expired
   if (millis() > ui.getInviteExpiry()) {
+    String code = ui.getInviteCode();
     ui.clearInviteCode();
-    // TODO: Unpublish invite code from MQTT
-    // mqttMessenger.unpublishInvite(code);
+    
+    // Unpublish invite code from MQTT to clear retained message
+    mqttMessenger.unpublishInvite(code);
     
     String infoMsg = "The invite code has\nexpired.\n\nPress ENTER to continue";
     ui.showMessage("Code Expired", infoMsg, 0);
@@ -2176,9 +2192,10 @@ void handleInviteCodeDisplay() {
   if (keyboard.hasInput() || keyboard.isEnterPressed() || keyboard.isLeftPressed()) {
     String code = ui.getInviteCode();
     ui.clearInviteCode();
-    // Unsubscribe from invite topic
+    // Unsubscribe and unpublish invite
     if (!code.isEmpty()) {
       mqttMessenger.unsubscribeFromInvite(code);
+      mqttMessenger.unpublishInvite(code);
     }
     
     appState = returnToState;
@@ -2357,26 +2374,37 @@ void handleJoinCodeInput() {
                 encryption.setKey(village.getEncryptionKey());
                 
                 // Show success screen
-                String successMsg = "You joined\nsuccessfully!\n\n" + pendingInvite.villageName;
+                String successMsg = "Successfully\njoined:\n\n" + pendingInvite.villageName;
                 ui.showMessage("Success!", successMsg, 0);
                 ui.update();
-                smartDelay(1500);  // Show success for 1.5 seconds
+                smartDelay(2000);  // Show success for 2 seconds
+                // Send announcement message that user joined from SmolTxt
+                String joinUsername = village.getUsername();
+                if (joinUsername.isEmpty() || joinUsername == "member") {
+                  joinUsername = "A new member";
+                }
+                String joinAnnouncement = joinUsername + " joined the conversation";
                 
-                // Show loading into conversation
-                ui.showMessage("Loading...", "Opening\nconversation\n\nOne moment...", 0);
-                ui.update();
-                smartDelay(800);
+                // Send as system message from SmolTxt
+                String systemMsgId = mqttMessenger.sendSystemMessage(joinAnnouncement, "SmolTxt");
+                if (systemMsgId.isEmpty()) {
+                  // Fallback if system message not available
+                  mqttMessenger.sendShout(joinAnnouncement);
+                }
                 
-                appState = APP_CONVERSATION_LIST;
-                ui.setState(STATE_CONVERSATION_LIST);
-                ui.resetMenuSelection();
+                // Brief delay to let the message send
+                smartDelay(200);
+                
+                // Go directly to messaging screen
+                appState = APP_MESSAGING;
+                ui.setState(STATE_MESSAGING);
                 ui.update();
               } else {
                 Serial.println("[Invite] Failed to load village after save");
                 ui.showMessage("Error", "Failed to load\nvillage data\n\nPress ENTER", 0);
                 while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
-                appState = APP_JOIN_EXPLAIN;
-                ui.setState(STATE_JOIN_EXPLAIN);
+                appState = APP_MAIN_MENU;
+                ui.setState(STATE_MAIN_MENU);
                 ui.resetMenuSelection();
                 ui.update();
               }
@@ -2384,8 +2412,8 @@ void handleJoinCodeInput() {
               Serial.println("[Invite] Failed to save village");
               ui.showMessage("Error", "Failed to save\nvillage data\n\nPress ENTER", 0);
               while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
-              appState = APP_JOIN_EXPLAIN;
-              ui.setState(STATE_JOIN_EXPLAIN);
+              appState = APP_MAIN_MENU;
+              ui.setState(STATE_MAIN_MENU);
               ui.resetMenuSelection();
               ui.update();
             }
@@ -2393,8 +2421,8 @@ void handleJoinCodeInput() {
             Serial.println("[Invite] No available slots");
             ui.showMessage("Error", "No available slots\n(max 10 conversations)\n\nPress ENTER", 0);
             while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
-            appState = APP_JOIN_EXPLAIN;
-            ui.setState(STATE_JOIN_EXPLAIN);
+            appState = APP_MAIN_MENU;
+            ui.setState(STATE_MAIN_MENU);
             ui.resetMenuSelection();
             ui.update();
           }
@@ -2403,20 +2431,20 @@ void handleJoinCodeInput() {
         } else {
           Serial.println("[Invite] Timeout waiting for invite data");
           logger.error("Invite code timeout: " + code);
-          String errorMsg = "Code not found\nor has expired:\n" + code + "\n\nPress ENTER";
+          String errorMsg = "Code not found\nor has expired\n\nCheck the code\nand try again\n\nPress ENTER";
           ui.showMessage("Not Found", errorMsg, 0);
           while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
-          appState = APP_JOIN_EXPLAIN;
-          ui.setState(STATE_JOIN_EXPLAIN);
+          appState = APP_MAIN_MENU;
+          ui.setState(STATE_MAIN_MENU);
           ui.resetMenuSelection();
           ui.update();
         }
       } else {
         Serial.println("[Invite] Failed to subscribe to invite topic");
-        ui.showMessage("Error", "Network error\n\nPress ENTER", 0);
+        ui.showMessage("Error", "Network error\n\nPlease try again\n\nPress ENTER", 0);
         while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
-        appState = APP_JOIN_EXPLAIN;
-        ui.setState(STATE_JOIN_EXPLAIN);
+        appState = APP_MAIN_MENU;
+        ui.setState(STATE_MAIN_MENU);
         ui.resetMenuSelection();
         ui.update();
       }
