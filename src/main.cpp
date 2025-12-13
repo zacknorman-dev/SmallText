@@ -2649,8 +2649,25 @@ void handleMessaging() {
     return;
   }
   
-  // Left arrow to go back to village menu
+  // Handle backspace FIRST (before navigation) to avoid accidental exits
+  if (keyboard.isBackspacePressed()) {
+    if (ui.getInputText().length() > 0) {
+      ui.removeInputChar();
+      ui.updatePartial();
+      lastMessagingActivity = millis();  // Update timestamp after backspace
+    }
+    lastKeyPress = millis();
+    return;
+  }
+  
+  // Left arrow to go back to village menu (ONLY if no text is being typed)
   if (keyboard.isLeftPressed()) {
+    // If there's text being typed, ignore LEFT arrow to prevent accidental exits
+    if (ui.getInputText().length() > 0) {
+      lastKeyPress = millis();
+      return;  // Stay in messaging, don't navigate away
+    }
+    
     inMessagingScreen = false;  // Clear flag - leaving messages
     lastMessagingActivity = millis();
     appState = APP_VILLAGE_MENU;

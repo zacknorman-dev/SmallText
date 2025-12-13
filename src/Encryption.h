@@ -7,7 +7,7 @@
 
 #define NONCE_SIZE 12
 #define TAG_SIZE 16
-#define MAX_PLAINTEXT 200
+#define MAX_PLAINTEXT 512
 #define MAX_CIPHERTEXT (MAX_PLAINTEXT + NONCE_SIZE + TAG_SIZE)
 
 class Encryption {

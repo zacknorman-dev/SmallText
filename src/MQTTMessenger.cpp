@@ -554,8 +554,8 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
             m.villageId = msg.villageId;  // Pass village ID for multi-village support
             
             // Determine if this is a received message or our own sent message
-            // Compare sender username with this village's username
-            if (msgVillage && msg.senderName == msgVillage->username) {
+            // Compare sender MAC address with our MAC address (NOT username!)
+            if (msg.senderMAC == myMacStr) {
                 // This is OUR message (synced back from another device)
                 m.received = false;
                 m.status = MSG_SENT;  // Our sent messages start as MSG_SENT
@@ -928,7 +928,7 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
         serializeJson(doc, payload);
         
         // Encrypt using village-specific key
-        uint8_t encrypted[512];
+        uint8_t encrypted[600];  // MAX_CIPHERTEXT = 512+12+16 = 540 bytes
         int encryptedLen = villageEncryption.encrypt((uint8_t*)payload.c_str(), payload.length(), encrypted, sizeof(encrypted));
         
         if (encryptedLen <= 0) {
