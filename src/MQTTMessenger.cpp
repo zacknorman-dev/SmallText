@@ -1,5 +1,6 @@
 #include "MQTTMessenger.h"
 #include "Logger.h"
+#include <mbedtls/base64.h>
 
 // Let's Encrypt R12 intermediate certificate for HiveMQ Cloud TLS
 // HiveMQ Cloud uses: Server cert -> R12 (intermediate) -> ISRG Root X1 (root)
@@ -50,6 +51,7 @@ MQTTMessenger::MQTTMessenger() {
     onMessageRead = nullptr;
     onCommandReceived = nullptr;
     onSyncRequest = nullptr;
+    onInviteReceived = nullptr;
     lastReconnectAttempt = 0;
     lastPingTime = 0;
     lastSeenCleanup = 0;
@@ -209,6 +211,10 @@ void MQTTMessenger::setSyncRequestCallback(void (*callback)(const String& reques
 
 void MQTTMessenger::setVillageNameCallback(void (*callback)(const String& villageId, const String& villageName)) {
     onVillageNameReceived = callback;
+}
+
+void MQTTMessenger::setInviteCallback(void (*callback)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen)) {
+    onInviteReceived = callback;
 }
 
 String MQTTMessenger::generateMessageId() {
@@ -399,6 +405,47 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
     
     String villageId = topic.substring(firstSlash + 1, secondSlash);
     Serial.println("[MQTT] Message for village: " + villageId);
+    
+    // Check for invite code topics (smoltxt/invites/{code})
+    if (topic.startsWith("smoltxt/invites/")) {
+        String inviteCode = topic.substring(16);  // Skip "smoltxt/invites/"
+        Serial.println("[MQTT] Received invite data for code: " + inviteCode);
+        
+        // Parse JSON payload
+        String message = "";
+        for (unsigned int i = 0; i < length; i++) {
+            message += (char)payload[i];
+        }
+        
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, message);
+        if (error) {
+            Serial.println("[MQTT] Invite JSON parse error: " + String(error.c_str()));
+            return;
+        }
+        
+        String inviteVillageId = doc["villageId"] | "";
+        String inviteVillageName = doc["villageName"] | "";
+        String encodedKey = doc["key"] | "";
+        
+        // Decode the encryption key from base64
+        uint8_t decodedKey[32];
+        size_t decodedLen = 0;
+        mbedtls_base64_decode(decodedKey, sizeof(decodedKey), &decodedLen, 
+                            (const unsigned char*)encodedKey.c_str(), encodedKey.length());
+        
+        if (decodedLen == 32) {
+            Serial.println("[MQTT] Invite received: " + inviteVillageName + " (" + inviteVillageId + ")");
+            logger.info("Invite received: " + inviteVillageName);
+            
+            if (onInviteReceived) {
+                onInviteReceived(inviteVillageId, inviteVillageName, decodedKey, 32);
+            }
+        } else {
+            Serial.println("[MQTT] Invite key decode failed: wrong length " + String(decodedLen));
+        }
+        return;
+    }
     
     // Check for village name announcement (unencrypted, just the name)
     if (topic.endsWith("/villagename")) {
@@ -1133,5 +1180,87 @@ VillageSubscription* MQTTMessenger::findVillageSubscription(const String& villag
         }
     }
     return nullptr;
+}
+
+// ============ Invite Code Protocol ============
+
+bool MQTTMessenger::publishInvite(const String& inviteCode, const String& villageId, const String& villageName, const uint8_t* encryptionKey) {
+    if (!connected || !mqttClient) {
+        Serial.println("[MQTT] Cannot publish invite - not connected");
+        logger.error("Invite publish failed: not connected");
+        return false;
+    }
+    
+    // Create JSON payload with village info
+    JsonDocument doc;
+    doc["villageId"] = villageId;
+    doc["villageName"] = villageName;
+    doc["timestamp"] = millis();
+    
+    // Base64 encode the encryption key
+    char encodedKey[64];
+    size_t encodedLen = 0;
+    mbedtls_base64_encode((unsigned char*)encodedKey, sizeof(encodedKey), &encodedLen, encryptionKey, 32);
+    encodedKey[encodedLen] = '\0';
+    doc["key"] = String(encodedKey);
+    
+    String payload;
+    serializeJson(doc, payload);
+    
+    Serial.println("[MQTT] Publishing invite to code: " + inviteCode);
+    Serial.println("[MQTT] Invite payload: " + payload);
+    
+    // Publish unencrypted to invite topic (the invite code itself is the secret)
+    String topic = "smoltxt/invites/" + inviteCode;
+    int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), payload.c_str(), 
+                                        payload.length(), 1, 1);  // QoS 1, retain=1
+    
+    if (msg_id >= 0) {
+        Serial.println("[MQTT] Invite published successfully");
+        logger.info("Invite published: code=" + inviteCode);
+        return true;
+    } else {
+        Serial.println("[MQTT] Invite publish failed");
+        logger.error("Invite publish failed");
+        return false;
+    }
+}
+
+bool MQTTMessenger::subscribeToInvite(const String& inviteCode) {
+    if (!connected || !mqttClient) {
+        Serial.println("[MQTT] Cannot subscribe to invite - not connected");
+        return false;
+    }
+    
+    String topic = "smoltxt/invites/" + inviteCode;
+    int msg_id = esp_mqtt_client_subscribe(mqttClient, topic.c_str(), 1);
+    
+    if (msg_id >= 0) {
+        Serial.println("[MQTT] Subscribed to invite: " + inviteCode);
+        logger.info("Subscribed to invite: " + inviteCode);
+        return true;
+    } else {
+        Serial.println("[MQTT] Failed to subscribe to invite");
+        logger.error("Invite subscribe failed");
+        return false;
+    }
+}
+
+bool MQTTMessenger::unsubscribeFromInvite(const String& inviteCode) {
+    if (!mqttClient) {
+        return false;
+    }
+    
+    String topic = "smoltxt/invites/" + inviteCode;
+    int msg_id = esp_mqtt_client_unsubscribe(mqttClient, topic.c_str());
+    
+    if (msg_id >= 0) {
+        Serial.println("[MQTT] Unsubscribed from invite: " + inviteCode);
+        logger.info("Unsubscribed from invite: " + inviteCode);
+        return true;
+    } else {
+        Serial.println("[MQTT] Failed to unsubscribe from invite");
+        return false;
+    }
 }
 

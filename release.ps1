@@ -95,28 +95,27 @@ Write-Host "      Tag v$Version ready" -ForegroundColor Green
 # Step 7: Push to GitHub
 Write-Host "`n[7/8] Pushing to GitHub..." -ForegroundColor Yellow
 
-# Temporarily disable error action preference for git commands (they write to stderr even on success)
-$oldErrorActionPreference = $ErrorActionPreference
-$ErrorActionPreference = "SilentlyContinue"
-
-git push origin main 2>&1 | Out-String | Write-Verbose
-$pushResult = $LASTEXITCODE
-
-$ErrorActionPreference = $oldErrorActionPreference
-
-if ($pushResult -ne 0) {
-    Write-Host "      Push to main failed (may already be up to date)" -ForegroundColor Yellow
+# Push main branch
+Write-Host "      Pushing main branch..." -ForegroundColor Cyan
+$pushOutput = git push origin main 2>&1 | Out-String
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "      Main branch pushed successfully" -ForegroundColor Green
+} else {
+    Write-Host "      Push output: $pushOutput" -ForegroundColor Yellow
+    if ($pushOutput -notlike "*Everything up-to-date*") {
+        Write-Host "      WARNING: Push to main may have failed" -ForegroundColor Yellow
+    }
 }
 
-$ErrorActionPreference = "SilentlyContinue"
-git push --force origin "v$Version" 2>&1 | Out-String | Write-Verbose
-$tagPushResult = $LASTEXITCODE
-$ErrorActionPreference = $oldErrorActionPreference
-
-if ($tagPushResult -ne 0) {
-    Write-Host "      Tag push may have failed (continuing anyway)" -ForegroundColor Yellow
+# Push tag
+Write-Host "      Pushing tag v$Version..." -ForegroundColor Cyan
+$tagOutput = git push --force origin "v$Version" 2>&1 | Out-String
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "      Tag v$Version pushed successfully" -ForegroundColor Green
+} else {
+    Write-Host "      Tag output: $tagOutput" -ForegroundColor Yellow
+    Write-Host "      WARNING: Tag push may have failed" -ForegroundColor Yellow
 }
-Write-Host "      Push completed" -ForegroundColor Green
 
 # Step 8: Create GitHub Release
 Write-Host "`n[8/8] Creating GitHub Release..." -ForegroundColor Yellow

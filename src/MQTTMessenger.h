@@ -47,6 +47,7 @@ private:
     void (*onCommandReceived)(const String& command);
     void (*onSyncRequest)(const String& requestorMAC, unsigned long timestamp);  // Sync request from peer
     void (*onVillageNameReceived)(const String& villageId, const String& villageName);  // Village name announcement
+    void (*onInviteReceived)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen);  // Invite code data
     
     // Connection management
     unsigned long lastReconnectAttempt;
@@ -102,9 +103,15 @@ public:
     void setCommandCallback(void (*callback)(const String& command));
     void setSyncRequestCallback(void (*callback)(const String& requestorMAC, unsigned long timestamp));
     void setVillageNameCallback(void (*callback)(const String& villageId, const String& villageName));
+    void setInviteCallback(void (*callback)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen));
     
     // Village coordination
     bool announceVillageName(const String& villageName);  // Creator broadcasts village name
+    
+    // Invite code system
+    bool publishInvite(const String& inviteCode, const String& villageId, const String& villageName, const uint8_t* encryptionKey);
+    bool subscribeToInvite(const String& inviteCode);
+    bool unsubscribeFromInvite(const String& inviteCode);
     
     // Messaging API (matches LoRaMessenger)
     String sendShout(const String& message);

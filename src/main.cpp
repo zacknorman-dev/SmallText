@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include <LittleFS.h>
+#include <mbedtls/base64.h>
 #include "version.h"
 #include "Village.h"
 #include "Encryption.h"
@@ -702,6 +704,25 @@ void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp)
   mqttMessenger.sendSyncResponse(requestorMAC, newMessages, 1);
 }
 
+// Global variable to store pending invite data
+struct PendingInvite {
+  String villageId;
+  String villageName;
+  uint8_t encryptionKey[32];
+  bool received = false;
+} pendingInvite;
+
+void onInviteReceived(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen) {
+  Serial.println("[Invite] Received invite data: " + villageName + " (" + villageId + ")");
+  logger.info("Invite received: " + villageName);
+  
+  // Store invite data for processing in main loop
+  pendingInvite.villageId = villageId;
+  pendingInvite.villageName = villageName;
+  memcpy(pendingInvite.encryptionKey, encryptedKey, 32);
+  pendingInvite.received = true;
+}
+
 void onVillageNameReceived(const String& villageId, const String& villageName) {
   Serial.println("[Village] Received village name announcement for " + villageId + ": " + villageName);
   
@@ -884,6 +905,7 @@ void setup() {
         mqttMessenger.setCommandCallback(onCommandReceived);
         mqttMessenger.setSyncRequestCallback(onSyncRequest);
         mqttMessenger.setVillageNameCallback(onVillageNameReceived);
+        mqttMessenger.setInviteCallback(onInviteReceived);
         
         // Set encryption
         mqttMessenger.setEncryption(&encryption);
@@ -2098,8 +2120,15 @@ void handleInviteExplain() {
       unsigned long expiry = millis() + 300000;  // 5 minutes from now
       ui.setInviteCode(code, expiry);
       
-      // TODO: Publish invite code to MQTT
-      // mqttMessenger.publishInvite(code, village.getVillageId(), village.getEncryptionKey());
+      // Publish invite code to MQTT
+      Serial.println("[Invite] Publishing code: " + code);
+      if (mqttMessenger.publishInvite(code, village.getVillageId(), village.getVillageName(), village.getEncryptionKey())) {
+        Serial.println("[Invite] Code published successfully");
+        logger.info("Invite code published: " + code);
+      } else {
+        Serial.println("[Invite] Failed to publish code");
+        logger.error("Invite code publish failed");
+      }
       
       appState = APP_INVITE_CODE_DISPLAY;
       ui.setState(STATE_INVITE_CODE_DISPLAY);
@@ -2141,9 +2170,12 @@ void handleInviteCodeDisplay() {
   
   // Any key pressed - cancel and go back
   if (keyboard.hasInput() || keyboard.isEnterPressed() || keyboard.isLeftPressed()) {
+    String code = ui.getInviteCode();
     ui.clearInviteCode();
-    // TODO: Unpublish invite code from MQTT
-    // mqttMessenger.unpublishInvite(code);
+    // Unsubscribe from invite topic
+    if (!code.isEmpty()) {
+      mqttMessenger.unsubscribeFromInvite(code);
+    }
     
     appState = returnToState;
     ui.setState(returnToState == APP_VILLAGE_MENU ? STATE_VILLAGE_MENU : STATE_VILLAGE_CREATED);
@@ -2236,19 +2268,134 @@ void handleJoinCodeInput() {
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     String code = ui.getInputText();
     if (code.length() == 8) {
-      // TODO: Look up invite code in MQTT and join village
-      // For now, show error message
-      String infoMsg = "Invite code lookup not\nyet implemented.\n\nPress ENTER to continue";
-      ui.showMessage("Not Available", infoMsg, 0);
-      while (!keyboard.isEnterPressed() && !keyboard.isRightPressed()) {
-        keyboard.update();
-        smartDelay(50);
-      }
+      Serial.println("[Invite] Attempting to join with code: " + code);
+      logger.info("Join attempt with code: " + code);
       
-      appState = APP_JOIN_EXPLAIN;
-      ui.setState(STATE_JOIN_EXPLAIN);
-      ui.resetMenuSelection();
-      ui.update();
+      // Subscribe to invite topic
+      if (mqttMessenger.subscribeToInvite(code)) {
+        Serial.println("[Invite] Subscribed, waiting for invite data...");
+        ui.showMessage("Joining...", "Looking up code...\n\nPlease wait", 0);
+        ui.update();
+        
+        // Wait up to 10 seconds for invite data
+        pendingInvite.received = false;
+        unsigned long startWait = millis();
+        while (!pendingInvite.received && (millis() - startWait < 10000)) {
+          smartDelay(100);
+          if (pendingInvite.received) break;
+        }
+        
+        // Unsubscribe from invite topic
+        mqttMessenger.unsubscribeFromInvite(code);
+        
+        if (pendingInvite.received) {
+          // Create village by manually building JSON and saving to slot
+          Serial.println("[Invite] Creating village: " + pendingInvite.villageName);
+          
+          // Find available slot
+          int slot = -1;
+          for (int i = 0; i < 10; i++) {
+            if (!Village::hasVillageInSlot(i)) {
+              slot = i;
+              break;
+            }
+          }
+          
+          if (slot >= 0) {
+            // Build village JSON manually
+            JsonDocument doc;
+            doc["villageId"] = pendingInvite.villageId;
+            doc["villageName"] = pendingInvite.villageName;
+            doc["password"] = "invite-joined";  // Placeholder password
+            doc["isOwner"] = false;
+            doc["myUsername"] = "member";
+            
+            // Base64 encode the encryption key
+            char encodedKey[64];
+            size_t encodedLen = 0;
+            mbedtls_base64_encode((unsigned char*)encodedKey, sizeof(encodedKey), &encodedLen, 
+                                pendingInvite.encryptionKey, 32);
+            encodedKey[encodedLen] = '\0';
+            doc["encryptionKey"] = String(encodedKey);
+            
+            // Save to file
+            String filename = "/village_" + String(slot) + ".dat";
+            File file = LittleFS.open(filename, "w");
+            if (file) {
+              serializeJson(doc, file);
+              file.close();
+              
+              Serial.println("[Invite] Village saved to slot " + String(slot));
+              logger.info("Joined village: " + pendingInvite.villageName);
+              
+              // Load the village
+              if (village.loadFromSlot(slot)) {
+                currentVillageSlot = slot;
+                
+                // Subscribe to village on MQTT
+                mqttMessenger.addVillageSubscription(village.getVillageId(), village.getVillageName(), 
+                                                    "member", village.getEncryptionKey());
+                
+                // Show success and go to conversation list
+                String successMsg = "Successfully joined:\n" + pendingInvite.villageName + "\n\nPress ENTER to continue";
+                ui.showMessage("Success!", successMsg, 0);
+                while (!keyboard.isEnterPressed() && !keyboard.isRightPressed()) {
+                  keyboard.update();
+                  smartDelay(50);
+                }
+                
+                appState = APP_CONVERSATION_LIST;
+                ui.setState(STATE_CONVERSATION_LIST);
+                ui.resetMenuSelection();
+                ui.update();
+              } else {
+                Serial.println("[Invite] Failed to load village after save");
+                ui.showMessage("Error", "Failed to load\nvillage data\n\nPress ENTER", 0);
+                while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
+                appState = APP_JOIN_EXPLAIN;
+                ui.setState(STATE_JOIN_EXPLAIN);
+                ui.resetMenuSelection();
+                ui.update();
+              }
+            } else {
+              Serial.println("[Invite] Failed to save village");
+              ui.showMessage("Error", "Failed to save\nvillage data\n\nPress ENTER", 0);
+              while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
+              appState = APP_JOIN_EXPLAIN;
+              ui.setState(STATE_JOIN_EXPLAIN);
+              ui.resetMenuSelection();
+              ui.update();
+            }
+          } else {
+            Serial.println("[Invite] No available slots");
+            ui.showMessage("Error", "No available slots\n(max 10 conversations)\n\nPress ENTER", 0);
+            while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
+            appState = APP_JOIN_EXPLAIN;
+            ui.setState(STATE_JOIN_EXPLAIN);
+            ui.resetMenuSelection();
+            ui.update();
+          }
+          
+          pendingInvite.received = false;
+        } else {
+          Serial.println("[Invite] Timeout waiting for invite data");
+          logger.error("Invite code timeout: " + code);
+          ui.showMessage("Not Found", "Code not found or\nhas expired\n\nPress ENTER", 0);
+          while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
+          appState = APP_JOIN_EXPLAIN;
+          ui.setState(STATE_JOIN_EXPLAIN);
+          ui.resetMenuSelection();
+          ui.update();
+        }
+      } else {
+        Serial.println("[Invite] Failed to subscribe to invite topic");
+        ui.showMessage("Error", "Network error\n\nPress ENTER", 0);
+        while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
+        appState = APP_JOIN_EXPLAIN;
+        ui.setState(STATE_JOIN_EXPLAIN);
+        ui.resetMenuSelection();
+        ui.update();
+      }
     }
     smartDelay(300);
     return;
