@@ -1,0 +1,751 @@
+
+========== DEBUG LOG DUMP ==========
+Total entries: 466
+====================================
+
+[34909] INFO: Village created: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[34910] INFO: Log buffer pruned, removed 125 old entries
+[37224] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[38297] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[40273] INFO: Invite published: code=88076976
+[2267] INFO: ======== SYSTEM BOOT ========
+[2267] INFO: Build: Dec 12 2025 17:34:15
+[2267] INFO: System boot started
+[2267] INFO: Build: v0.54.5
+[8073] INFO: OTA Updater initialized, version: v0.54.5
+[8073] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[8585] INFO: WiFi connected: 192.168.8.156
+[8585] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[8585] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_241
+[8586] INFO: MQTT: User=smoltxt2
+[9019] INFO: MQTT: TLS enabled with R12 certificate
+[9019] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9021] INFO: MQTT messenger initialized
+[9407] INFO: MQTT: Subscribed to 4 villages
+[9407] INFO: OTA: Boot update check
+[13977] INFO: MQTT: Connected - subscribed to 4 villages
+[13996] INFO: OTA: Already on latest version
+[21715] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[21866] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[22060] INFO: Village name received: w00w (ID: 26f83d6f-4fc8-62f8-c3c8-d3afd3773a26)
+[2193] INFO: ======== SYSTEM BOOT ========
+[2193] INFO: Build: Dec 12 2025 17:34:15
+[2193] INFO: System boot started
+[2193] INFO: Build: v0.54.5
+[8006] INFO: OTA Updater initialized, version: v0.54.5
+[8006] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[12018] INFO: WiFi connected: 192.168.8.156
+[12018] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[12018] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_238
+[12019] INFO: MQTT: User=smoltxt2
+[12463] INFO: MQTT: TLS enabled with R12 certificate
+[12463] INFO: MQTT: Config set - clean_session=true keepalive=60
+[12465] INFO: MQTT messenger initialized
+[12974] INFO: MQTT: Subscribed to 4 villages
+[12974] INFO: OTA: Boot update check
+[18408] INFO: MQTT: Connected - subscribed to 4 villages
+[20738] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[20940] INFO: OTA: Update available v0.54.6
+[20942] INFO: OTA: New version available: v0.54.6
+[21235] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[2310] INFO: ======== SYSTEM BOOT ========
+[2310] INFO: Build: Dec 12 2025 17:51:45
+[2310] INFO: System boot started
+[2310] INFO: Build: v0.54.6
+[8117] INFO: OTA Updater initialized, version: v0.54.6
+[8117] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9129] INFO: WiFi connected: 192.168.8.156
+[9130] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9130] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_289
+[9130] INFO: MQTT: User=smoltxt2
+[9589] INFO: MQTT: TLS enabled with R12 certificate
+[9589] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9590] INFO: MQTT messenger initialized
+[10069] INFO: MQTT: Subscribed to 4 villages
+[10069] INFO: OTA: Boot update check
+[16057] INFO: MQTT: Connected - subscribed to 4 villages
+[16176] INFO: OTA: Already on latest version
+[42276] INFO: Village created: tobwe (ID: 287187b4-1fce-c434-bd53-b7390af3e118)
+[49877] INFO: Invite published: code=96557015
+[49977] INFO: Invite code published: 96557015
+[2289] INFO: ======== SYSTEM BOOT ========
+[2289] INFO: Build: Dec 12 2025 17:51:45
+[2289] INFO: System boot started
+[2289] INFO: Build: v0.54.6
+[8095] INFO: OTA Updater initialized, version: v0.54.6
+[8095] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9106] INFO: WiFi connected: 192.168.8.156
+[9106] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9107] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_241
+[9107] INFO: MQTT: User=smoltxt2
+[9600] INFO: MQTT: TLS enabled with R12 certificate
+[9600] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9601] INFO: MQTT messenger initialized
+[9994] INFO: MQTT: Subscribed to 5 villages
+[9994] INFO: OTA: Boot update check
+[11109] INFO: MQTT: Connected - subscribed to 5 villages
+[11208] INFO: OTA: Already on latest version
+[18185] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[18274] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[18416] INFO: Village name received: w00w (ID: 26f83d6f-4fc8-62f8-c3c8-d3afd3773a26)
+[2321] INFO: ======== SYSTEM BOOT ========
+[2321] INFO: Build: Dec 12 2025 17:51:45
+[2321] INFO: System boot started
+[2321] INFO: Build: v0.54.6
+[8126] INFO: OTA Updater initialized, version: v0.54.6
+[8126] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[13138] INFO: WiFi connected: 192.168.8.156
+[13138] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[13138] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_238
+[13139] INFO: MQTT: User=smoltxt2
+[13636] INFO: MQTT: TLS enabled with R12 certificate
+[13637] INFO: MQTT: Config set - clean_session=true keepalive=60
+[13638] INFO: MQTT messenger initialized
+[14507] INFO: MQTT: Subscribed to 5 villages
+[14507] INFO: OTA: Boot update check
+[15144] INFO: MQTT: Connected - subscribed to 5 villages
+[15782] INFO: OTA: Already on latest version
+[22294] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[22387] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[22561] INFO: Village name received: w00w (ID: 26f83d6f-4fc8-62f8-c3c8-d3afd3773a26)
+[23423] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[23497] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[23566] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[274076] INFO: Join attempt with code: 75168935
+[278797] INFO: Subscribed to invite: 75168935
+[279011] INFO: Invite received: too2
+[279011] INFO: Invite received: too2
+[283020] INFO: Unsubscribed from invite: 75168935
+[283284] INFO: Joined village: too2
+[283516] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[397824] ERROR: Sync request decrypt failed
+[408187] ERROR: Load messages failed: village not initialized
+[408187] INFO: Sync: Request sent, last=0
+[408206] INFO: Sync request sent
+[408441] INFO: Sync from e4cc3bba2010 ts=0
+[408441] INFO: Sync from e4cc3bba2010 (after t=0)
+[408707] ERROR: Load messages failed: village not initialized
+[414374] INFO: MQTT SHOUT sent: aa
+[414375] INFO: MQTT send: SUCCESS id=000652a100000001
+[414375] ERROR: Save message failed: village not initialized
+[2336] INFO: ======== SYSTEM BOOT ========
+[2337] INFO: Log buffer pruned, removed 125 old entries
+[2337] INFO: Build: Dec 12 2025 17:51:45
+[2337] INFO: System boot started
+[2337] INFO: Build: v0.54.6
+[8631] INFO: OTA Updater initialized, version: v0.54.6
+[8632] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9143] INFO: WiFi connected: 192.168.8.156
+[9143] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9144] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_241
+[9144] INFO: MQTT: User=smoltxt2
+[9144] INFO: MQTT: TLS enabled with R12 certificate
+[9144] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9146] INFO: MQTT messenger initialized
+[10067] INFO: MQTT: Subscribed to 6 villages
+[2270] INFO: ======== SYSTEM BOOT ========
+[2270] INFO: Build: Dec 12 2025 17:51:45
+[2270] INFO: System boot started
+[2270] INFO: Build: v0.54.6
+[8075] INFO: OTA Updater initialized, version: v0.54.6
+[8075] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[13087] INFO: WiFi connected: 192.168.8.156
+[13087] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[13087] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_238
+[13088] INFO: MQTT: User=smoltxt2
+[13540] INFO: MQTT: TLS enabled with R12 certificate
+[13540] INFO: MQTT: Config set - clean_session=true keepalive=60
+[13541] INFO: MQTT messenger initialized
+[14496] INFO: MQTT: Subscribed to 6 villages
+[14497] INFO: OTA: Boot update check
+[15028] INFO: MQTT: Connected - subscribed to 6 villages
+[15222] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[15534] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[15734] INFO: Village name received: w00w (ID: 26f83d6f-4fc8-62f8-c3c8-d3afd3773a26)
+[16220] INFO: OTA: Update available v0.54.7
+[16290] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[2292] INFO: ======== SYSTEM BOOT ========
+[2292] INFO: Build: Dec 12 2025 18:27:10
+[2292] INFO: System boot started
+[2292] INFO: Build: v0.54.7
+[8098] INFO: OTA Updater initialized, version: v0.54.7
+[8098] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9109] INFO: WiFi connected: 192.168.8.156
+[9110] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9110] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_292
+[9553] INFO: MQTT: User=smoltxt2
+[9553] INFO: MQTT: TLS enabled with R12 certificate
+[9553] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9555] INFO: MQTT messenger initialized
+[10559] INFO: MQTT: Subscribed to 6 villages
+[10559] INFO: OTA: Boot update check
+[10924] INFO: MQTT: Connected - subscribed to 6 villages
+[11934] INFO: OTA: Already on latest version
+[18075] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[18209] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[19097] INFO: Village name received: w00w (ID: 26f83d6f-4fc8-62f8-c3c8-d3afd3773a26)
+[19236] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[19473] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[19579] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[19672] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[176390] INFO: Village created: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[176661] INFO: MQTT SYSTEM sent: adama joined the conversation
+[177101] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[177620] INFO: Message saved: id=0002b21000000001 from=SmolTxt village=b334c257-f28e-bb6f-5916-30bfaa2235a4
+[178680] INFO: Updated message 0002b21000000001 to status 2
+[2287] INFO: ======== SYSTEM BOOT ========
+[2287] INFO: Build: Dec 12 2025 18:27:10
+[2287] INFO: System boot started
+[2288] INFO: Build: v0.54.7
+[8093] INFO: OTA Updater initialized, version: v0.54.7
+[8093] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[14104] INFO: WiFi connected: 192.168.8.156
+[14104] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[14105] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_239
+[14105] INFO: MQTT: User=smoltxt2
+[14603] INFO: MQTT: TLS enabled with R12 certificate
+[14603] INFO: MQTT: Config set - clean_session=true keepalive=60
+[14605] INFO: MQTT messenger initialized
+[15030] INFO: MQTT: Subscribed to 6 villages
+[15030] INFO: OTA: Boot update check
+[16091] INFO: MQTT: Connected - subscribed to 6 villages
+[16245] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[16441] INFO: OTA: Already on latest version
+[16553] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[16718] INFO: Village name received: w00w (ID: 26f83d6f-4fc8-62f8-c3c8-d3afd3773a26)
+[17589] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[52109] INFO: Join attempt with code: 38311071
+[56831] INFO: Subscribed to invite: 38311071
+[57042] INFO: Invite received: uuuq
+[57042] INFO: Invite received: uuuq
+[61054] INFO: Unsubscribed from invite: 38311071
+[61218] INFO: Joined village: uuuq
+[61451] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[67517] INFO: MQTT SYSTEM sent: A new member joined the conversation
+[97086] ERROR: Load messages failed: village not initialized
+[97591] INFO: Sync: Request sent, last=0
+[97597] INFO: Sync request sent
+[97801] INFO: Sync from e4cc3bba2010 ts=0
+[97801] INFO: Sync from e4cc3bba2010 (after t=0)
+[98099] ERROR: Load messages failed: village not initialized
+[116048] ERROR: MQTT: Decryption failed for uuuq
+[119302] ERROR: MQTT: Decryption failed for uuuq
+[130469] ERROR: Sync request decrypt failed
+[133637] ERROR: Sync request decrypt failed
+[136729] ERROR: MQTT: Decryption failed for uuuq
+[150507] ERROR: Load messages failed: village not initialized
+[150507] INFO: Sync: Request sent, last=0
+[150513] INFO: Sync request sent
+[150739] INFO: Sync from e4cc3bba2010 ts=0
+[150739] INFO: Sync from e4cc3bba2010 (after t=0)
+[151014] ERROR: Load messages failed: village not initialized
+[159955] INFO: MQTT SHOUT sent: wwww
+[159955] INFO: MQTT send: SUCCESS id=000270cd00000003
+[159956] ERROR: Save message failed: village not initialized
+[236677] INFO: Village created: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[238235] INFO: MQTT SYSTEM sent: tw joined the conversation
+[238699] INFO: Village name received: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[239204] INFO: Message saved: id=0003a29500000004 from=SmolTxt village=95f4bb5b-01cc-a108-8d11-e6a51473ff19
+[240276] INFO: Updated message 0003a29500000004 to status 2
+[241281] INFO: Saved 585 total lines (all villages preserved)
+[241873] INFO: Village name received: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[245431] INFO: Invite published: code=54441019
+[245531] INFO: Invite code published: 54441019
+[285088] ERROR: MQTT: Decryption failed for llqq
+[288258] ERROR: MQTT: Decryption failed for llqq
+[291537] ERROR: MQTT: Decryption failed for llqq
+[291538] INFO: Log buffer pruned, removed 125 old entries
+[291542] ERROR: MQTT: Decryption failed for llqq
+[294812] ERROR: MQTT: Decryption failed for llqq
+[299594] INFO: Unsubscribed from invite: 54441019
+[300021] INFO: Invite unpublished: code=54441019
+[308452] INFO: MQTT SHOUT sent: twwww
+[308452] INFO: MQTT send: SUCCESS id=0004b4de00000006
+[308536] INFO: Message saved: id=0004b4de00000006 from=tw village=95f4bb5b-01cc-a108-8d11-e6a51473ff19
+[320635] ERROR: MQTT: Decryption failed for llqq
+[323894] ERROR: MQTT: Decryption failed for llqq
+[338229] ERROR: MQTT: Decryption failed for llqq
+[341403] ERROR: MQTT: Decryption failed for llqq
+[382311] INFO: Loading messages for village: 95f4bb5b-01cc-a108-8d11-e6a51473ff19
+[382686] ERROR: Sync request decrypt failed
+[383437] INFO: File stats: total=586 empty=266 parseErr=0 wrongUUID=318 matched=2
+[383437] INFO: Loaded 2 messages for village 95f4bb5b-01cc-a108-8d11-e6a51473ff19
+[383437] INFO: Sync: Request sent, last=1765593775
+[383444] INFO: Sync request sent
+[383693] INFO: Sync from e4cc3bba2010 ts=1765593775
+[383694] INFO: Sync from e4cc3bba2010 (after t=1765593775)
+[383959] INFO: Loading messages for village: 95f4bb5b-01cc-a108-8d11-e6a51473ff19
+[384707] INFO: File stats: total=586 empty=266 parseErr=0 wrongUUID=318 matched=2
+[384707] INFO: Loaded 2 messages for village 95f4bb5b-01cc-a108-8d11-e6a51473ff19
+[385496] INFO: Batch updated 1 messages to status 3
+[2288] INFO: ======== SYSTEM BOOT ========
+[2288] INFO: Build: Dec 12 2025 18:27:10
+[2288] INFO: System boot started
+[2289] INFO: Build: v0.54.7
+[8094] INFO: OTA Updater initialized, version: v0.54.7
+[8094] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9105] INFO: WiFi connected: 192.168.8.156
+[9106] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9106] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_241
+[9106] INFO: MQTT: User=smoltxt2
+[9853] INFO: MQTT: TLS enabled with R12 certificate
+[9853] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9854] INFO: MQTT messenger initialized
+[10339] INFO: MQTT: Subscribed to 8 villages
+[10339] INFO: OTA: Boot update check
+[19493] INFO: MQTT: Connected - subscribed to 8 villages
+[19562] INFO: OTA: Already on latest version
+[22660] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[29128] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[29285] INFO: Village name received: w00w (ID: 26f83d6f-4fc8-62f8-c3c8-d3afd3773a26)
+[30070] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[30815] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[31155] INFO: Village name received: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[31601] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[31766] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[32383] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[38835] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[38981] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[39125] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[308031] INFO: Power: Entering nap mode after inactivity
+[2109] INFO: ======== SYSTEM BOOT ========
+[2109] INFO: Build: Dec 12 2025 18:27:10
+[2109] INFO: System boot started
+[2110] INFO: Build: v0.54.7
+[7931] INFO: OTA Updater initialized, version: v0.54.7
+[7931] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[8943] INFO: WiFi connected: 192.168.8.156
+[8943] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[8943] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_40
+[8944] INFO: MQTT: User=smoltxt2
+[9452] INFO: MQTT: TLS enabled with R12 certificate
+[9452] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9454] INFO: MQTT messenger initialized
+[10455] INFO: MQTT: Subscribed to 8 villages
+[10455] INFO: OTA: Boot update check
+[11286] INFO: MQTT: Connected - subscribed to 8 villages
+[11599] INFO: OTA: Already on latest version
+[12980] INFO: Village name received: momdad (ID: 0d568fd1-ea64-cb15-3c5d-0201e981c4fa)
+[13193] INFO: Village name received: momdad (ID: 0d568fd1-ea64-cb15-3c5d-0201e981c4fa)
+[13384] INFO: Village name received: momdad (ID: 0d568fd1-ea64-cb15-3c5d-0201e981c4fa)
+[14458] INFO: Village name received: momdad (ID: 0d568fd1-ea64-cb15-3c5d-0201e981c4fa)
+[14637] INFO: Village name received: momdad (ID: 0d568fd1-ea64-cb15-3c5d-0201e981c4fa)
+[14849] INFO: Village name received: momdad (ID: 0d568fd1-ea64-cb15-3c5d-0201e981c4fa)
+[15471] INFO: Village name received: momdad (ID: 0d568fd1-ea64-cb15-3c5d-0201e981c4fa)
+[21463] INFO: Power: Entering nap mode
+[27100] INFO: Sync from f8c43bba2010 ts=1765575526
+[27100] INFO: Sync from f8c43bba2010 (after t=1765575526)
+[27100] ERROR: Load messages failed: village not initialized
+[27100] INFO: Sync: No new messages for f8c43bba2010
+[27104] INFO: Sync from f8c43bba2010 ts=1765575526
+[2324] INFO: ======== SYSTEM BOOT ========
+[2324] INFO: Build: Dec 12 2025 18:27:10
+[2324] INFO: System boot started
+[2325] INFO: Build: v0.54.7
+[8131] INFO: OTA Updater initialized, version: v0.54.7
+[8131] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[11643] INFO: WiFi connected: 192.168.8.156
+[11643] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[11644] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_239
+[11644] INFO: MQTT: User=smoltxt2
+[12153] INFO: MQTT: TLS enabled with R12 certificate
+[12154] INFO: MQTT: Config set - clean_session=true keepalive=60
+[12155] INFO: MQTT messenger initialized
+[12942] INFO: MQTT: Subscribed to 8 villages
+[12942] INFO: OTA: Boot update check
+[14353] INFO: OTA: Update available v0.54.8
+[14355] INFO: OTA: New version available: v0.54.8
+[17381] INFO: MQTT: Connected - subscribed to 8 villages
+[18751] INFO: OTA: User approved update
+[18926] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[2365] INFO: ======== SYSTEM BOOT ========
+[2365] INFO: Build: Dec 12 2025 19:06:17
+[2366] INFO: System boot started
+[2366] INFO: Build: v0.54.8
+[8171] INFO: OTA Updater initialized, version: v0.54.8
+[8171] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9183] INFO: WiFi connected: 192.168.8.156
+[9183] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9184] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_294
+[9184] INFO: MQTT: User=smoltxt2
+[9716] INFO: MQTT: TLS enabled with R12 certificate
+[9716] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9718] INFO: MQTT messenger initialized
+[10548] INFO: MQTT: Subscribed to 8 villages
+[10548] INFO: OTA: Boot update check
+[13023] INFO: OTA: Already on latest version
+[13393] INFO: MQTT: Connected - subscribed to 8 villages
+[15993] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[22490] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[22608] INFO: Village name received: w00w (ID: 26f83d6f-4fc8-62f8-c3c8-d3afd3773a26)
+[23476] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[23477] INFO: Log buffer pruned, removed 125 old entries
+[24214] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[24505] INFO: Village name received: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[24878] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[25477] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[28626] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[208200] INFO: Village created: rufu (ID: a8bf539d-9cce-cbef-2977-01b0ae1f0edf)
+[208905] INFO: MQTT SYSTEM sent: sal joined the conversation
+[211734] INFO: Message saved: id=0003300400000001 from=SmolTxt village=a8bf539d-9cce-cbef-2977-01b0ae1f0edf
+[212808] INFO: Updated message 0003300400000001 to status 2
+[213831] INFO: Saved 587 total lines (all villages preserved)
+[213839] INFO: Village name received: rufu (ID: a8bf539d-9cce-cbef-2977-01b0ae1f0edf)
+[218474] INFO: Village name received: rufu (ID: a8bf539d-9cce-cbef-2977-01b0ae1f0edf)
+[219612] INFO: Village name received: rufu (ID: a8bf539d-9cce-cbef-2977-01b0ae1f0edf)
+[222878] INFO: Village name received: rufu (ID: a8bf539d-9cce-cbef-2977-01b0ae1f0edf)
+[235558] INFO: Invite published: code=60469586
+[235658] INFO: Invite code published: 60469586
+[287904] ERROR: MQTT: Decryption failed for rufu
+[287909] ERROR: Sync request decrypt failed
+[290773] ERROR: MQTT: Decryption failed for rufu
+[290778] ERROR: MQTT: Decryption failed for rufu
+[290782] ERROR: MQTT: Decryption failed for rufu
+[299244] INFO: Unsubscribed from invite: 60469586
+[299245] INFO: Invite unpublished: code=60469586
+[2285] INFO: ======== SYSTEM BOOT ========
+[2285] INFO: Build: Dec 12 2025 19:06:17
+[2286] INFO: System boot started
+[2286] INFO: Build: v0.54.8
+[8092] INFO: OTA Updater initialized, version: v0.54.8
+[8092] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9103] INFO: WiFi connected: 192.168.8.156
+[9104] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9104] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_242
+[9104] INFO: MQTT: User=smoltxt2
+[9543] INFO: MQTT: TLS enabled with R12 certificate
+[9543] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9544] INFO: MQTT messenger initialized
+[10882] INFO: MQTT: Subscribed to 9 villages
+[10882] INFO: OTA: Boot update check
+[11094] INFO: MQTT: Connected - subscribed to 9 villages
+[11293] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[11849] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[12027] INFO: Village name received: w00w (ID: 26f83d6f-4fc8-62f8-c3c8-d3afd3773a26)
+[12223] INFO: OTA: Already on latest version
+[12414] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[12943] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[2313] INFO: ======== SYSTEM BOOT ========
+[2313] INFO: Build: Dec 12 2025 19:06:17
+[2314] INFO: System boot started
+[2314] INFO: Build: v0.54.8
+[8120] INFO: OTA Updater initialized, version: v0.54.8
+[8120] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[12131] INFO: WiFi connected: 192.168.8.156
+[12132] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[12641] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_239
+[12641] INFO: MQTT: User=smoltxt2
+[12641] INFO: MQTT: TLS enabled with R12 certificate
+[12641] INFO: MQTT: Config set - clean_session=true keepalive=60
+[12643] INFO: MQTT messenger initialized
+[14023] INFO: MQTT: Subscribed to 9 villages
+[14023] INFO: OTA: Boot update check
+[14094] INFO: MQTT: Connected - subscribed to 9 villages
+[14311] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[15027] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[2331] INFO: ======== SYSTEM BOOT ========
+[2331] INFO: Build: Dec 12 2025 19:24:00
+[2331] INFO: System boot started
+[2331] INFO: Build: v0.54.9
+[8137] INFO: OTA Updater initialized, version: v0.54.9
+[8137] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[10149] INFO: WiFi connected: 192.168.8.156
+[10149] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[10149] INFO: MQTT: ClientID=smol_esp_e4cc3bba2010_292
+[10149] INFO: MQTT: User=smoltxt2
+[10652] INFO: MQTT: TLS enabled with R12 certificate
+[10653] INFO: MQTT: Config set - clean_session=true keepalive=60
+[10654] INFO: MQTT messenger initialized
+[11470] INFO: MQTT: Subscribed to 9 villages
+[11471] INFO: OTA: Boot update check
+[16446] INFO: MQTT: Connected - subscribed to 9 villages
+[18935] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[19070] INFO: OTA: Already on latest version
+[20434] INFO: Village name received: tuber (ID: 548c4fa6-afc2-3405-d7ee-317262279d83)
+[20581] INFO: Village name received: w00w (ID: 26f83d6f-4fc8-62f8-c3c8-d3afd3773a26)
+[21441] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[21956] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[22558] INFO: Village name received: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[23454] INFO: Village name received: rufu (ID: a8bf539d-9cce-cbef-2977-01b0ae1f0edf)
+[23998] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+[24444] INFO: Village name received: yeserday (ID: b334c257-f28e-bb6f-5916-30bfaa2235a4)
+
+========== END LOG DUMP ==========
+
+[Battery] Voltage: 4.14V, Percent: 93%
+[KB-READ] I2C byte: 0xB6 (182)
+[Keyboard] DOWN pressed
+[MainMenu] DOWN pressed
+_Update_Part : 774997
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[MainMenu] ENTER or RIGHT pressed - advancing to selection
+_Update_Part : 775999
+_Update_Part : 775997
+[KB-READ] readKey() called 10000 times
+[KB-READ] I2C byte: 0x66 (102)
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x69 (105)
+_Update_Part : 775999
+[KB-READ] I2C byte: 0x72 (114)
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x64 (100)
+_Update_Part : 775997
+[KB-READ] I2C byte: 0xD (13)
+[Keyboard] ENTER pressed
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x75 (117)
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x75 (117)
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x75 (117)
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x75 (117)
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x71 (113)
+_Update_Part : 775998
+[KB-READ] I2C byte: 0x77 (119)
+_Update_Part : 775997
+[KB-READ] I2C byte: 0xD (13)
+[Keyboard] ENTER pressed
+[Create] Generated passphrase: cat moon
+[Create] Custom village name: fird
+[94424] INFO: Village created: fird (ID: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c)
+[Village] Created with ID: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[Village] Created with password: cat moon
+[Village] Encryption key: 65 CB 98 7E E0 60 E0 13 40 AC 48 DC DB 5C 7D C4 
+[ 94767][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[Village] No existing village found with ID: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[Main] Creator checking for existing village ID: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c, found in slot: -1
+[ 95093][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[Main] Using empty slot: 9
+[Village] Saving to slot 9
+[MQTT] Added village subscription: fird (9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c)
+[MQTT] Subscribed to topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/#
+[MQTT] Active village set to: fird
+[Username] Village added to MQTT subscriptions: fird
+[MQTT] Village name announced (retained, QoS 1): fird
+[Village] Announced village name: fird
+[MQTT] SYSTEM message sent from SmolTxt: uuuuqw joined the conversation
+[95133] INFO: MQTT SYSTEM sent: uuuuqw joined the conversation
+_Update_Part : 776019
+[MQTT] Active village set to: fird
+[Loop] Active village set to: fird
+[MQTT] Subscribed to topic, msg_id=9425
+[MQTT] Message published successfully, msg_id=839
+[MQTT] Received on topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/villagename
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Received village name announcement: fird for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[96712] INFO: Village name received: fird (ID: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c)
+[Village] Received village name announcement for 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c: fird
+[Village] Found existing village with ID '9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c' in slot 9
+[Village] Name updated to: fird
+
+[Villa
+_Update_Part : 775999
+[MQTT] Active Village Set:
+  ID: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+  Name: fird
+  User: uuuuqw
+[MQTT] Active village set to: fird
+[MQTT] Received on topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/shout
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Decrypted message from fird: SHOUT:9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c:*:SmolTxt:system:0001739800000001:uuuuqw joined the conversation:0:0
+[MQTTessage: 0001739800000001 to system
+[MQTT] Received message from SmolTxt
+[Message] From SmolT 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c)
+[Power] Activity timer reset - message received
+[Message] Real-time message - updating UI
+[Battery] Voltage: 4.15V, Percent: 95%
+[98155] INFO: Message saved: id=0001739800000001 from=SmolTxt village=9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[UI] Mes
+[Message] Added to UI. Total messages in history: 1
+[Ringtone] Playing: Rising Tone
+[99712] INFO: Updated message 0001739800000001 to status 2
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[100700] INFO: Saved 589 total lines (all villages preserved)
+[Message] Marked incoming message as received (status 2)
+[MQTT] Message published successfully, msg_id=58455
+[MQTT] Message published successfully, msg_id=53962
+_Update_Part : 775997
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[Invite] Publishing code: 65125413
+[MQTT] Received on topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/shout
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Decrypte5-58ec813bbe6c:*:SmolTxt:system:0001739800000001:uuuuqw joined the conversation:0:0
+[MQTT] Duplicate message, ignoring: 0001739800000001
+[MQTT] Receive3bbe6c/shout
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Decrypted message from fird: SHOUT:9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c:*:SmolTxt:system:0001739800000001:uuuuqw joined the conversation:0:0
+[MQTT] Duplicate message, ignoring: 0001739800000001
+3bbe6c/ack/system
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Decrypted message from fird: ACK:9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c:system:uuuuqw:e4cc3bba2010:00017f1400000002:0001739800000001:0:0
+[MQTT] Received on topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/shout
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Decrypted message from fird: SHOUT:9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c:*:SmolTxt:system:0001739800000001:uuuuqw joined the conversation:0:0
+[MQTTng: 0001739800000001
+_Update_Full : 3297999
+_Update_Part : 774998
+[MQTT] Publishing invite to code: 65125413
+[MQTT] Invite payload: {"villageId":"9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c","villageName":"fird","timestamp":105721,"key":"ZcuYfuBg4BNArEjc21x9xFDj5hhaRT5iPJh4wkDAiQ0="}
+[MQTT] Invite published successfully
+[105723] INFO: Invite published: code=65125413
+[Invite] Code published successfully
+[105824] INFO: Invite code published: 65125413
+_Update_Part : 775997
+[MQTT] Message published successfully, msg_id=9958
+_Update_Part : 775998
+_Update_Part : 775999
+_Update_Part : 775997
+_Update_Part : 775999
+_Update_Part : 775999
+_Update_Part : 775999
+_Update_Part : 775998
+_Update_Part : 775999
+_Update_Part : 775998
+_Update_Part : 775998
+_Update_Part : 775998
+_Update_Part : 775998
+[Battery] Voltage: 4.14V, Percent: 93%
+_Update_Part : 775999
+_Update_Part : 775999
+_Update_Part : 775998
+_Update_Part : 775999
+_Update_Part : 775999
+_Update_Part : 775998
+_Update_Part : 775998
+_Update_Part : 775998
+_Update_Part : 775998
+_Update_Part : 775999
+_Update_Part : 775999
+_Update_Part : 775999
+_Update_Part : 775999
+_Update_Part : 775998
+_Update_Part : 775998
+_Update_Part : 775998
+[Battery] Voltage: 4.14V, Percent: 93%
+_Update_Part : 775998
+_Update_Part : 775999
+_Update_Part : 775998
+[KB-READ] readKey() called 20000 times
+_Update_Part : 775999
+_Update_Part : 775998
+[MQTT] Receiv3bbe6c/shout
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Decryption failed for village: fird
+[168570] ERROR: MQTT: Decryption failed for fird
+[MQTT] Received on topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/sync-request/f8c43bba2010
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Received sync request for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Sync request decryption failed for village: 9b6ac2c-8d93-73e5-58ec813bbe6c
+[168574] ERROR: Sync request decrypt failed
+_Update_Part : 775999
+[MQTT] Received on topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/shout
+[MQTT] Message for village: 9b8ec813bbe6c
+] ERROR: MQTT: Decryption failed for fird
+_Update_Part : 775999
+[MQTT] Received on topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/ack/system
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Decryption fai[1715_Update_Part : 775999
+[MQTT] Received on topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/ack/system
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Decryption failed for village: fird
+[173061] ERROR: MQT
+[MQTT] Received on topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/read/system
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Decryption failed for village: fird
+[173066] ERRO: MQTT: Decryption failed for fird
+_Update_Part : 775998
+_Update_Part : 775998
+_Update_Part : 775999
+_Update_Part : 775998
+[KB-READ] I2C byte: 0xB4 (180)
+[Keyboard] LEFT pressed
+[MQTT] Unsubscribed from invite: 65125413
+[180165] INFO: Unsubscribed from invite: 65125413
+[MQTT] Invite unpublished (cleared): 65125413
+[180167] INFO: Invite unpublished: code=65125413
+_Update_Part : 775999
+[MQTT] Other event id:4
+[MQTT] Message published successfully, msg_id=12332
+[KB-READ] I2C byte: 0xB4 (180)
+[Keyboard] LEFT pressed
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775997
+[Battery] Voltage: 4.14V, Percent: 93%
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x70 (112)
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775999
+[KB-READ] I2C byte: 0x6F (111)
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x6F (111)
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775997
+[KB-READ] I2C byte: 0x70 (112)
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775997
+[KB-READ] I2C byte: 0xD (13)
+[Keyboard] ENTER pressed
+[App] Enter pressed. Input text: 'poop' length: 4
+[UI] Drawing messaging. History size: 1
+_Update_Part : 775997
+[MQTT] SHOUT sent (QoS 1): poop
+[201306] INFO: MQTT SHOUT sent: poop
+[201306] INFO: MQTT send: SUCCESS id=0003125300000003
+[App] Sending message via MQTT
+[UI] Message added. Total: 2
+[201393] INFO: Message saved: id=0003125300000003 from=uuuuqw village=9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[UI] Drawing messaging. History size: 2
+_Update_Part : 775997
+[MQTT] Received on topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/shout
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Decrypted message from fird: SHOUT:9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c:*:uuuuqw:e4cc3bba2010:0003125300000003:poop:0:0
+[MQTT] Ignoring our own message
+[MQTT] Message published successfully, msg_id=27918
+[Battery] Voltage: 4.14V, Percent: 93%
+[KB-READ] readKey() called 30000 times
+[MQTT] Receiv3bbe6c/shout
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Decryption failed for village: fird
+[232642] ERROR: MQTT: Decryption failed for fird
+[MQTT] Received on topic: smoltxt/9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c/shout
+[MQTT] Message for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[MQTT] Dec23[Battery] Voltage: 4.14V, Percent: 93%
+[KB-READ] readKey() called 40000 times

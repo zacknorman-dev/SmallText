@@ -5,17 +5,6 @@
 #include <RNG.h>
 #include <algorithm>  // For std::sort
 
-// Word list for passphrase generation (easy to type and remember)
-const char* PASSPHRASE_WORDS[] = {
-    "apple", "blue", "cat", "dog", "east", "fire", "green", "happy",
-    "ice", "jump", "king", "lion", "moon", "north", "ocean", "pink",
-    "quick", "red", "sun", "tree", "up", "violet", "west", "yellow",
-    "zero", "bear", "cloud", "dragon", "earth", "frost", "gold", "hero",
-    "island", "jade", "knight", "lake", "magic", "night", "orange", "pearl",
-    "quest", "river", "star", "tiger", "ultra", "vine", "wind", "zebra"
-};
-const int PASSPHRASE_WORD_COUNT = 48;
-
 Village::Village() {
     initialized = false;
     isOwner = false;
@@ -44,15 +33,10 @@ String Village::hashPassword(const String& password) {
     return hashStr;
 }
 
-void Village::generateEncryptionKey() {
-    // Generate random 256-bit key
-    RNG.begin("SmolTxt");
-    RNG.rand(encryptionKey, KEY_SIZE);
-}
 
-String generateUUID() {
-    // Generate UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-    // where x is random hex digit, y is 8/9/a/b
+
+String Village::generateRandomUUID() {
+    // Generate random UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
     RNG.begin("SmolTxt");
     uint8_t random[16];
     RNG.rand(random, 16);
@@ -72,109 +56,22 @@ String generateUUID() {
     return String(uuid);
 }
 
-String Village::deriveVillageIdFromPassword(const String& password) {
-    // Derive deterministic UUID from password - both creator and joiner will get same ID
-    SHA256 sha256;
-    uint8_t hash[32];
-    
-    sha256.reset();
-    sha256.update((const uint8_t*)password.c_str(), password.length());
-    sha256.update((const uint8_t*)"VillageID", 9);  // Salt to make it different from encryption key
-    sha256.finalize(hash, 32);
-    
-    // Use first 16 bytes of hash as UUID
-    char uuid[37];
-    snprintf(uuid, sizeof(uuid),
-        "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-        hash[0], hash[1], hash[2], hash[3],
-        hash[4], hash[5], hash[6], hash[7],
-        hash[8], hash[9], hash[10], hash[11],
-        hash[12], hash[13], hash[14], hash[15]);
-    
-    return String(uuid);
-}
-
-void Village::deriveKeyFromPassword(const String& password) {
-    // Use PBKDF2-like key derivation with SHA256
-    // Simple version: hash password + salt multiple times
-    SHA256 sha256;
-    uint8_t hash[32];
-    
-    // First hash: password + "SmolTxt" as salt
-    sha256.reset();
-    sha256.update((const uint8_t*)password.c_str(), password.length());
-    sha256.update((const uint8_t*)"SmolTxt", 7);
-    sha256.finalize(hash, 32);
-    
-    // Multiple rounds for key strengthening (1000 iterations)
-    for (int i = 0; i < 1000; i++) {
-        sha256.reset();
-        sha256.update(hash, 32);
-        sha256.finalize(hash, 32);
-    }
-    
-    // Use final hash as encryption key
-    memcpy(encryptionKey, hash, KEY_SIZE);
-}
-
-String Village::generatePassphrase() {
-    // Generate random 2-word passphrase like "green dragon"
+void Village::generateRandomEncryptionKey() {
+    // Generate pure random 256-bit encryption key
     RNG.begin("SmolTxt");
-    
-    uint8_t random[2];
-    RNG.rand(random, 2);
-    
-    int word1Index = random[0] % PASSPHRASE_WORD_COUNT;
-    int word2Index = random[1] % PASSPHRASE_WORD_COUNT;
-    
-    String word1 = String(PASSPHRASE_WORDS[word1Index]);
-    String word2 = String(PASSPHRASE_WORDS[word2Index]);
-    
-    // Lowercase with space (case insensitive)
-    word1.toLowerCase();
-    word2.toLowerCase();
-    
-    return word1 + " " + word2;
+    RNG.rand(encryptionKey, KEY_SIZE);
 }
 
-String Village::deriveVillageNameFromPassword(const String& password) {
-    // Derive a deterministic but human-readable village name from password
-    // Use hash to pick 2 words from the word list
-    SHA256 sha256;
-    uint8_t hash[32];
-    
-    sha256.reset();
-    sha256.update((const uint8_t*)password.c_str(), password.length());
-    sha256.update((const uint8_t*)"VillageName", 11);  // Different salt than UUID
-    sha256.finalize(hash, 32);
-    
-    // Use first 2 bytes to pick words
-    int word1Index = hash[0] % PASSPHRASE_WORD_COUNT;
-    int word2Index = hash[1] % PASSPHRASE_WORD_COUNT;
-    
-    String word1 = String(PASSPHRASE_WORDS[word1Index]);
-    String word2 = String(PASSPHRASE_WORDS[word2Index]);
-    
-    // Capitalize first letter of each word
-    word1[0] = toupper(word1[0]);
-    word2[0] = toupper(word2[0]);
-    
-    return word1 + " " + word2;  // e.g., "Green Dragon"
-}
 
-bool Village::createVillage(const String& name, const String& password) {
+
+bool Village::createVillage(const String& name) {
     if (name.length() == 0 || name.length() >= MAX_VILLAGE_NAME) {
         logger.error("Village create failed: invalid name length");
         return false;
     }
     
-    if (password.length() == 0 || password.length() >= MAX_PASSWORD) {
-        logger.error("Village create failed: invalid password length");
-        return false;
-    }
-    
-    // Derive deterministic village ID from password (same for all devices with same password)
-    String uuid = Village::deriveVillageIdFromPassword(password);
+    // Generate random village ID
+    String uuid = generateRandomUUID();
     strncpy(villageId, uuid.c_str(), 36);
     villageId[36] = '\0';
     
@@ -184,15 +81,13 @@ bool Village::createVillage(const String& name, const String& password) {
     strncpy(villageName, name.c_str(), MAX_VILLAGE_NAME - 1);
     villageName[MAX_VILLAGE_NAME - 1] = '\0';
     
-    strncpy(villagePassword, password.c_str(), MAX_PASSWORD - 1);
-    villagePassword[MAX_PASSWORD - 1] = '\0';
+    // No password needed anymore
+    memset(villagePassword, 0, MAX_PASSWORD);
     
-    // Derive encryption key from password
-    deriveKeyFromPassword(password);
+    // Generate random encryption key
+    generateRandomEncryptionKey();
     
     // Debug: Print encryption key
-    Serial.print("[Village] Created with password: ");
-    Serial.println(password);
     Serial.print("[Village] Encryption key: ");
     for (int i = 0; i < 16; i++) {
         Serial.print(encryptionKey[i], HEX);
@@ -207,56 +102,7 @@ bool Village::createVillage(const String& name, const String& password) {
     return true;  // Don't save here - main.cpp will save to correct slot
 }
 
-bool Village::joinVillageAsMember(const String& name, const String& password) {
-    // NOTE: When joining with just password, name can be empty - will be received via announcement
-    if (name.length() >= MAX_VILLAGE_NAME) {
-        logger.error("Village join failed: name too long");
-        return false;
-    }
-    
-    if (password.length() == 0 || password.length() >= MAX_PASSWORD) {
-        logger.error("Village join failed: invalid password length");
-        return false;
-    }
-    
-    // Derive deterministic village ID from password (same as creator)
-    String uuid = Village::deriveVillageIdFromPassword(password);
-    strncpy(villageId, uuid.c_str(), 36);
-    villageId[36] = '\0';
-    
-    // Use provided name or placeholder if empty (will be updated via announcement)
-    if (name.length() > 0) {
-        strncpy(villageName, name.c_str(), MAX_VILLAGE_NAME - 1);
-    } else {
-        strncpy(villageName, "Pending...", MAX_VILLAGE_NAME - 1);
-    }
-    villageName[MAX_VILLAGE_NAME - 1] = '\0';
-    
-    logger.info("Village joined: " + String(villageName) + " (ID: " + String(villageId) + ")");
-    Serial.println("[Village] Joining with ID: " + String(villageId));
-    
-    strncpy(villagePassword, password.c_str(), MAX_PASSWORD - 1);
-    villagePassword[MAX_PASSWORD - 1] = '\0';
-    
-    // Derive encryption key from password
-    deriveKeyFromPassword(password);
-    
-    // Debug: Print encryption key
-    Serial.print("[Village] Joined with password: ");
-    Serial.println(password);
-    Serial.print("[Village] Encryption key: ");
-    for (int i = 0; i < 16; i++) {
-        Serial.print(encryptionKey[i], HEX);
-        Serial.print(" ");
-    }
-    Serial.println();
-    
-    isOwner = false;  // NOT the owner, just a member
-    initialized = true;
-    members.clear();
-    
-    return true;  // Don't save here - main.cpp will save to correct slot
-}
+
 
 bool Village::joinVillage(const String& username, const String& password) {
     // For joining, we need to load existing village data

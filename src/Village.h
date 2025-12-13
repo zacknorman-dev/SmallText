@@ -32,19 +32,14 @@ private:
     bool initialized;
     
     String hashPassword(const String& password);
-    void generateEncryptionKey();
-    void deriveKeyFromPassword(const String& password);
+    void generateRandomEncryptionKey();
+    static String generateRandomUUID();
     
 public:
     Village();
     
-    // Passphrase generation
-    String generatePassphrase();  // Generate random 2-word passphrase
-    static String deriveVillageNameFromPassword(const String& password);  // Derive deterministic village name
-    
     // Village management
-    bool createVillage(const String& name, const String& password);
-    bool joinVillageAsMember(const String& name, const String& password);
+    bool createVillage(const String& name);
     bool joinVillage(const String& username, const String& password);
     bool isInitialized() { return initialized; }
     bool amOwner() { return isOwner; }
@@ -89,7 +84,6 @@ public:
     static bool hasVillageInSlot(int slot);  // Check if slot has a village
     static String getVillageNameFromSlot(int slot);  // Get village name without loading
     static String getVillageIdFromSlot(int slot);  // Get village ID without loading
-    static String deriveVillageIdFromPassword(const String& password);  // Derive UUID from passphrase
     static int findVillageSlotById(const String& villageId);  // Find slot with matching village ID
     static void deleteSlot(int slot);  // Delete village in slot
     

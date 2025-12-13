@@ -1370,6 +1370,35 @@ void handleConversationList() {
     smartDelay(200);
   }
   
+  // Backspace to delete selected conversation
+  if (keyboard.isBackspacePressed()) {
+    int selection = ui.getMenuSelection();
+    if (selection >= 0 && selection < conversationList.size()) {
+      ConversationEntry& entry = conversationList[selection];
+      Serial.println("[ConversationList] BACKSPACE pressed - deleting village: " + entry.name);
+      
+      // Delete the village slot
+      Village::deleteSlot(entry.slot);
+      
+      // Remove from MQTT subscriptions if it's the current village
+      if (currentVillageSlot == entry.slot) {
+        mqttMessenger.removeVillageSubscription(entry.id);
+        village.clearVillage();
+        currentVillageSlot = -1;
+      }
+      
+      // Rebuild conversation list and return to menu
+      appState = APP_MAIN_MENU;
+      ui.setState(STATE_MAIN_MENU);
+      ui.resetMenuSelection();
+      ui.updateClean();
+      
+      Serial.println("[ConversationList] Village deleted, returning to main menu");
+    }
+    smartDelay(300);
+    return;
+  }
+  
   // Left arrow to go back to main menu
   if (keyboard.isLeftPressed()) {
     Serial.println("[ConversationList] LEFT pressed - back to main menu");
@@ -1842,20 +1871,17 @@ void handleUsernameInput() {
     String currentName = ui.getInputText();
     if (currentName.length() > 0) {
       if (isCreatingVillage) {
-        // Generate passphrase for new village
-        tempVillagePassword = village.generatePassphrase();
-        
-        Serial.println("[Create] Generated passphrase: " + tempVillagePassword);
+        // Create new village with random UUID and encryption key
         Serial.println("[Create] Custom village name: " + tempVillageName);
         
         // Clear memory and create the new village with custom name
         village.clearVillage();
-        village.createVillage(tempVillageName, tempVillagePassword);
+        village.createVillage(tempVillageName);
         ui.setExistingVillageName(tempVillageName);
       } else {
-        // For joining, create the village with the passphrase provided
-        village.clearVillage();
-        village.joinVillageAsMember(tempVillageName, tempVillagePassword);
+        // Joining is now only via invite codes - this path shouldn't be used
+        Serial.println("[Error] Old join path called - should use invite system");
+        return;
       }
       
       village.setUsername(currentName);
@@ -1863,9 +1889,9 @@ void handleUsernameInput() {
       // Find appropriate slot for this village
       currentVillageSlot = -1;  // Reset slot search
       
-      // For joiners, check if village already exists in a slot (by UUID derived from password)
+      // Check if village already exists in a slot
       if (!isCreatingVillage) {
-        String villageId = village.getVillageId();  // Get the ID that was set during joinVillageAsMember
+        String villageId = village.getVillageId();
         currentVillageSlot = Village::findVillageSlotById(villageId);
         Serial.println("[Main] Joiner searching for village ID: " + villageId + ", found in slot: " + String(currentVillageSlot));
       } else {
