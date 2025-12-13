@@ -2464,10 +2464,12 @@ void handleJoinCodeInput() {
                 smartDelay(2000);  // Show success for 2 seconds
                 
                 // FIXED: Prompt for username before sending join announcement
+                // Clear everything aggressively to prevent pre-filling
+                keyboard.clearInput();
+                ui.setInputText("");
+                ui.setCurrentUsername("");  // Clear any cached username
                 appState = APP_JOIN_USERNAME_INPUT;
                 ui.setState(STATE_INPUT_USERNAME);
-                ui.setInputText("");
-                keyboard.clearInput();
                 ui.update();
                 
                 // Set flags for username handler to know we're joining (not creating)
@@ -2573,6 +2575,12 @@ void handleJoinUsernameInput() {
       String announcement = currentName + " joined the conversation";
       mqttMessenger.sendSystemMessage(announcement, "SmolTxt");
       logger.info("User joined: " + currentName);
+      
+      // Request message sync to get creator's join message and any other history
+      if (mqttMessenger.isConnected()) {
+        mqttMessenger.requestSync(0);  // Request all messages from the beginning
+        smartDelay(500);  // Give time for sync to arrive
+      }
       
       // Transition to messaging screen
       appState = APP_MESSAGING;
