@@ -138,9 +138,12 @@ Write-Host "`n[7/8] Pushing to GitHub..." -ForegroundColor Yellow
 
 # Push main branch and tags together
 Write-Host "      Pushing main branch..." -ForegroundColor Cyan
+$ErrorActionPreference = "Continue"
 $pushOutput = git push origin main 2>&1 | Out-String
+$pushExitCode = $LASTEXITCODE
+$ErrorActionPreference = "Stop"
 Write-Host "      $pushOutput" -ForegroundColor Gray
-if ($LASTEXITCODE -eq 0 -or $pushOutput -like "*Everything up-to-date*") {
+if ($pushExitCode -eq 0 -or $pushOutput -like "*Everything up-to-date*") {
     Write-Host "      Main branch pushed successfully" -ForegroundColor Green
 } else {
     Write-Host "      WARNING: Push to main may have failed" -ForegroundColor Yellow
@@ -148,9 +151,12 @@ if ($LASTEXITCODE -eq 0 -or $pushOutput -like "*Everything up-to-date*") {
 
 # Push tag (force to handle recreated tags)
 Write-Host "      Pushing tag v$Version..." -ForegroundColor Cyan
+$ErrorActionPreference = "Continue"
 $tagOutput = git push --force origin "refs/tags/v$Version" 2>&1 | Out-String
+$tagExitCode = $LASTEXITCODE
+$ErrorActionPreference = "Stop"
 Write-Host "      $tagOutput" -ForegroundColor Gray
-if ($LASTEXITCODE -eq 0) {
+if ($tagExitCode -eq 0) {
     Write-Host "      Tag v$Version pushed successfully" -ForegroundColor Green
 } else {
     Write-Host "      WARNING: Tag push failed" -ForegroundColor Red

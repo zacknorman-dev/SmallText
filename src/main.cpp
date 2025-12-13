@@ -2281,8 +2281,10 @@ void handleJoinCodeInput() {
         pendingInvite.received = false;
         unsigned long startWait = millis();
         while (!pendingInvite.received && (millis() - startWait < 10000)) {
-          smartDelay(100);
-          if (pendingInvite.received) break;
+          // Only process MQTT, don't allow keyboard input during wait
+          mqttMessenger.loop();
+          yield();
+          delay(100);
         }
         
         // Unsubscribe from invite topic
