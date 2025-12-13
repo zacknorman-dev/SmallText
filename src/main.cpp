@@ -2341,6 +2341,7 @@ void handleJoinCodeInput() {
             doc["password"] = "invite-joined";  // Placeholder password
             doc["isOwner"] = false;
             doc["myUsername"] = "member";
+            doc["initialized"] = true;  // Mark as initialized so loadMessages() works
             
             // Base64 encode the encryption key
             char encodedKey[64];
