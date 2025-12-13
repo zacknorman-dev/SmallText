@@ -417,7 +417,7 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
     
     // Check for sync-request topics (from other devices)
     if (topic.startsWith("smoltxt/" + villageId + "/sync-request/")) {
-        handleSyncRequest(payload, length);
+        handleSyncRequest(villageId, payload, length);
         return;
     }
     
@@ -860,17 +860,23 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
     return true;
 }
 
-void MQTTMessenger::handleSyncRequest(const uint8_t* payload, unsigned int length) {
-    Serial.println("[MQTT] Received sync request, decrypting...");
+void MQTTMessenger::handleSyncRequest(const String& villageId, const uint8_t* payload, unsigned int length) {
+    Serial.println("[MQTT] Received sync request for village: " + villageId);
     
-    if (!encryption) {
-        Serial.println("[MQTT] No encryption set");
+    // Find the village subscription to get the correct encryption key
+    VillageSubscription* village = findVillageSubscription(villageId);
+    if (!village) {
+        Serial.println("[MQTT] Ignoring sync request for non-subscribed village: " + villageId);
         return;
     }
     
+    // Create temporary Encryption object with village key
+    Encryption villageEncryption;
+    villageEncryption.setKey(village->encryptionKey);
+    
     String message;
-    if (!encryption->decryptString(payload, length, message)) {
-        Serial.println("[MQTT] Sync request decryption failed");
+    if (!villageEncryption.decryptString(payload, length, message)) {
+        Serial.println("[MQTT] Sync request decryption failed for village: " + villageId);
         logger.error("Sync request decrypt failed");
         return;
     }

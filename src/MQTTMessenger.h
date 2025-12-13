@@ -66,7 +66,7 @@ private:
     String generateMessageId();
     String generateTopic(const String& messageType, const String& target = "");
     void handleIncomingMessage(const String& topic, const uint8_t* payload, unsigned int length);
-    void handleSyncRequest(const uint8_t* payload, unsigned int length);
+    void handleSyncRequest(const String& villageId, const uint8_t* payload, unsigned int length);
     void handleSyncResponse(const uint8_t* payload, unsigned int length);
     void cleanupSeenMessages();
     VillageSubscription* findVillageSubscription(const String& villageId);  // Find village by ID
