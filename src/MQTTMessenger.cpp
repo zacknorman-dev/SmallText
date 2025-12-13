@@ -1218,6 +1218,10 @@ bool MQTTMessenger::publishInvite(const String& inviteCode, const String& villag
     if (msg_id >= 0) {
         Serial.println("[MQTT] Invite published successfully");
         logger.info("Invite published: code=" + inviteCode);
+        
+        // Wait a moment to ensure message is transmitted before any disconnect
+        delay(100);
+        
         return true;
     } else {
         Serial.println("[MQTT] Invite publish failed");
