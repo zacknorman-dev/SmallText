@@ -95,26 +95,26 @@ Write-Host "      Tag v$Version ready" -ForegroundColor Green
 # Step 7: Push to GitHub
 Write-Host "`n[7/8] Pushing to GitHub..." -ForegroundColor Yellow
 
-# Push main branch
+# Push main branch and tags together
 Write-Host "      Pushing main branch..." -ForegroundColor Cyan
 $pushOutput = git push origin main 2>&1 | Out-String
-if ($LASTEXITCODE -eq 0) {
+Write-Host "      $pushOutput" -ForegroundColor Gray
+if ($LASTEXITCODE -eq 0 -or $pushOutput -like "*Everything up-to-date*") {
     Write-Host "      Main branch pushed successfully" -ForegroundColor Green
 } else {
-    Write-Host "      Push output: $pushOutput" -ForegroundColor Yellow
-    if ($pushOutput -notlike "*Everything up-to-date*") {
-        Write-Host "      WARNING: Push to main may have failed" -ForegroundColor Yellow
-    }
+    Write-Host "      WARNING: Push to main may have failed" -ForegroundColor Yellow
 }
 
-# Push tag
+# Push tag (force to handle recreated tags)
 Write-Host "      Pushing tag v$Version..." -ForegroundColor Cyan
-$tagOutput = git push --force origin "v$Version" 2>&1 | Out-String
+$tagOutput = git push --force origin "refs/tags/v$Version" 2>&1 | Out-String
+Write-Host "      $tagOutput" -ForegroundColor Gray
 if ($LASTEXITCODE -eq 0) {
     Write-Host "      Tag v$Version pushed successfully" -ForegroundColor Green
 } else {
-    Write-Host "      Tag output: $tagOutput" -ForegroundColor Yellow
-    Write-Host "      WARNING: Tag push may have failed" -ForegroundColor Yellow
+    Write-Host "      WARNING: Tag push failed" -ForegroundColor Red
+    Write-Host "      Error: $tagOutput" -ForegroundColor Red
+    exit 1
 }
 
 # Step 8: Create GitHub Release
