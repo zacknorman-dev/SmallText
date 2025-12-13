@@ -83,11 +83,14 @@ Write-Host "      Changes committed" -ForegroundColor Green
 Write-Host "`n[6/8] Creating Git tag..." -ForegroundColor Yellow
 $ErrorActionPreference = "SilentlyContinue"
 git tag -a "v$Version" -m "Release v$Version`n`n$Message"
+$tagCreateResult = $LASTEXITCODE
 $ErrorActionPreference = "Stop"
-if ($LASTEXITCODE -ne 0) {
+if ($tagCreateResult -ne 0) {
     Write-Host "      Tag already exists, deleting and recreating..." -ForegroundColor Yellow
-    git tag -d "v$Version" | Out-Null
+    git tag -d "v$Version" 2>&1 | Out-Null
+    $ErrorActionPreference = "SilentlyContinue"
     git push origin ":refs/tags/v$Version" 2>&1 | Out-Null
+    $ErrorActionPreference = "Stop"
     git tag -a "v$Version" -m "Release v$Version`n`n$Message"
 }
 Write-Host "      Tag v$Version ready" -ForegroundColor Green
