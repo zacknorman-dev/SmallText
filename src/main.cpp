@@ -2122,9 +2122,13 @@ void handleInviteExplain() {
       
       // Publish invite code to MQTT
       Serial.println("[Invite] Publishing code: " + code);
+      ui.showMessage("Publishing...", "Creating invite\ncode\n\nPlease wait...", 0);
+      ui.update();
+      
       if (mqttMessenger.publishInvite(code, village.getVillageId(), village.getVillageName(), village.getEncryptionKey())) {
         Serial.println("[Invite] Code published successfully");
         logger.info("Invite code published: " + code);
+        smartDelay(300);  // Brief pause after publishing
       } else {
         Serial.println("[Invite] Failed to publish code");
         logger.error("Invite code publish failed");
@@ -2271,10 +2275,16 @@ void handleJoinCodeInput() {
       Serial.println("[Invite] Attempting to join with code: " + code);
       logger.info("Join attempt with code: " + code);
       
+      // Show verification screen with the code they entered
+      String verifyMsg = "Checking code:\n" + code + "\n\nPlease wait...";
+      ui.showMessage("Verifying", verifyMsg, 0);
+      ui.update();
+      smartDelay(500);  // Brief pause so user can verify the code
+      
       // Subscribe to invite topic
       if (mqttMessenger.subscribeToInvite(code)) {
         Serial.println("[Invite] Subscribed, waiting for invite data...");
-        ui.showMessage("Joining...", "Looking up code...\n\nPlease wait", 0);
+        ui.showMessage("Looking up...", "Searching for\ninvite code\n\nThis may take a\nmoment...", 0);
         ui.update();
         
         // Wait up to 15 seconds for invite data
@@ -2339,13 +2349,21 @@ void handleJoinCodeInput() {
                 mqttMessenger.addVillageSubscription(village.getVillageId(), village.getVillageName(), 
                                                     "member", village.getEncryptionKey());
                 
-                // Show success and go to conversation list
-                String successMsg = "Successfully joined:\n" + pendingInvite.villageName + "\n\nPress ENTER to continue";
+                // Set as active village for sending messages
+                mqttMessenger.setActiveVillage(village.getVillageId());
+                ui.setExistingVillageName(village.getVillageName());
+                encryption.setKey(village.getEncryptionKey());
+                
+                // Show success screen
+                String successMsg = "You joined\nsuccessfully!\n\n" + pendingInvite.villageName;
                 ui.showMessage("Success!", successMsg, 0);
-                while (!keyboard.isEnterPressed() && !keyboard.isRightPressed()) {
-                  keyboard.update();
-                  smartDelay(50);
-                }
+                ui.update();
+                smartDelay(1500);  // Show success for 1.5 seconds
+                
+                // Show loading into conversation
+                ui.showMessage("Loading...", "Opening\nconversation\n\nOne moment...", 0);
+                ui.update();
+                smartDelay(800);
                 
                 appState = APP_CONVERSATION_LIST;
                 ui.setState(STATE_CONVERSATION_LIST);
@@ -2383,7 +2401,8 @@ void handleJoinCodeInput() {
         } else {
           Serial.println("[Invite] Timeout waiting for invite data");
           logger.error("Invite code timeout: " + code);
-          ui.showMessage("Not Found", "Code not found or\nhas expired\n\nPress ENTER", 0);
+          String errorMsg = "Code not found\nor has expired:\n" + code + "\n\nPress ENTER";
+          ui.showMessage("Not Found", errorMsg, 0);
           while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
           appState = APP_JOIN_EXPLAIN;
           ui.setState(STATE_JOIN_EXPLAIN);

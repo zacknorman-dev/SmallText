@@ -1789,10 +1789,17 @@ void UI::drawInviteCodeDisplay() {
     display->setCursor(timeX, 85);
     display->print(timeStr);
     
-    // Draw instructions
+    // Draw waiting message
     display->setFont(&FreeSans9pt7b);
-    display->setCursor(10, 110);
-    display->print("Press any key to cancel");
+    display->setCursor(10, 105);
+    display->print("Waiting for");
+    display->setCursor(10, 120);
+    display->print("your friend...");
+    
+    // Draw cancel instruction
+    display->setFont();  // Small default font
+    display->setCursor(10, 118);
+    display->print("Any key to cancel");
 }
 
 void UI::drawJoinExplain() {
