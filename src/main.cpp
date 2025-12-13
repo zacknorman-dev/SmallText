@@ -2277,14 +2277,15 @@ void handleJoinCodeInput() {
         ui.showMessage("Joining...", "Looking up code...\n\nPlease wait", 0);
         ui.update();
         
-        // Wait up to 10 seconds for invite data
+        // Wait up to 15 seconds for invite data
         pendingInvite.received = false;
         unsigned long startWait = millis();
-        while (!pendingInvite.received && (millis() - startWait < 10000)) {
-          // Only process MQTT, don't allow keyboard input during wait
+        while (!pendingInvite.received && (millis() - startWait < 15000)) {
+          // Process WiFi and MQTT events to ensure callbacks are delivered
           mqttMessenger.loop();
-          yield();
-          delay(100);
+          yield();  // Let FreeRTOS tasks run
+          vTaskDelay(1);  // Allow MQTT task to process
+          delay(50);  // Shorter delay for more responsive checking
         }
         
         // Unsubscribe from invite topic

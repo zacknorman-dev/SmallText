@@ -11,6 +11,9 @@ Devices that are actively charging should remain awake and not enter nap mode. C
 ### Quiet Hours Feature
 Add configurable quiet hours mode for nighttime/classroom use. During quiet hours: napping devices never wake up for incoming messages, and awake devices don't make alert sounds (silent notifications only). Needs UI for setting quiet hours schedule (e.g., 10 PM - 7 AM).
 
+### OTA Update Screen White Display
+Sometimes the "Check for Update" screen displays completely white instead of showing the update UI. Display refresh issue during OTA update flow. May be related to display refresh timing or partial/full update mode selection during the update process.
+
 ### Reset to Factory Conditions
 Add a "Reset to Factory" option in Settings menu that:
 - Wipes all village data (all slot files)
