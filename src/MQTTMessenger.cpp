@@ -860,6 +860,18 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
         return true;
     }
     
+    // Get village ID from the first message to find correct encryption key
+    String villageId = messages.empty() ? currentVillageId : messages[0].villageId;
+    VillageSubscription* village = findVillageSubscription(villageId);
+    if (!village) {
+        Serial.println("[MQTT] Cannot send sync - village not found: " + villageId);
+        return false;
+    }
+    
+    // Create temporary Encryption object with village key
+    Encryption villageEncryption;
+    villageEncryption.setKey(village->encryptionKey);
+    
     // BATCHED SYNC: Send only 20 messages per phase, starting with most recent
     const int MESSAGES_PER_PHASE = 20;
     int totalMessages = messages.size();
@@ -915,9 +927,9 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
         String payload;
         serializeJson(doc, payload);
         
-        // Encrypt
+        // Encrypt using village-specific key
         uint8_t encrypted[512];
-        int encryptedLen = encryption->encrypt((uint8_t*)payload.c_str(), payload.length(), encrypted, sizeof(encrypted));
+        int encryptedLen = villageEncryption.encrypt((uint8_t*)payload.c_str(), payload.length(), encrypted, sizeof(encrypted));
         
         if (encryptedLen <= 0) {
             Serial.println("[MQTT] Sync response encryption failed");
@@ -1122,10 +1134,19 @@ String MQTTMessenger::getConnectionStatus() {
 // Multi-village subscription management
 
 void MQTTMessenger::addVillageSubscription(const String& villageId, const String& villageName, const String& username, const uint8_t* encKey) {
-    // Check if already subscribed
+    // Check if already subscribed - UPDATE username if it exists
     for (auto& village : subscribedVillages) {
         if (village.villageId == villageId) {
-            Serial.println("[MQTT] Village already subscribed: " + villageName);
+            // Update username and encryption key
+            village.username = username;
+            memcpy(village.encryptionKey, encKey, 32);
+            Serial.println("[MQTT] Updated village subscription: " + villageName + " (username: " + username + ")");
+            
+            // If this is the active village, update currentUsername too
+            if (currentVillageId == villageId) {
+                currentUsername = username;
+                Serial.println("[MQTT] Updated active village username to: " + username);
+            }
             return;
         }
     }

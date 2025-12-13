@@ -442,6 +442,24 @@ void onMessageReceived(const Message& msg) {
   lastActivityTime = millis();
   Serial.println("[Power] Activity timer reset - message received");
   
+  // AUTO-TRANSITION: If creator is on invite screen and someone joins, go to messaging
+  if (appState == APP_INVITE_CODE_DISPLAY && msg.content.endsWith(" joined the conversation")) {
+    Serial.println("[Invite] New member joined - auto-transitioning to messaging");
+    String code = ui.getInviteCode();
+    ui.clearInviteCode();
+    // Unpublish invite
+    if (!code.isEmpty()) {
+      mqttMessenger.unsubscribeFromInvite(code);
+      mqttMessenger.unpublishInvite(code);
+    }
+    // Go directly to messaging
+    appState = APP_MESSAGING;
+    ui.setState(STATE_MESSAGING);
+    inMessagingScreen = true;
+    lastMessagingActivity = millis();
+    ui.update();
+  }
+  
   // Check if this message is for the currently loaded village
   bool isForCurrentVillage = village.isInitialized() && (String(village.getVillageId()) == msg.villageId);
   
@@ -2567,9 +2585,12 @@ void handleJoinUsernameInput() {
       village.setUsername(currentName);
       village.saveToSlot(currentVillageSlot);
       
-      // Re-subscribe to village with updated username
+      // Re-subscribe to village with updated username (this updates the subscription)
       mqttMessenger.addVillageSubscription(village.getVillageId(), village.getVillageName(), 
                                           currentName, village.getEncryptionKey());
+      
+      // CRITICAL: Set as active village again to update currentUsername for sending messages
+      mqttMessenger.setActiveVillage(village.getVillageId());
       
       // Send join announcement with actual username
       String announcement = currentName + " joined the conversation";
