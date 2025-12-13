@@ -2395,7 +2395,65 @@ void handleJoinCodeInput() {
                 // Brief delay to let the message send
                 smartDelay(200);
                 
+                // Load message history and request sync
+                std::vector<Message> existingMsgs = village.loadMessages();
+                unsigned long lastMsgTime = 0;
+                for (const auto& msg : existingMsgs) {
+                  if (msg.timestamp > lastMsgTime) {
+                    lastMsgTime = msg.timestamp;
+                  }
+                }
+                if (mqttMessenger.isConnected()) {
+                  Serial.println("[Sync] Requesting sync after join: last timestamp=" + String(lastMsgTime));
+                  logger.info("Sync: Request sent, last=" + String(lastMsgTime));
+                  mqttMessenger.requestSync(lastMsgTime);
+                  smartDelay(500);  // Wait for sync responses
+                }
+                
+                // Load messages with pagination
+                ui.clearMessages();
+                std::vector<Message> messages = village.loadMessages();
+                Serial.println("[Village] Loaded " + String(messages.size()) + " messages from storage");
+                
+                // Show last MAX_MESSAGES_TO_LOAD messages
+                int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+                int displayCount = 0;
+                for (int i = startIndex; i < messages.size(); i++) {
+                  ui.addMessage(messages[i]);
+                  displayCount++;
+                }
+                Serial.println("[App] Displaying last " + String(displayCount) + " of " + String(messages.size()) + " messages after join");
+                
+                // Mark received messages as read
+                readReceiptQueue.clear();
+                std::vector<String> messagesToMarkRead;
+                int unreadCount = 0;
+                for (int i = startIndex; i < messages.size(); i++) {
+                  const Message& msg = messages[i];
+                  if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
+                    ui.updateMessageStatus(msg.messageId, MSG_READ);
+                    messagesToMarkRead.push_back(msg.messageId);
+                    if (!msg.senderMAC.isEmpty()) {
+                      ReadReceiptQueueItem item;
+                      item.messageId = msg.messageId;
+                      item.recipientMAC = msg.senderMAC;
+                      readReceiptQueue.push_back(item);
+                      unreadCount++;
+                    }
+                  }
+                }
+                if (!messagesToMarkRead.empty()) {
+                  village.batchUpdateMessageStatus(messagesToMarkRead, MSG_READ);
+                  Serial.println("[App] Marked " + String(unreadCount) + " unread messages as read after join");
+                }
+                
                 // Go directly to messaging screen
+                keyboard.clearInput();
+                ui.setInputText("");
+                inMessagingScreen = true;
+                lastMessagingActivity = millis();
+                ui.setCurrentUsername(village.getUsername());
+                ui.resetMessageScroll();
                 appState = APP_MESSAGING;
                 ui.setState(STATE_MESSAGING);
                 ui.update();
