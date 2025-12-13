@@ -1,17 +1,20 @@
 # SmolTxt Release Script
 # 
 # USAGE:
-#   If execution policy blocks you, run:
-#   powershell -ExecutionPolicy Bypass -File .\release.ps1 -Version "0.42.5" -Message "Your changes"
+#   Auto-increment version:
+#     powershell -ExecutionPolicy Bypass -File .\release.ps1 -Message "Your changes"
+#   
+#   Specify version manually:
+#     powershell -ExecutionPolicy Bypass -File .\release.ps1 -Version "0.42.5" -Message "Your changes"
 #
 # EXPLANATION:
 #   -ExecutionPolicy Bypass  = Temporarily disable script execution restrictions (only for this command)
 #   -File                    = Execute the specified script file
-#   -Version                 = Version number without 'v' prefix (e.g., "0.42.5")
+#   -Version                 = (Optional) Version number without 'v' prefix (e.g., "0.42.5")
 #   -Message                 = Release description
 
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory=$false)]
     [string]$Version,
     
     [Parameter(Mandatory=$true)]
@@ -20,10 +23,45 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Strip leading 'v' if present (script adds it automatically)
-if ($Version -match '^v') {
-    $Version = $Version.Substring(1)
-    Write-Host "Note: Removed leading 'v' from version. Script expects version without 'v' prefix (e.g., '0.41.4')" -ForegroundColor Yellow
+# Auto-detect next version if not specified
+if (-not $Version) {
+    Write-Host "`n========================================" -ForegroundColor Cyan
+    Write-Host "Auto-detecting next version..." -ForegroundColor Cyan
+    Write-Host "========================================`n" -ForegroundColor Cyan
+    
+    # Get latest tag from GitHub
+    $latestTag = git describe --tags --abbrev=0 2>$null
+    if ($LASTEXITCODE -eq 0 -and $latestTag) {
+        # Parse version (strip 'v' prefix)
+        $latestVersion = $latestTag -replace '^v', ''
+        $parts = $latestVersion -split '\.'
+        if ($parts.Count -eq 3) {
+            $major = [int]$parts[0]
+            $minor = [int]$parts[1]
+            $patch = [int]$parts[2]
+            
+            # Increment patch version
+            $patch++
+            $Version = "$major.$minor.$patch"
+            
+            Write-Host "      Latest tag: $latestTag" -ForegroundColor Gray
+            Write-Host "      Next version: v$Version" -ForegroundColor Green
+        } else {
+            Write-Host "      ERROR: Could not parse latest tag '$latestTag'" -ForegroundColor Red
+            exit 1
+        }
+    } else {
+        # No tags found, start with 0.1.0
+        $Version = "0.1.0"
+        Write-Host "      No existing tags found" -ForegroundColor Gray
+        Write-Host "      Starting with: v$Version" -ForegroundColor Green
+    }
+} else {
+    # Strip leading 'v' if present (script adds it automatically)
+    if ($Version -match '^v') {
+        $Version = $Version.Substring(1)
+        Write-Host "Note: Removed leading 'v' from version. Script expects version without 'v' prefix (e.g., '0.41.4')" -ForegroundColor Yellow
+    }
 }
 
 Write-Host "`n========================================" -ForegroundColor Cyan
