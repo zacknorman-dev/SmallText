@@ -68,6 +68,7 @@ enum AppState {
   APP_INVITE_CODE_DISPLAY,
   APP_JOIN_EXPLAIN,
   APP_JOIN_CODE_INPUT,
+  APP_JOIN_USERNAME_INPUT,      // New: Enter username after invite join
   APP_VILLAGE_JOIN_NAME,
   APP_VILLAGE_JOIN_PASSWORD,
   APP_PASSWORD_INPUT,
@@ -423,6 +424,7 @@ void handleInviteExplain();
 void handleInviteCodeDisplay();
 void handleJoinExplain();
 void handleJoinCodeInput();
+void handleJoinUsernameInput();
 void handleVillageJoinName();
 void handleVillageJoinPassword();
 void handlePasswordInput();
@@ -1260,6 +1262,9 @@ void loop() {
     case APP_JOIN_CODE_INPUT:
       handleJoinCodeInput();
       break;
+    case APP_JOIN_USERNAME_INPUT:
+      handleJoinUsernameInput();
+      break;
     case APP_VILLAGE_JOIN_PASSWORD:
       handleVillageJoinPassword();
       break;
@@ -1881,28 +1886,76 @@ void handleUsernameInput() {
         village.clearVillage();
         village.createVillage(tempVillageName);
         ui.setExistingVillageName(tempVillageName);
+        
+        village.setUsername(currentName);
       } else {
-        // Joining is now only via invite codes - this path shouldn't be used
-        Serial.println("[Error] Old join path called - should use invite system");
-        return;
+        // FIXED: Joining via invite - just set username, village already loaded
+        Serial.println("[Invite] Setting username after invite join: " + currentName);
+        village.setUsername(currentName);
+        
+        // Send join announcement NOW that we have username
+        String joinAnnouncement = currentName + " joined the conversation";
+        String systemMsgId = mqttMessenger.sendSystemMessage(joinAnnouncement, "SmolTxt");
+        if (systemMsgId.isEmpty()) {
+          mqttMessenger.sendShout(joinAnnouncement);
+        }
+        logger.info("MQTT SYSTEM sent: " + joinAnnouncement);
+      }
+      // FIXED: Different flow for creators vs joiners
+      if (!isCreatingVillage) {
+        // JOINER PATH: Village already loaded and subscribed, just save username
+        Serial.println("[Invite] Saving username to existing village slot " + String(currentVillageSlot));
+        village.saveToSlot(currentVillageSlot);
+        
+        // Update MQTT subscription with new username
+        mqttMessenger.addVillageSubscription(
+          village.getVillageId(),
+          village.getVillageName(),
+          currentName,
+          village.getEncryptionKey()
+        );
+        
+        // Load messages and go to messaging screen (skip invite code flow continuation)
+        ui.clearMessages();
+        std::vector<Message> messages = village.loadMessages();
+        int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+        for (int i = startIndex; i < messages.size(); i++) {
+          ui.addMessage(messages[i]);
+        }
+        
+        // Request sync
+        unsigned long lastMsgTime = 0;
+        for (const auto& msg : messages) {
+          if (msg.timestamp > lastMsgTime) lastMsgTime = msg.timestamp;
+        }
+        if (mqttMessenger.isConnected()) {
+          mqttMessenger.requestSync(lastMsgTime);
+          smartDelay(500);
+        }
+        
+        // Go to messaging
+        keyboard.clearInput();
+        ui.setInputText("");
+        inMessagingScreen = true;
+        lastMessagingActivity = millis();
+        ui.setCurrentUsername(currentName);
+        ui.resetMessageScroll();
+        appState = APP_MESSAGING;
+        ui.setState(STATE_MESSAGING);
+        ui.update();
+        return;  // Exit early for joiners
       }
       
+      // CREATOR PATH: Need to find slot and set everything up
       village.setUsername(currentName);
       
       // Find appropriate slot for this village
       currentVillageSlot = -1;  // Reset slot search
       
-      // Check if village already exists in a slot
-      if (!isCreatingVillage) {
-        String villageId = village.getVillageId();
-        currentVillageSlot = Village::findVillageSlotById(villageId);
-        Serial.println("[Main] Joiner searching for village ID: " + villageId + ", found in slot: " + String(currentVillageSlot));
-      } else {
-        // For creators, also check if we somehow already created this village
-        String villageId = village.getVillageId();
-        currentVillageSlot = Village::findVillageSlotById(villageId);
-        Serial.println("[Main] Creator checking for existing village ID: " + villageId + ", found in slot: " + String(currentVillageSlot));
-      }
+      // Check if we somehow already created this village
+      String villageId = village.getVillageId();
+      currentVillageSlot = Village::findVillageSlotById(villageId);
+      Serial.println("[Main] Creator checking for existing village ID: " + villageId + ", found in slot: " + String(currentVillageSlot));
       
       // If not found, find first empty slot
       if (currentVillageSlot == -1) {
@@ -2294,10 +2347,10 @@ void handleJoinExplain() {
 void handleJoinCodeInput() {
   keyboard.update();
   
-  // Left arrow to go back
+  // Left arrow to go back to main menu
   if (keyboard.isLeftPressed()) {
-    appState = APP_JOIN_EXPLAIN;
-    ui.setState(STATE_JOIN_EXPLAIN);
+    appState = APP_MAIN_MENU;
+    ui.setState(STATE_MAIN_MENU);
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
@@ -2409,89 +2462,17 @@ void handleJoinCodeInput() {
                 ui.showMessage("Success!", successMsg, 0);
                 ui.update();
                 smartDelay(2000);  // Show success for 2 seconds
-                // Send announcement message that user joined from SmolTxt
-                String joinUsername = village.getUsername();
-                if (joinUsername.isEmpty() || joinUsername == "member") {
-                  joinUsername = "A new member";
-                }
-                String joinAnnouncement = joinUsername + " joined the conversation";
                 
-                // Send as system message from SmolTxt
-                String systemMsgId = mqttMessenger.sendSystemMessage(joinAnnouncement, "SmolTxt");
-                if (systemMsgId.isEmpty()) {
-                  // Fallback if system message not available
-                  mqttMessenger.sendShout(joinAnnouncement);
-                }
-                
-                // Brief delay to let the message send
-                smartDelay(200);
-                
-                // Load message history and request sync
-                std::vector<Message> existingMsgs = village.loadMessages();
-                unsigned long lastMsgTime = 0;
-                for (const auto& msg : existingMsgs) {
-                  if (msg.timestamp > lastMsgTime) {
-                    lastMsgTime = msg.timestamp;
-                  }
-                }
-                if (mqttMessenger.isConnected()) {
-                  Serial.println("[Sync] Requesting sync after join: last timestamp=" + String(lastMsgTime));
-                  logger.info("Sync: Request sent, last=" + String(lastMsgTime));
-                  mqttMessenger.requestSync(lastMsgTime);
-                  smartDelay(500);  // Wait for sync responses
-                }
-                
-                // Load messages with pagination
-                ui.clearMessages();
-                std::vector<Message> messages = village.loadMessages();
-                Serial.println("[Village] Loaded " + String(messages.size()) + " messages from storage");
-                
-                // Show last MAX_MESSAGES_TO_LOAD messages
-                int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
-                int displayCount = 0;
-                for (int i = startIndex; i < messages.size(); i++) {
-                  ui.addMessage(messages[i]);
-                  displayCount++;
-                }
-                Serial.println("[App] Displaying last " + String(displayCount) + " of " + String(messages.size()) + " messages after join");
-                
-                // Mark received messages as read
-                readReceiptQueue.clear();
-                std::vector<String> messagesToMarkRead;
-                int unreadCount = 0;
-                for (int i = startIndex; i < messages.size(); i++) {
-                  const Message& msg = messages[i];
-                  if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
-                    ui.updateMessageStatus(msg.messageId, MSG_READ);
-                    messagesToMarkRead.push_back(msg.messageId);
-                    if (!msg.senderMAC.isEmpty()) {
-                      ReadReceiptQueueItem item;
-                      item.messageId = msg.messageId;
-                      item.recipientMAC = msg.senderMAC;
-                      readReceiptQueue.push_back(item);
-                      unreadCount++;
-                    }
-                  }
-                }
-                if (!messagesToMarkRead.empty()) {
-                  village.batchUpdateMessageStatus(messagesToMarkRead, MSG_READ);
-                  Serial.println("[App] Marked " + String(unreadCount) + " unread messages as read after join");
-                }
-                
-                // Go directly to messaging screen
-                // FIXED: More aggressive input clearing to prevent username pre-fill
-                keyboard.clearInput();
-                keyboard.update();  // Process the clear
+                // FIXED: Prompt for username before sending join announcement
+                appState = APP_JOIN_USERNAME_INPUT;
+                ui.setState(STATE_INPUT_USERNAME);
                 ui.setInputText("");
-                ui.update();  // Force UI to process the clear
-                smartDelay(50);  // Brief delay to ensure clearing completes
-                inMessagingScreen = true;
-                lastMessagingActivity = millis();
-                ui.setCurrentUsername(village.getUsername());
-                ui.resetMessageScroll();
-                appState = APP_MESSAGING;
-                ui.setState(STATE_MESSAGING);
+                keyboard.clearInput();
                 ui.update();
+                
+                // Set flags for username handler to know we're joining (not creating)
+                isCreatingVillage = false;
+                tempVillageName = pendingInvite.villageName;  // Store for reference
               } else {
                 Serial.println("[Invite] Failed to load village after save");
                 ui.showMessage("Error", "Failed to load\nvillage data\n\nPress ENTER", 0);
@@ -2556,6 +2537,75 @@ void handleJoinCodeInput() {
     }
     keyboard.clearInput();
     ui.updatePartial();
+  }
+}
+
+void handleJoinUsernameInput() {
+  keyboard.update();
+  
+  // Left arrow returns to main menu
+  if (keyboard.isLeftPressed()) {
+    appState = APP_MAIN_MENU;
+    ui.setState(STATE_MAIN_MENU);
+    ui.resetMenuSelection();
+    ui.setInputText("");
+    keyboard.clearInput();
+    ui.update();
+    smartDelay(300);
+    return;
+  }
+  
+  // Check for ENTER - save username and send join announcement
+  if (keyboard.isEnterPressed()) {
+    String currentName = ui.getInputText();
+    currentName.trim();
+    
+    if (currentName.length() > 0) {
+      // Update village with actual username
+      village.setUsername(currentName);
+      village.saveToSlot(currentVillageSlot);
+      
+      // Re-subscribe to village with updated username
+      mqttMessenger.addVillageSubscription(village.getVillageId(), village.getVillageName(), 
+                                          currentName, village.getEncryptionKey());
+      
+      // Send join announcement with actual username
+      String announcement = currentName + " joined the conversation";
+      mqttMessenger.sendSystemMessage(announcement, "SmolTxt");
+      logger.info("User joined: " + currentName);
+      
+      // Transition to messaging screen
+      appState = APP_MESSAGING;
+      ui.setState(STATE_MESSAGING);
+      ui.setCurrentUsername(currentName);
+      ui.setInputText("");
+      keyboard.clearInput();
+      ui.update();
+      inMessagingScreen = true;
+      lastMessagingActivity = millis();
+      
+      pendingInvite.received = false;  // Clear invite flag
+    }
+    smartDelay(300);
+    return;
+  }
+  
+  // Regular text input
+  if (keyboard.hasInput()) {
+    String input = keyboard.getInput();
+    for (char c : input) {
+      ui.addInputChar(c);
+    }
+    keyboard.clearInput();
+    ui.updatePartial();
+  }
+  
+  // Backspace handling
+  if (keyboard.isBackspacePressed()) {
+    ui.removeInputChar();
+    keyboard.clearInput();
+    ui.updatePartial();
+    smartDelay(100);
   }
 }
 
