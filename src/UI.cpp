@@ -61,11 +61,8 @@ void UI::update() {
         case STATE_SPLASH:
             drawSplash();
             break;
-        case STATE_VILLAGE_SELECT:
-            drawVillageSelect();
-            break;
-        case STATE_MAIN_MENU:
-            drawMainMenu();
+        case STATE_MAIN_HUB:
+            drawMainHub();
             break;
         case STATE_WIFI_SETUP_MENU:
             drawWiFiSetupMenu();
@@ -88,14 +85,14 @@ void UI::update() {
         case STATE_OTA_UPDATE:
             drawOTAUpdate();
             break;
-        case STATE_VILLAGE_MENU:
-            drawVillageMenu();
+        case STATE_CONVERSATION_MENU:
+            drawConversationMenu();
             break;
-        case STATE_CREATE_VILLAGE:
+        case STATE_CREATE_CONVERSATION:
             drawInputPrompt("Village name:");
             break;
-        case STATE_VILLAGE_CREATED:
-            drawVillageCreated();
+        case STATE_CONVERSATION_CREATED:
+            drawConversationCreated();
             break;
         case STATE_INVITE_EXPLAIN:
             drawInviteExplain();
@@ -109,10 +106,10 @@ void UI::update() {
         case STATE_JOIN_CODE_INPUT:
             drawJoinCodeInput();
             break;
-        case STATE_JOIN_VILLAGE_NAME:
+        case STATE_JOIN_CONVERSATION_NAME:
             drawInputPrompt("Village to join:");
             break;
-        case STATE_JOIN_VILLAGE_PASSWORD:
+        case STATE_JOIN_CONVERSATION_PASSWORD:
             drawInputPrompt("Enter secret passphrase:");
             break;
         case STATE_INPUT_PASSWORD:
@@ -153,14 +150,11 @@ void UI::updatePartial() {
     display->fillScreen(GxEPD_WHITE);
     
     switch (currentState) {
-        case STATE_VILLAGE_SELECT:
-            drawVillageSelect();
+        case STATE_MAIN_HUB:
+            drawMainHub();
             break;
         case STATE_CONVERSATION_LIST:
             drawConversationList();
-            break;
-        case STATE_MAIN_MENU:
-            drawMainMenu();
             break;
         case STATE_SETTINGS_MENU:
             drawSettingsMenu();
@@ -192,14 +186,14 @@ void UI::updatePartial() {
         case STATE_OTA_UPDATE:
             drawOTAUpdate();
             break;
-        case STATE_VILLAGE_MENU:
-            drawVillageMenu();
+        case STATE_CONVERSATION_MENU:
+            drawConversationMenu();
             break;
-        case STATE_CREATE_VILLAGE:
+        case STATE_CREATE_CONVERSATION:
             drawInputPrompt("Village name:");
             break;
-        case STATE_VILLAGE_CREATED:
-            drawVillageCreated();
+        case STATE_CONVERSATION_CREATED:
+            drawConversationCreated();
             break;
         case STATE_INVITE_EXPLAIN:
             drawInviteExplain();
@@ -213,10 +207,10 @@ void UI::updatePartial() {
         case STATE_JOIN_CODE_INPUT:
             drawJoinCodeInput();
             break;
-        case STATE_JOIN_VILLAGE_NAME:
+        case STATE_JOIN_CONVERSATION_NAME:
             drawInputPrompt("Village to join:");
             break;
-        case STATE_JOIN_VILLAGE_PASSWORD:
+        case STATE_JOIN_CONVERSATION_PASSWORD:
             drawInputPrompt("Enter secret passphrase:");
             break;
         case STATE_INPUT_PASSWORD:
@@ -250,9 +244,8 @@ void UI::updateClean() {
     display->fillScreen(GxEPD_WHITE);
     switch (currentState) {
         case STATE_SPLASH:          drawSplash(); break;
-        case STATE_VILLAGE_SELECT:  drawVillageSelect(); break;
+        case STATE_MAIN_HUB:        drawMainHub(); break;
         case STATE_CONVERSATION_LIST: drawConversationList(); break;
-        case STATE_MAIN_MENU:       drawMainMenu(); break;
         case STATE_SETTINGS_MENU:   drawSettingsMenu(); break;
         case STATE_RINGTONE_SELECT: drawRingtoneSelect(); break;
         case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
@@ -265,14 +258,14 @@ void UI::updateClean() {
         case STATE_WIFI_STATUS:     drawWiFiStatus(); break;
         case STATE_OTA_CHECK:       drawOTACheck(); break;
         case STATE_OTA_UPDATE:      drawOTAUpdate(); break;
-        case STATE_CREATE_VILLAGE:  drawInputPrompt("Village name:"); break;
-        case STATE_VILLAGE_CREATED:  drawVillageCreated(); break;
+        case STATE_CREATE_CONVERSATION:  drawInputPrompt("Village name:"); break;
+        case STATE_CONVERSATION_CREATED:  drawConversationCreated(); break;
         case STATE_INVITE_EXPLAIN:  drawInviteExplain(); break;
         case STATE_INVITE_CODE_DISPLAY:  drawInviteCodeDisplay(); break;
         case STATE_JOIN_EXPLAIN:  drawJoinExplain(); break;
         case STATE_JOIN_CODE_INPUT:  drawJoinCodeInput(); break;
-        case STATE_JOIN_VILLAGE_NAME: drawInputPrompt("Village to join:"); break;
-        case STATE_JOIN_VILLAGE_PASSWORD: drawInputPrompt("Enter secret passphrase:"); break;
+        case STATE_JOIN_CONVERSATION_NAME: drawInputPrompt("Village to join:"); break;
+        case STATE_JOIN_CONVERSATION_PASSWORD: drawInputPrompt("Enter secret passphrase:"); break;
         case STATE_INPUT_PASSWORD:  drawInputPrompt("Village password:"); break;
         case STATE_ADD_MEMBER:      drawAddMember(); break;
         case STATE_VIEW_MEMBERS:    drawViewMembers(); break;
@@ -282,7 +275,7 @@ void UI::updateClean() {
         case STATE_INPUT_MESSAGE:   drawInputPrompt("New message:"); break;
         case STATE_POWERING_DOWN:   drawPoweringDown(); break;
         case STATE_SLEEPING:        drawSleeping(); break;
-        case STATE_VILLAGE_MENU:    drawVillageMenu(); break;
+        case STATE_CONVERSATION_MENU:    drawConversationMenu(); break;
     }
     display->display(true);  // Partial refresh to draw content
 }
@@ -293,9 +286,8 @@ void UI::updateFull() {
     display->fillScreen(GxEPD_WHITE);
     switch (currentState) {
         case STATE_SPLASH:          drawSplash(); break;
-        case STATE_VILLAGE_SELECT:  drawVillageSelect(); break;
+        case STATE_MAIN_HUB:        drawMainHub(); break;
         case STATE_CONVERSATION_LIST: drawConversationList(); break;
-        case STATE_MAIN_MENU:       drawMainMenu(); break;
         case STATE_SETTINGS_MENU:   drawSettingsMenu(); break;
         case STATE_RINGTONE_SELECT: drawRingtoneSelect(); break;
         case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
@@ -308,14 +300,14 @@ void UI::updateFull() {
         case STATE_WIFI_STATUS:     drawWiFiStatus(); break;
         case STATE_OTA_CHECK:       drawOTACheck(); break;
         case STATE_OTA_UPDATE:      drawOTAUpdate(); break;
-        case STATE_CREATE_VILLAGE:  drawInputPrompt("Village name:"); break;
-        case STATE_VILLAGE_CREATED:  drawVillageCreated(); break;
+        case STATE_CREATE_CONVERSATION:  drawInputPrompt("Village name:"); break;
+        case STATE_CONVERSATION_CREATED:  drawConversationCreated(); break;
         case STATE_INVITE_EXPLAIN:  drawInviteExplain(); break;
         case STATE_INVITE_CODE_DISPLAY:  drawInviteCodeDisplay(); break;
         case STATE_JOIN_EXPLAIN:  drawJoinExplain(); break;
         case STATE_JOIN_CODE_INPUT:  drawJoinCodeInput(); break;
-        case STATE_JOIN_VILLAGE_NAME: drawInputPrompt("Village to join:"); break;
-        case STATE_JOIN_VILLAGE_PASSWORD: drawInputPrompt("Enter secret passphrase:"); break;
+        case STATE_JOIN_CONVERSATION_NAME: drawInputPrompt("Village to join:"); break;
+        case STATE_JOIN_CONVERSATION_PASSWORD: drawInputPrompt("Enter secret passphrase:"); break;
         case STATE_INPUT_PASSWORD:  drawInputPrompt("Village password:"); break;
         case STATE_ADD_MEMBER:      drawAddMember(); break;
         case STATE_VIEW_MEMBERS:    drawViewMembers(); break;
@@ -352,7 +344,7 @@ void UI::drawSplash() {
     display->print("Safe text for kids");
 }
 
-void UI::drawVillageSelect() {
+void UI::drawMainHub() {
     drawMenuHeader("Main Menu");
     
     int y = 35;
@@ -439,26 +431,8 @@ void UI::drawConversationList() {
     }
 }
 
-void UI::drawMainMenu() {
-    // Title
-    display->setFont(&FreeSansBold12pt7b);
-    display->setCursor(80, 20);
-    display->print("MAIN MENU");
-    drawBatteryIcon(SCREEN_WIDTH - 25, 5, batteryPercent);
-    display->setFont(&FreeSans9pt7b);
-    
-    String items[] = {"Create Village", "Join Village"};
-    int y = 50;
-    int lineHeight = 25;
-    
-    for (int i = 0; i < 2; i++) {
-        drawMenuItem(items[i], y, i == menuSelection, lineHeight);
-        y += lineHeight;
-    }
-}
-
-void UI::drawVillageMenu() {
-    drawMenuHeader(existingVillageName);
+void UI::drawConversationMenu() {
+    drawMenuHeader(existingConversationName);
     
     String items[] = {"View Messages", "Invite a Friend", "View Members", "Delete Group"};
     int y = 38;
@@ -1421,8 +1395,8 @@ void UI::menuUp() {
 void UI::menuDown() {
     int maxItems = 0;
     switch (currentState) {
-        case STATE_VILLAGE_SELECT: {
-            // Main menu has 4 static items: My Conversations, New Village, Join Village, Settings
+        case STATE_MAIN_HUB: {
+            // Main menu has 4 static items: My Conversations, New Conversation, Join Conversation, Settings
             maxItems = 3;  // 0-3 (4 items)
             break;
         }
@@ -1432,16 +1406,13 @@ void UI::menuDown() {
             maxItems = conversationList.size() > 0 ? conversationList.size() - 1 : 0;
             break;
         }
-        case STATE_MAIN_MENU:
-            maxItems = 1;
-            break;
         case STATE_SETTINGS_MENU:
             maxItems = 2;  // Ringtone, WiFi, Updates (0-2)
             break;
         case STATE_RINGTONE_SELECT:
             maxItems = 11;  // 12 ringtone options (0-11)
             break;
-        case STATE_VILLAGE_MENU:
+        case STATE_CONVERSATION_MENU:
             maxItems = 3;
             break;
         case STATE_WIFI_SETUP_MENU:
@@ -1552,8 +1523,8 @@ void UI::setMemberList(const std::vector<String>& members) {
     memberList = members;
 }
 
-void UI::setExistingVillageName(const String& name) {
-    existingVillageName = name;
+void UI::setExistingConversationName(const String& name) {
+    existingConversationName = name;
 }
 
 void UI::setNetworkList(const std::vector<String>& ssids, const std::vector<int>& rssis, 
@@ -1723,7 +1694,7 @@ void UI::drawSleeping() {
     display->print("Press reset to wake");
 }
 
-void UI::drawVillageCreated() {
+void UI::drawConversationCreated() {
     drawMenuHeader("Conversation Created");
     
     String items[] = {"Invite a Friend", "Back"};

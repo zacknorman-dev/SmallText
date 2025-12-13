@@ -1,0 +1,104 @@
+[Power] Woke from nap - reason: TIMER
+[Buzzer] Initialized on GPIO 40 using LEDC channel 0
+
+
+
+
+
+
+=================================
+SmolTxt - Safe Texting for Kids
+=================================
+Boot starting...
+[Logger] Initializing event logger...
+[Logger] Loaded 430 log entries from file
+[2019] INFO: ======== SYSTEM BOOT ========
+[2019] INFO: Build: Dec 13 2025 14:49:21
+[Logger] Initialized
+[Logger] Success! Event logging active
+[2020] INFO: System boot started
+[2020] INFO: Build: v0.55.0
+[Display] Initializing e-paper...
+[  2221][E][esp32-hal-spi.c:215] spiAttachMISO(): HSPI Does not have default pins on ESP32S3!
+[UI] GxEPD2 display initialized
+[Display] Success!
+[Display] Showing splash...
+_Update_Full : 3259000
+[I2C] Initializing I2C bus...
+[I2C] I2C initialized at 100kHz with 200ms timeout for detection
+[Keyboard] Initializing CardKB...
+[Keyboard] State cleared: currentKey=0, inputBuffer empty
+[Keyboard] CardKB found at 0x5F
+[I2C] Timeout reduced to 50ms for normal operations
+[Keyboard] Before clear - checking for garbage...
+[Keyboard] After clear - currentKey check: no keys
+[Keyboard] Buffer cleared and ready
+[Power] Device awake - 5 minute activity timer started
+[Battery] Initializing battery monitor...
+[Battery] Initialized
+[Battery] Voltage: 4.15V, Percent: 95%
+[Battery] Battery monitor ready
+[WiFi] Initializing WiFi manager...
+[WiFi] Loading 2 saved networks
+[WiFi]   - fomalhaut2.4G
+[WiFi]   - Zachary
+[WiFi] WiFiManager initialized with 2 saved networks
+[WiFi] WiFi manager ready
+[OTA] Initializing OTA updater...
+[OTA] ====================================
+[OTA] Partition Information:
+[OTA] Running partition: app1
+[OTA] Running partition size: 1280 KB
+[OTA] Update partition: app0
+[OTA] Update partition size: 1280 KB
+[OTA] Firmware version: v0.55.0
+[OTA] ====================================
+[7773] INFO: OTA Updater initialized, version: v0.55.0
+[7773] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[OTA] Update source: GitHub zacknorman-dev/SmallText
+[OTA] OTA updater ready
+[WiFi] Found saved credentials, connecting...
+[WiFi] Trying last connected network: fomalhaut2.4G
+[WiFi] Connecting to: fomalhaut2.4G
+..
+[WiFi] Connected!
+[WiFi] IP: 192.168.8.27
+[WiFi] RSSI: -64 dBm
+[WiFi] Syncing NTP time...
+[WiFi] NTP configured
+[WiFi] NTP sync successful: 2025-12-13 23:24:54 UTC
+[WiFi] Time offset: 1765668286 seconds
+[WiFi] Connected: 192.168.8.27
+[8785] INFO: WiFi connected: 192.168.8.27
+[MQTT] Initializing MQTT messenger...
+[MQTT] Initializing ESP-MQTT messenger
+[MQTT] Broker: mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[MQTT] Username: smoltxt2
+[MQTT] Client ID: smol_esp_f8c43bba2010_38
+[8786] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[8786] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_38
+[8786] INFO: MQTT: User=smoltxt2
+[9281] INFO: MQTT: TLS enabled with R12 certificate
+[9282] INFO: MQTT: Config set - clean_session=true keepalive=60
+[MQTT] Client started (retry attempts: 0)
+[MQTT] Other event id:7
+[MQTT] MQTT messenger ready
+[9283] INFO: MQTT messenger initialized
+[MQTT] Scanning for saved villages...
+[MQTT] Added village subscription: yeppers (4eef65eb-49e5-4a7d-8aa6-16b9f78a8ec4)
+[  9413][E][vfs_api.cpp:105] open(): /littlefs/village_1.dat does not exist, no permits for creation
+[  9425][E][vfs_api.cpp:105] open(): /littlefs/village_2.dat does not exist, no permits for creation
+[  9437][E][vfs_api.cpp:105] open(): /littlefs/village_3.dat does not exist, no permits for creation
+[  9449][E][vfs_api.cpp:105] open(): /littlefs/village_4.dat does not exist, no permits for creation
+[  9461][E][vfs_api.cpp:105] open(): /littlefs/village_5.dat does not exist, no permits for creation
+[  9473][E][vfs_api.cpp:105] open(): /littlefs/village_6.dat does not exist, no permits for creation
+[  9485][E][vfs_api.cpp:105] open(): /littlefs/village_7.dat does not exist, no permits for creation
+[  9497][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+[  9509][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[MQTT] Subscribed to 1 villages
+[9518] INFO: MQTT: Subscribed to 1 villages
+[MQTT] Subscribed to all saved villages
+[OTA] Checking for updates on boot...
+[9518] INFO: OTA: Boot update check
+[OTA] Checking for updates...
+[OTA] Fetching: https://api.github.com/repos/zacknorman-dev/SmallText/releases/latest

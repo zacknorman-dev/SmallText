@@ -47,30 +47,30 @@ OTAUpdater otaUpdater;
 // Application state
 enum AppState {
   APP_MAIN_MENU,
-  APP_CONVERSATION_LIST,       // New: dynamic list of all valid villages
+  APP_CONVERSATION_LIST,
   APP_SETTINGS_MENU,
   APP_RINGTONE_SELECT,
   APP_WIFI_SETUP_MENU,
-  APP_WIFI_NETWORK_LIST,      // New: show scanned networks
-  APP_WIFI_NETWORK_OPTIONS,   // New: connect/forget for selected network
-  APP_WIFI_NETWORK_DETAILS,   // New: show details of connected/saved network
-  APP_WIFI_SAVED_NETWORKS,    // New: list all saved networks
+  APP_WIFI_NETWORK_LIST,
+  APP_WIFI_NETWORK_OPTIONS,
+  APP_WIFI_NETWORK_DETAILS,
+  APP_WIFI_SAVED_NETWORKS,
   APP_WIFI_SSID_INPUT,
   APP_WIFI_PASSWORD_INPUT,
   APP_WIFI_CONNECTING,
   APP_WIFI_STATUS,
   APP_OTA_CHECKING,
   APP_OTA_UPDATING,
-  APP_VILLAGE_MENU,
-  APP_VILLAGE_CREATE,
-  APP_VILLAGE_CREATED,
+  APP_CONVERSATION_MENU,
+  APP_CONVERSATION_CREATE,
+  APP_CONVERSATION_CREATED,
   APP_INVITE_EXPLAIN,
   APP_INVITE_CODE_DISPLAY,
   APP_JOIN_EXPLAIN,
   APP_JOIN_CODE_INPUT,
-  APP_JOIN_USERNAME_INPUT,      // New: Enter username after invite join
-  APP_VILLAGE_JOIN_NAME,
-  APP_VILLAGE_JOIN_PASSWORD,
+  APP_JOIN_USERNAME_INPUT,
+  APP_CONVERSATION_JOIN_NAME,
+  APP_CONVERSATION_JOIN_PASSWORD,
   APP_PASSWORD_INPUT,
   APP_USERNAME_INPUT,
   APP_VIEW_MEMBERS,
@@ -79,7 +79,7 @@ enum AppState {
 };
 
 AppState appState = APP_MAIN_MENU;
-AppState returnToState = APP_MAIN_MENU;  // Track where to return from invite flow
+// Phase 2 refactor: Removed returnToState - all flows now return to main hub
 String messageComposingText = "";
 String tempVillageName = "";  // Temp storage during village creation
 String tempWiFiSSID = "";     // Temp storage during WiFi setup
@@ -151,6 +151,14 @@ const unsigned long AWAKE_TIMEOUT = 300000;  // 5 minutes = 300,000ms
 const unsigned long NAP_WAKE_INTERVAL = 900000;  // 15 minutes = 900,000ms
 const float LOW_BATTERY_THRESHOLD = 3.0;  // 3.0V = too low, go to permanent sleep
 float sleepBatteryVoltage = 0.0;  // Battery voltage when entering nap mode
+
+// USB power detection helper
+bool isUsbPowered() {
+  // ESP32-S3 can detect USB power via battery voltage
+  // When USB connected, battery reads higher voltage (charging)
+  float voltage = battery.getVoltage();
+  return (voltage > 4.3);  // USB charging typically shows >4.3V
+}
 
 // Ringtone types
 enum RingtoneType {
@@ -577,7 +585,7 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
   
   // Update display if we're actively viewing messaging screen OR if we're in village/main menu
   // (so status changes are visible even when not actively in the messaging screen)
-  if (inMessagingScreen || appState == APP_VILLAGE_MENU || appState == APP_MAIN_MENU) {
+  if (inMessagingScreen || appState == APP_CONVERSATION_MENU || appState == APP_MAIN_MENU) {
     ui.updatePartial();
   }
 }
@@ -595,7 +603,7 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
   
   // Update display if we're actively viewing messaging screen OR if we're in village/main menu
   // (so status changes are visible even when not actively in the messaging screen)
-  if (inMessagingScreen || appState == APP_VILLAGE_MENU || appState == APP_MAIN_MENU) {
+  if (inMessagingScreen || appState == APP_CONVERSATION_MENU || appState == APP_MAIN_MENU) {
     ui.updatePartial();
   }
 }
@@ -609,7 +617,7 @@ void onCommandReceived(const String& command) {
     logger.info("Critical update command received");
     
     // Only show update screen if on main menu (not interrupting active use)
-    if (appState == APP_MAIN_MENU || appState == APP_VILLAGE_MENU) {
+    if (appState == APP_MAIN_MENU || appState == APP_CONVERSATION_MENU) {
       if (otaUpdater.checkForUpdate()) {
         logger.info("OTA: Critical update available: " + otaUpdater.getLatestVersion());
         appState = APP_OTA_CHECKING;
@@ -767,7 +775,7 @@ void onVillageNameReceived(const String& villageId, const String& villageName) {
     // If this is the current village, update UI and MQTT
     if (slot == currentVillageSlot) {
       village.setVillageName(villageName);
-      ui.setExistingVillageName(villageName);
+      ui.setExistingConversationName(villageName);
       ui.update();  // Force full update to show new name
       mqttMessenger.setVillageInfo(villageId, villageName, village.getUsername());
     }
@@ -879,7 +887,9 @@ void setup() {
   // Initialize power management - start awake timer
   powerMode = POWER_AWAKE;
   lastActivityTime = millis();
+  bool usbPower = isUsbPowered();
   Serial.println("[Power] Device awake - 5 minute activity timer started");
+  Serial.println("[Power] USB power: " + String(usbPower ? "CONNECTED (sleep disabled)" : "NOT DETECTED"));
   
   // Set typing check callback to defer display updates during typing
   ui.setTypingCheckCallback(isUserTyping);
@@ -1085,7 +1095,7 @@ void setup() {
   }
   
   appState = APP_MAIN_MENU;
-  ui.setState(STATE_VILLAGE_SELECT);
+  ui.setState(STATE_MAIN_HUB);
   ui.resetMenuSelection();
   Serial.println("[System] About to call ui.update() for village select...");
   ui.updateClean();  // Clean transition to main menu
@@ -1196,7 +1206,8 @@ void loop() {
   }
   
   // Check for inactivity timeout - enter napping mode after 5 minutes
-  if (powerMode == POWER_AWAKE) {
+  // BUT: Skip sleep if USB powered (for debugging and real-time updates)
+  if (powerMode == POWER_AWAKE && !isUsbPowered()) {
     unsigned long inactiveTime = millis() - lastActivityTime;
     if (inactiveTime >= AWAKE_TIMEOUT) {
       Serial.println("[Power] 5 minutes of inactivity - entering napping mode");
@@ -1259,13 +1270,13 @@ void loop() {
     case APP_OTA_UPDATING:
       handleOTAUpdating();
       break;
-    case APP_VILLAGE_MENU:
+    case APP_CONVERSATION_MENU:
       handleVillageMenu();
       break;
-    case APP_VILLAGE_CREATE:
+    case APP_CONVERSATION_CREATE:
       handleVillageCreate();
       break;
-    case APP_VILLAGE_CREATED:
+    case APP_CONVERSATION_CREATED:
       handleVillageCreated();
       break;
     case APP_INVITE_EXPLAIN:
@@ -1283,10 +1294,10 @@ void loop() {
     case APP_JOIN_USERNAME_INPUT:
       handleJoinUsernameInput();
       break;
-    case APP_VILLAGE_JOIN_PASSWORD:
+    case APP_CONVERSATION_JOIN_PASSWORD:
       handleVillageJoinPassword();
       break;
-    case APP_VILLAGE_JOIN_NAME:
+    case APP_CONVERSATION_JOIN_NAME:
       handleVillageJoinName();
       break;
     case APP_PASSWORD_INPUT:
@@ -1354,8 +1365,8 @@ void handleMainMenu() {
       // Selected "New Village" - ask for village name first
       isCreatingVillage = true;
       keyboard.clearInput();
-      appState = APP_VILLAGE_CREATE;
-      ui.setState(STATE_CREATE_VILLAGE);
+      appState = APP_CONVERSATION_CREATE;
+      ui.setState(STATE_CREATE_CONVERSATION);
       ui.setInputText("");
       ui.updateClean();  // Clean transition
     } else if (selection == 2) {
@@ -1415,7 +1426,7 @@ void handleConversationList() {
       
       // Return to main menu
       appState = APP_MAIN_MENU;
-      ui.setState(STATE_MAIN_MENU);
+      ui.setState(STATE_MAIN_HUB);
       ui.resetMenuSelection();
       ui.updateClean();
       
@@ -1430,7 +1441,7 @@ void handleConversationList() {
     Serial.println("[ConversationList] LEFT pressed - back to main menu");
     keyboard.clearInput();
     appState = APP_MAIN_MENU;
-    ui.setState(STATE_VILLAGE_SELECT);
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
     ui.updateClean();
     smartDelay(300);
@@ -1448,7 +1459,7 @@ void handleConversationList() {
       
       if (village.loadFromSlot(entry.slot)) {
         currentVillageSlot = entry.slot;
-        ui.setExistingVillageName(village.getVillageName());
+        ui.setExistingConversationName(village.getVillageName());
         encryption.setKey(village.getEncryptionKey());
         
         // Set as active village for sending
@@ -1457,8 +1468,8 @@ void handleConversationList() {
         
         // Go to village menu
         keyboard.clearInput();
-        appState = APP_VILLAGE_MENU;
-        ui.setState(STATE_VILLAGE_MENU);
+        appState = APP_CONVERSATION_MENU;
+        ui.setState(STATE_CONVERSATION_MENU);
         ui.resetMenuSelection();
         ui.updateClean();
       } else {
@@ -1485,7 +1496,7 @@ void handleVillageMenu() {
   if (keyboard.isLeftPressed()) {
     keyboard.clearInput();
     appState = APP_MAIN_MENU;
-    ui.setState(STATE_VILLAGE_SELECT);
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
     ui.updateClean();  // Clean transition
     smartDelay(300);
@@ -1573,7 +1584,6 @@ void handleVillageMenu() {
       ui.update();  // Always refresh to show any messages received
     } else if (selection == 1) {
       // Invite a Friend - go to invite flow
-      returnToState = APP_VILLAGE_MENU;
       appState = APP_INVITE_EXPLAIN;
       ui.setState(STATE_INVITE_EXPLAIN);
       ui.resetMenuSelection();
@@ -1609,12 +1619,12 @@ void handleVillageMenu() {
           smartDelay(1500);
           
           appState = APP_MAIN_MENU;
-          ui.setState(STATE_VILLAGE_SELECT);
+          ui.setState(STATE_MAIN_HUB);
           ui.resetMenuSelection();
           ui.updateClean();  // Clean transition
           break;
         } else if (keyboard.isLeftPressed()) {
-          ui.setState(STATE_VILLAGE_MENU);
+          ui.setState(STATE_CONVERSATION_MENU);
           ui.updateClean();  // Clean transition
           break;
         }
@@ -1631,8 +1641,8 @@ void handleViewMembers() {
   
   // Left arrow to go back to village menu
   if (keyboard.isLeftPressed()) {
-    appState = APP_VILLAGE_MENU;
-    ui.setState(STATE_VILLAGE_MENU);
+    appState = APP_CONVERSATION_MENU;
+    ui.setState(STATE_CONVERSATION_MENU);
     ui.resetMenuSelection();
     ui.updateClean();  // Clean transition
     smartDelay(300);
@@ -1645,7 +1655,7 @@ void handleVillageCreate() {
   // Left arrow to cancel and go back
   if (keyboard.isLeftPressed()) {
     appState = APP_MAIN_MENU;
-    ui.setState(STATE_VILLAGE_SELECT);
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
@@ -1700,7 +1710,7 @@ void handleVillageJoinPassword() {
   // Left arrow to go back to main menu
   if (keyboard.isLeftPressed()) {
     appState = APP_MAIN_MENU;
-    ui.setState(STATE_VILLAGE_SELECT);
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
@@ -1731,7 +1741,7 @@ void handleVillageJoinPassword() {
       Serial.println("[Join] Village name will be received via MQTT");
       
       // Go straight to username - village name will update in background
-      ui.setExistingVillageName("Joining...");
+      ui.setExistingConversationName("Joining...");
       appState = APP_USERNAME_INPUT;
       ui.setState(STATE_INPUT_USERNAME);
       ui.setInputText("");
@@ -1761,8 +1771,8 @@ void handleVillageJoinName() {
   
   // Left arrow to cancel and go back to passphrase
   if (keyboard.isLeftPressed()) {
-    appState = APP_VILLAGE_JOIN_PASSWORD;
-    ui.setState(STATE_JOIN_VILLAGE_PASSWORD);
+    appState = APP_CONVERSATION_JOIN_PASSWORD;
+    ui.setState(STATE_JOIN_CONVERSATION_PASSWORD);
     ui.setInputText(tempVillagePassword);  // Restore passphrase
     ui.update();
     smartDelay(300);
@@ -1788,7 +1798,7 @@ void handleVillageJoinName() {
       // DON'T create village here - just store the name
       // Village will be created/joined properly after username input
       // This prevents duplicate villages from being created in different slots
-      ui.setExistingVillageName(tempVillageName);
+      ui.setExistingConversationName(tempVillageName);
       
       // Ask for username
       appState = APP_USERNAME_INPUT;
@@ -1820,8 +1830,8 @@ void handlePasswordInput() {
   
   // Left arrow to cancel and go back
   if (keyboard.isLeftPressed()) {
-    appState = APP_VILLAGE_CREATE;
-    ui.setState(STATE_CREATE_VILLAGE);
+    appState = APP_CONVERSATION_CREATE;
+    ui.setState(STATE_CREATE_CONVERSATION);
     ui.setInputText(tempVillageName);  // Restore village name
     ui.update();
     smartDelay(300);
@@ -1875,7 +1885,7 @@ void handleUsernameInput() {
   // Left arrow to cancel and go back
   if (keyboard.isLeftPressed()) {
     appState = APP_MAIN_MENU;
-    ui.setState(STATE_VILLAGE_SELECT);
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
@@ -1903,7 +1913,7 @@ void handleUsernameInput() {
         // Clear memory and create the new village with custom name
         village.clearVillage();
         village.createVillage(tempVillageName);
-        ui.setExistingVillageName(tempVillageName);
+        ui.setExistingConversationName(tempVillageName);
         
         village.setUsername(currentName);
       } else {
@@ -1952,7 +1962,6 @@ void handleUsernameInput() {
         }
         
         // Go to messaging
-        keyboard.clearInput();
         ui.setInputText("");
         inMessagingScreen = true;
         lastMessagingActivity = millis();
@@ -1960,6 +1969,7 @@ void handleUsernameInput() {
         ui.resetMessageScroll();
         appState = APP_MESSAGING;
         ui.setState(STATE_MESSAGING);
+        keyboard.clearInput();  // MOVED: Clear after state transition to prevent residual chars
         ui.update();
         return;  // Exit early for joiners
       }
@@ -2031,8 +2041,8 @@ void handleUsernameInput() {
         }
         
         // Go to village created menu
-        appState = APP_VILLAGE_CREATED;
-        ui.setState(STATE_VILLAGE_CREATED);
+        appState = APP_CONVERSATION_CREATED;
+        ui.setState(STATE_CONVERSATION_CREATED);
         ui.resetMenuSelection();
         ui.update();
         smartDelay(300);
@@ -2072,7 +2082,6 @@ void handleUsernameInput() {
       Serial.println("[App] Messages in history: " + String(ui.getMessageCount()));
       Serial.println("[App] ============================================");
       
-      keyboard.clearInput();  // Clear buffer to prevent typing detection freeze
       ui.setInputText("");  // Clear any leftover text from other screens (WiFi details, etc.)
       appState = APP_MESSAGING;
       inMessagingScreen = true;  // Set flag - we're now viewing messages
@@ -2080,6 +2089,7 @@ void handleUsernameInput() {
       ui.setCurrentUsername(village.getUsername());  // Set username for message display
       ui.setState(STATE_MESSAGING);
       ui.resetMessageScroll();  // Reset scroll to show latest messages
+      keyboard.clearInput();  // MOVED: Clear buffer AFTER state transition to prevent residual chars
       
       // Load messages with pagination - show last N messages (same window for both devices)
       ui.clearMessages();  // Clear any old messages from UI
@@ -2181,16 +2191,15 @@ void handleVillageCreated() {
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     int selection = ui.getMenuSelection();
     if (selection == 0) {  // Invite a Friend
-      returnToState = APP_VILLAGE_CREATED;
       appState = APP_INVITE_EXPLAIN;
       ui.setState(STATE_INVITE_EXPLAIN);
       ui.resetMenuSelection();
-      ui.update();
+      ui.updateClean();
     } else if (selection == 1) {  // Back
       appState = APP_MESSAGING;
       inMessagingScreen = true;
       ui.setState(STATE_MESSAGING);
-      ui.update();
+      ui.updateClean();
     }
     smartDelay(300);
     return;
@@ -2200,12 +2209,12 @@ void handleVillageCreated() {
 void handleInviteExplain() {
   keyboard.update();
   
-  // Left arrow to go back
+  // Left arrow to go back to main hub
   if (keyboard.isLeftPressed()) {
-    appState = returnToState;
-    ui.setState(returnToState == APP_VILLAGE_MENU ? STATE_VILLAGE_MENU : STATE_VILLAGE_CREATED);
+    appState = APP_MAIN_MENU;
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
-    ui.update();
+    ui.updateClean();
     smartDelay(300);
     return;
   }
@@ -2250,12 +2259,12 @@ void handleInviteExplain() {
       
       appState = APP_INVITE_CODE_DISPLAY;
       ui.setState(STATE_INVITE_CODE_DISPLAY);
-      ui.update();
-    } else if (selection == 1) {  // Cancel
-      appState = returnToState;
-      ui.setState(returnToState == APP_VILLAGE_MENU ? STATE_VILLAGE_MENU : STATE_VILLAGE_CREATED);
+      ui.updateClean();
+    } else if (selection == 1) {  // Cancel - return to main hub
+      appState = APP_MAIN_MENU;
+      ui.setState(STATE_MAIN_HUB);
       ui.resetMenuSelection();
-      ui.update();
+      ui.updateClean();
     }
     smartDelay(300);
     return;
@@ -2280,15 +2289,15 @@ void handleInviteCodeDisplay() {
       smartDelay(50);
     }
     
-    appState = returnToState;
-    ui.setState(returnToState == APP_VILLAGE_MENU ? STATE_VILLAGE_MENU : STATE_VILLAGE_CREATED);
+    appState = APP_MAIN_MENU;
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
-    ui.update();
+    ui.updateClean();
     smartDelay(300);
     return;
   }
   
-  // Any key pressed - cancel and go back
+  // Any key pressed - cancel and go back to main hub
   if (keyboard.hasInput() || keyboard.isEnterPressed() || keyboard.isLeftPressed()) {
     String code = ui.getInviteCode();
     ui.clearInviteCode();
@@ -2298,10 +2307,10 @@ void handleInviteCodeDisplay() {
       mqttMessenger.unpublishInvite(code);
     }
     
-    appState = returnToState;
-    ui.setState(returnToState == APP_VILLAGE_MENU ? STATE_VILLAGE_MENU : STATE_VILLAGE_CREATED);
+    appState = APP_MAIN_MENU;
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
-    ui.update();
+    ui.updateClean();
     keyboard.clearInput();
     smartDelay(300);
     return;
@@ -2321,7 +2330,7 @@ void handleJoinExplain() {
   // Left arrow to go back
   if (keyboard.isLeftPressed()) {
     appState = APP_MAIN_MENU;
-    ui.setState(STATE_VILLAGE_SELECT);
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
@@ -2353,7 +2362,7 @@ void handleJoinExplain() {
       ui.update();
     } else if (selection == 1) {  // Cancel
       appState = APP_MAIN_MENU;
-      ui.setState(STATE_VILLAGE_SELECT);
+      ui.setState(STATE_MAIN_HUB);
       ui.resetMenuSelection();
       ui.update();
     }
@@ -2368,7 +2377,7 @@ void handleJoinCodeInput() {
   // Left arrow to go back to main menu
   if (keyboard.isLeftPressed()) {
     appState = APP_MAIN_MENU;
-    ui.setState(STATE_MAIN_MENU);
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
@@ -2472,7 +2481,7 @@ void handleJoinCodeInput() {
                 
                 // Set as active village for sending messages
                 mqttMessenger.setActiveVillage(village.getVillageId());
-                ui.setExistingVillageName(village.getVillageName());
+                ui.setExistingConversationName(village.getVillageName());
                 encryption.setKey(village.getEncryptionKey());
                 
                 // Show success screen
@@ -2498,7 +2507,7 @@ void handleJoinCodeInput() {
                 ui.showMessage("Error", "Failed to load\nvillage data\n\nPress ENTER", 0);
                 while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
                 appState = APP_MAIN_MENU;
-                ui.setState(STATE_MAIN_MENU);
+                ui.setState(STATE_MAIN_HUB);
                 ui.resetMenuSelection();
                 ui.update();
               }
@@ -2507,7 +2516,7 @@ void handleJoinCodeInput() {
               ui.showMessage("Error", "Failed to save\nvillage data\n\nPress ENTER", 0);
               while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
               appState = APP_MAIN_MENU;
-              ui.setState(STATE_MAIN_MENU);
+              ui.setState(STATE_MAIN_HUB);
               ui.resetMenuSelection();
               ui.update();
             }
@@ -2516,7 +2525,7 @@ void handleJoinCodeInput() {
             ui.showMessage("Error", "No available slots\n(max 10 conversations)\n\nPress ENTER", 0);
             while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
             appState = APP_MAIN_MENU;
-            ui.setState(STATE_MAIN_MENU);
+            ui.setState(STATE_MAIN_HUB);
             ui.resetMenuSelection();
             ui.update();
           }
@@ -2529,7 +2538,7 @@ void handleJoinCodeInput() {
           ui.showMessage("Not Found", errorMsg, 0);
           while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
           appState = APP_MAIN_MENU;
-          ui.setState(STATE_MAIN_MENU);
+          ui.setState(STATE_MAIN_HUB);
           ui.resetMenuSelection();
           ui.update();
         }
@@ -2538,7 +2547,7 @@ void handleJoinCodeInput() {
         ui.showMessage("Error", "Network error\n\nPlease try again\n\nPress ENTER", 0);
         while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
         appState = APP_MAIN_MENU;
-        ui.setState(STATE_MAIN_MENU);
+        ui.setState(STATE_MAIN_HUB);
         ui.resetMenuSelection();
         ui.update();
       }
@@ -2566,7 +2575,7 @@ void handleJoinUsernameInput() {
   // Left arrow returns to main menu
   if (keyboard.isLeftPressed()) {
     appState = APP_MAIN_MENU;
-    ui.setState(STATE_MAIN_MENU);
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
     ui.setInputText("");
     keyboard.clearInput();
@@ -2670,8 +2679,8 @@ void handleMessaging() {
     
     inMessagingScreen = false;  // Clear flag - leaving messages
     lastMessagingActivity = millis();
-    appState = APP_VILLAGE_MENU;
-    ui.setState(STATE_VILLAGE_MENU);
+    appState = APP_CONVERSATION_MENU;
+    ui.setState(STATE_CONVERSATION_MENU);
     ui.resetMenuSelection();
     ui.setInputText("");  // Clear any typed text
     ui.update();
@@ -2879,7 +2888,7 @@ void handleSettingsMenu() {
   if (keyboard.isLeftPressed()) {
     keyboard.clearInput();
     appState = APP_MAIN_MENU;
-    ui.setState(STATE_VILLAGE_SELECT);
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
     ui.updateClean();
     smartDelay(300);
@@ -3519,7 +3528,7 @@ void handleOTAChecking() {
     logger.info("OTA: User declined update");
     ui.setInputText("");  // Clear the input text
     appState = APP_MAIN_MENU;
-    ui.setState(STATE_VILLAGE_SELECT);
+    ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
@@ -3548,7 +3557,7 @@ void handleOTAChecking() {
       
       ui.setInputText("");  // Clear the input text
       appState = APP_MAIN_MENU;
-      ui.setState(STATE_VILLAGE_SELECT);
+      ui.setState(STATE_MAIN_HUB);
       ui.resetMenuSelection();
       ui.update();
     } else {
@@ -3557,7 +3566,7 @@ void handleOTAChecking() {
       logger.info("OTA: No update available");
       ui.setInputText("");  // Clear the input text
       appState = APP_MAIN_MENU;
-      ui.setState(STATE_VILLAGE_SELECT);
+      ui.setState(STATE_MAIN_HUB);
       ui.resetMenuSelection();
       ui.update();
     }

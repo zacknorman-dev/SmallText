@@ -18,32 +18,31 @@
 
 enum UIState {
     STATE_SPLASH,
-    STATE_VILLAGE_SELECT,
-    STATE_MAIN_MENU,
-    STATE_CONVERSATION_LIST,      // New: dynamic list of villages
+    STATE_MAIN_HUB,              // Main menu - hub for all navigation
+    STATE_CONVERSATION_LIST,     // List of all conversations
     STATE_SETTINGS_MENU,
     STATE_RINGTONE_SELECT,
     STATE_WIFI_SETUP_MENU,
-    STATE_WIFI_NETWORK_LIST,      // New: show scanned networks
-    STATE_WIFI_NETWORK_OPTIONS,   // New: connect/forget menu
-    STATE_WIFI_NETWORK_DETAILS,   // New: show details of connected/saved network
-    STATE_WIFI_SAVED_NETWORKS,    // New: list all saved networks
+    STATE_WIFI_NETWORK_LIST,
+    STATE_WIFI_NETWORK_OPTIONS,
+    STATE_WIFI_NETWORK_DETAILS,
+    STATE_WIFI_SAVED_NETWORKS,
     STATE_WIFI_SSID_INPUT,
     STATE_WIFI_PASSWORD_INPUT,
     STATE_WIFI_STATUS,
     STATE_OTA_CHECK,
     STATE_OTA_UPDATE,
-    STATE_CREATE_VILLAGE,
-    STATE_VILLAGE_CREATED,        // New: Invite/Back menu after creation
-    STATE_INVITE_EXPLAIN,         // New: Pre-generate explanation screen
-    STATE_INVITE_CODE_DISPLAY,    // New: Show 8-digit code with timer
-    STATE_JOIN_EXPLAIN,           // New: Pre-enter explanation screen
-    STATE_JOIN_CODE_INPUT,        // New: Enter 8-digit code field
-    STATE_JOIN_VILLAGE_NAME,
-    STATE_JOIN_VILLAGE_PASSWORD,
+    STATE_CREATE_CONVERSATION,
+    STATE_CONVERSATION_CREATED,  // Show invite code or return to hub
+    STATE_INVITE_EXPLAIN,
+    STATE_INVITE_CODE_DISPLAY,
+    STATE_JOIN_EXPLAIN,
+    STATE_JOIN_CODE_INPUT,
+    STATE_JOIN_CONVERSATION_NAME,
+    STATE_JOIN_CONVERSATION_PASSWORD,
     STATE_INPUT_PASSWORD,
-    STATE_JOIN_VILLAGE,
-    STATE_VILLAGE_MENU,
+    STATE_JOIN_CONVERSATION,
+    STATE_CONVERSATION_MENU,
     STATE_ADD_MEMBER,
     STATE_VIEW_MEMBERS,
     STATE_MESSAGING,
@@ -74,7 +73,7 @@ private:
     int messageScrollOffset;
     
     std::vector<String> memberList;  // Store member list for display
-    String existingVillageName;  // Store village name if one exists
+    String existingConversationName;  // Store village name if one exists
     String currentUsername;  // Current user's username for message display
     String buildNumber;  // Build version to display
     float batteryVoltage;  // Current battery voltage
@@ -106,9 +105,8 @@ private:
     void drawMenuItem(const String& text, int y, bool selected, int lineHeight = 18);
     
     void drawSplash();
-    void drawVillageSelect();
+    void drawMainHub();
     void drawConversationList();
-    void drawMainMenu();
     void drawSettingsMenu();
     void drawRingtoneSelect();
     void drawWiFiSetupMenu();
@@ -122,13 +120,13 @@ private:
     void drawOTACheck();
     void drawOTAUpdate();
     void drawCreateVillage();
-    void drawVillageCreated();       // New: Invite/Back menu
+    void drawConversationCreated();       // New: Invite/Back menu
     void drawInviteExplain();        // New: Pre-generate explanation
     void drawInviteCodeDisplay();    // New: Show code with timer
     void drawJoinExplain();          // New: Pre-enter explanation
     void drawJoinCodeInput();        // New: Code input field
     void drawJoinVillage();
-    void drawVillageMenu();
+    void drawConversationMenu();
     void drawAddMember();
     void drawViewMembers();
     void drawMessaging();
@@ -178,7 +176,7 @@ public:
     
     // Member list
     void setMemberList(const std::vector<String>& members);
-    void setExistingVillageName(const String& name);
+    void setExistingConversationName(const String& name);
     void setCurrentUsername(const String& username) { currentUsername = username; }
     
     // Build version
