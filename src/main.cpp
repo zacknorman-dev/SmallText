@@ -2281,6 +2281,9 @@ void handleJoinCodeInput() {
       ui.update();
       smartDelay(500);  // Brief pause so user can verify the code
       
+      // Reset invite flag BEFORE subscribing (callback could trigger immediately)
+      pendingInvite.received = false;
+      
       // Subscribe to invite topic
       if (mqttMessenger.subscribeToInvite(code)) {
         Serial.println("[Invite] Subscribed, waiting for invite data...");
@@ -2288,7 +2291,6 @@ void handleJoinCodeInput() {
         ui.update();
         
         // Wait up to 15 seconds for invite data
-        pendingInvite.received = false;
         unsigned long startWait = millis();
         while (!pendingInvite.received && (millis() - startWait < 15000)) {
           // Process WiFi and MQTT events to ensure callbacks are delivered

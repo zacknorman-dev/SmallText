@@ -25,6 +25,9 @@ Add a "Reset to Factory" option in Settings menu that:
 
 ## Medium Priority
 
+### UI Text: "Join Conversation" → "Join a Conversation"
+Change menu text from "Join Conversation" to "Join a Conversation" for better grammar and clarity.
+
 ## Low Priority
 
 ## Ideas / Future Consideration
