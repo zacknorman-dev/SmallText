@@ -1387,7 +1387,10 @@ void handleConversationList() {
         currentVillageSlot = -1;
       }
       
-      // Rebuild conversation list and return to menu
+      // FIXED: Clear stale conversation list and rebuild on next view
+      conversationList.clear();
+      
+      // Return to main menu
       appState = APP_MAIN_MENU;
       ui.setState(STATE_MAIN_MENU);
       ui.resetMenuSelection();
@@ -2366,16 +2369,17 @@ void handleJoinCodeInput() {
             doc["villageName"] = pendingInvite.villageName;
             doc["password"] = "invite-joined";  // Placeholder password
             doc["isOwner"] = false;
-            doc["myUsername"] = "member";
+            doc["username"] = "member";  // FIXED: Use "username" not "myUsername" to match loadFromSlot()
             doc["initialized"] = true;  // Mark as initialized so loadMessages() works
             
-            // Base64 encode the encryption key
-            char encodedKey[64];
-            size_t encodedLen = 0;
-            mbedtls_base64_encode((unsigned char*)encodedKey, sizeof(encodedKey), &encodedLen, 
-                                pendingInvite.encryptionKey, 32);
-            encodedKey[encodedLen] = '\0';
-            doc["encryptionKey"] = String(encodedKey);
+            // FIXED: Convert encryption key to hex format (not base64) to match saveToSlot()
+            String keyHex = "";
+            for (int i = 0; i < 32; i++) {
+              char hex[3];
+              sprintf(hex, "%02x", pendingInvite.encryptionKey[i]);
+              keyHex += hex;
+            }
+            doc["key"] = keyHex;  // Save as 64-char hex string
             
             // Save to file
             String filename = "/village_" + String(slot) + ".dat";
@@ -2475,8 +2479,12 @@ void handleJoinCodeInput() {
                 }
                 
                 // Go directly to messaging screen
+                // FIXED: More aggressive input clearing to prevent username pre-fill
                 keyboard.clearInput();
+                keyboard.update();  // Process the clear
                 ui.setInputText("");
+                ui.update();  // Force UI to process the clear
+                smartDelay(50);  // Brief delay to ensure clearing completes
                 inMessagingScreen = true;
                 lastMessagingActivity = millis();
                 ui.setCurrentUsername(village.getUsername());

@@ -1,0 +1,702 @@
+
+========== DEBUG LOG DUMP ==========
+Total entries: 470
+====================================
+
+[12654] INFO: MQTT: TLS enabled with R12 certificate
+[12655] INFO: Log buffer pruned, removed 125 old entries
+[12655] INFO: MQTT: Config set - clean_session=true keepalive=60
+[12656] INFO: MQTT messenger initialized
+[13071] INFO: MQTT: Subscribed to 3 villages
+[13944] INFO: OTA: Boot update check
+[14310] INFO: MQTT: Connected - subscribed to 3 villages
+[14520] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[14933] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[15079] INFO: OTA: Already on latest version
+[220572] INFO: Village created: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[221318] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[227496] INFO: Invite published: code=75168935
+[227597] INFO: Invite code published: 75168935
+[363252] INFO: Unsubscribed from invite: 75168935
+[375247] INFO: Loading messages for village: 98fb754f-860f-dd10-5d11-acd6fea0697e
+[376000] INFO: File stats: total=310 empty=0 parseErr=0 wrongUUID=310 matched=0
+[376000] INFO: Loaded 0 messages for village 98fb754f-860f-dd10-5d11-acd6fea0697e
+[376000] INFO: Sync: Request sent, last=0
+[376007] INFO: Sync request sent
+[376251] INFO: Sync from f8c43bba2010 ts=0
+[376251] INFO: Sync from f8c43bba2010 (after t=0)
+[376529] INFO: Loading messages for village: 98fb754f-860f-dd10-5d11-acd6fea0697e
+[377283] INFO: File stats: total=310 empty=0 parseErr=0 wrongUUID=310 matched=0
+[377283] INFO: Loaded 0 messages for village 98fb754f-860f-dd10-5d11-acd6fea0697e
+[2270] INFO: ======== SYSTEM BOOT ========
+[2270] INFO: Build: Dec 12 2025 17:51:45
+[2270] INFO: System boot started
+[2270] INFO: Build: v0.54.6
+[8109] INFO: OTA Updater initialized, version: v0.54.6
+[8109] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9121] INFO: WiFi connected: 192.168.8.27
+[9121] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9122] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_241
+[9122] INFO: MQTT: User=smoltxt2
+[9540] INFO: MQTT: TLS enabled with R12 certificate
+[9540] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9542] INFO: MQTT messenger initialized
+[9808] INFO: MQTT: Subscribed to 4 villages
+[9809] INFO: OTA: Boot update check
+[15976] INFO: MQTT: Connected - subscribed to 4 villages
+[19144] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[19245] INFO: OTA: Already on latest version
+[22326] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[22463] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[2296] INFO: ======== SYSTEM BOOT ========
+[2296] INFO: Build: Dec 12 2025 17:51:45
+[2296] INFO: System boot started
+[2296] INFO: Build: v0.54.6
+[8063] INFO: OTA Updater initialized, version: v0.54.6
+[8063] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[12075] INFO: WiFi connected: 192.168.8.27
+[12075] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[12075] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_238
+[12075] INFO: MQTT: User=smoltxt2
+[12513] INFO: MQTT: TLS enabled with R12 certificate
+[12513] INFO: MQTT: Config set - clean_session=true keepalive=60
+[12514] INFO: MQTT messenger initialized
+[13018] INFO: MQTT: Subscribed to 4 villages
+[13018] INFO: OTA: Boot update check
+[19426] INFO: OTA: Update available v0.54.7
+[19428] INFO: OTA: New version available: v0.54.7
+[19463] INFO: MQTT: Connected - subscribed to 4 villages
+[23087] INFO: OTA: User approved update
+[23918] INFO: OTA: Starting update from https://github.com/zacknorman-dev/SmallText/releases/download/v0.54.7/firmware-v0.54.7.bin
+[27384] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[27853] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[27908] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[28027] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[30594] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[30721] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[30830] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[31142] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[31226] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[31413] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[2304] INFO: ======== SYSTEM BOOT ========
+[2304] INFO: Build: Dec 12 2025 17:51:45
+[2304] INFO: System boot started
+[2304] INFO: Build: v0.54.6
+[8071] INFO: OTA Updater initialized, version: v0.54.6
+[8071] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[10084] INFO: WiFi connected: 192.168.8.27
+[10084] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[10084] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_238
+[10084] INFO: MQTT: User=smoltxt2
+[10577] INFO: MQTT: TLS enabled with R12 certificate
+[10577] INFO: MQTT: Config set - clean_session=true keepalive=60
+[10578] INFO: MQTT messenger initialized
+[11028] INFO: MQTT: Subscribed to 4 villages
+[11028] INFO: OTA: Boot update check
+[17867] INFO: MQTT: Connected - subscribed to 4 villages
+[18026] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[18039] INFO: OTA: Update available v0.54.7
+[18050] INFO: OTA: New version available: v0.54.7
+[19616] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[20528] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[23422] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[24227] INFO: OTA: User approved update
+[25058] INFO: OTA: Starting update from https://github.com/zacknorman-dev/SmallText/releases/download/v0.54.7/firmware-v0.54.7.bin
+[42443] ERROR: OTA failed: HTTP error: read Timeout
+[43275] ERROR: OTA update failed
+[85612] ERROR: OTA GitHub API failed, code=-1
+[94826] INFO: OTA: User declined update
+[118453] INFO: OTA: Update available v0.54.7
+[120894] INFO: OTA: User approved update
+[2343] INFO: ======== SYSTEM BOOT ========
+[2343] INFO: Build: Dec 12 2025 18:27:10
+[2343] INFO: System boot started
+[2344] INFO: Build: v0.54.7
+[8121] INFO: OTA Updater initialized, version: v0.54.7
+[8121] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[10133] INFO: WiFi connected: 192.168.8.27
+[10133] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[10133] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_291
+[10133] INFO: MQTT: User=smoltxt2
+[10629] INFO: MQTT: TLS enabled with R12 certificate
+[10629] INFO: MQTT: Config set - clean_session=true keepalive=60
+[10630] INFO: MQTT messenger initialized
+[11078] INFO: MQTT: Subscribed to 4 villages
+[11078] INFO: OTA: Boot update check
+[17199] INFO: MQTT: Connected - subscribed to 4 villages
+[20431] INFO: OTA: Already on latest version
+[26810] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[26973] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[27419] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[28132] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[28133] INFO: Log buffer pruned, removed 125 old entries
+[28243] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[28413] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[33368] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[34230] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[34287] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[56678] INFO: OTA: Already on latest version
+[58691] INFO: OTA: User declined update
+[72768] INFO: Village created: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[73159] INFO: MQTT SYSTEM sent: xaq joined the conversation
+[79653] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[80336] INFO: Invite published: code=38311071
+[80437] INFO: Invite code published: 38311071
+[80437] INFO: Message saved: id=00011dc200000001 from=SmolTxt village=8878cbd3-8ec2-e317-b407-6f0b0fcc6e49
+[81941] INFO: Updated message 00011dc200000001 to status 2
+[83097] INFO: Saved 312 total lines (all villages preserved)
+[83103] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[86358] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[86878] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[87935] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[122044] ERROR: MQTT: Decryption failed for uuuq
+[125318] ERROR: MQTT: Decryption failed for uuuq
+[145614] INFO: Unsubscribed from invite: 38311071
+[145616] INFO: Invite unpublished: code=38311071
+[149355] ERROR: Sync request decrypt failed
+[167336] INFO: MQTT SHOUT sent: uuup
+[167337] INFO: MQTT send: SUCCESS id=00028da200000003
+[167433] INFO: Message saved: id=00028da200000003 from=xaq village=8878cbd3-8ec2-e317-b407-6f0b0fcc6e49
+[180970] INFO: Loading messages for village: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49
+[181730] INFO: File stats: total=313 empty=0 parseErr=0 wrongUUID=311 matched=2
+[181731] INFO: Loaded 2 messages for village 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49
+[181731] INFO: Sync: Request sent, last=1765593583
+[181737] INFO: Sync request sent
+[182251] INFO: Loading messages for village: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49
+[183590] INFO: File stats: total=313 empty=0 parseErr=0 wrongUUID=311 matched=2
+[183590] INFO: Loaded 2 messages for village 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49
+[184380] INFO: Batch updated 1 messages to status 3
+[184984] INFO: Sync from f8c43bba2010 ts=1765593583
+[184984] INFO: Sync from f8c43bba2010 (after t=1765593583)
+[185376] INFO: Saved 313 total lines (all villages preserved)
+[188234] INFO: Sync from f8c43bba2010 ts=1765593583
+[188234] INFO: Sync from f8c43bba2010 (after t=1765593583)
+[205291] ERROR: Sync request decrypt failed
+[214712] ERROR: MQTT: Decryption failed for uuuq
+[318785] INFO: Join attempt with code: 54441019
+[323461] INFO: Subscribed to invite: 54441019
+[326739] INFO: Invite received: llqq
+[326739] INFO: Invite received: llqq
+[327636] INFO: Unsubscribed from invite: 54441019
+[327837] INFO: Joined village: llqq
+[333198] INFO: Invite received: llqq
+[333199] INFO: Invite received: llqq
+[333203] INFO: Invite received: llqq
+[333203] INFO: Invite received: llqq
+[334038] INFO: MQTT SYSTEM sent: A new member joined the conversation
+[339537] INFO: Village name received: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[363191] ERROR: MQTT: Decryption failed for llqq
+[371906] INFO: MQTT SHOUT sent: 5444101
+[371906] INFO: MQTT send: SUCCESS id=0005acbb00000007
+[371906] ERROR: Save message failed: village not initialized
+[389488] INFO: MQTT SHOUT sent: yuyu
+[389488] INFO: MQTT send: SUCCESS id=0005f16900000008
+[389488] ERROR: Save message failed: village not initialized
+[433331] ERROR: Load messages failed: village not initialized
+[2294] INFO: ======== SYSTEM BOOT ========
+[2294] INFO: Build: Dec 12 2025 18:27:10
+[2294] INFO: System boot started
+[2294] INFO: Build: v0.54.7
+[8061] INFO: OTA Updater initialized, version: v0.54.7
+[8062] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[10074] INFO: WiFi connected: 192.168.8.27
+[10075] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[10075] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_241
+[10075] INFO: MQTT: User=smoltxt2
+[10561] INFO: MQTT: TLS enabled with R12 certificate
+[10561] INFO: MQTT: Config set - clean_session=true keepalive=60
+[10563] INFO: MQTT messenger initialized
+[11389] INFO: MQTT: Subscribed to 6 villages
+[11389] INFO: OTA: Boot update check
+[11935] INFO: MQTT: Connected - subscribed to 6 villages
+[12126] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[12531] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[12708] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[12957] INFO: OTA: Already on latest version
+[13026] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[2124] INFO: ======== SYSTEM BOOT ========
+[2124] INFO: Build: Dec 12 2025 18:27:10
+[2125] INFO: System boot started
+[2125] INFO: Build: v0.54.7
+[7878] INFO: OTA Updater initialized, version: v0.54.7
+[7878] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[8891] INFO: WiFi connected: 192.168.8.27
+[8891] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[8891] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_40
+[2319] INFO: ======== SYSTEM BOOT ========
+[2319] INFO: Build: Dec 12 2025 18:27:10
+[2319] INFO: System boot started
+[2319] INFO: Build: v0.54.7
+[8087] INFO: OTA Updater initialized, version: v0.54.7
+[8087] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[13099] INFO: WiFi connected: 192.168.8.27
+[13099] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[13100] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_239
+[13100] INFO: MQTT: User=smoltxt2
+[13598] INFO: MQTT: TLS enabled with R12 certificate
+[13598] INFO: MQTT: Config set - clean_session=true keepalive=60
+[13600] INFO: MQTT messenger initialized
+[14218] INFO: MQTT: Subscribed to 6 villages
+[14219] INFO: OTA: Boot update check
+[15456] INFO: OTA: Update available v0.54.8
+[15458] INFO: OTA: New version available: v0.54.8
+[15746] INFO: MQTT: Connected - subscribed to 6 villages
+[18804] INFO: OTA: User approved update
+[19634] INFO: OTA: Starting update from https://github.com/zacknorman-dev/SmallText/releases/download/v0.54.8/firmware-v0.54.8.bin
+[2347] INFO: ======== SYSTEM BOOT ========
+[2347] INFO: Build: Dec 12 2025 19:06:17
+[2347] INFO: System boot started
+[2347] INFO: Build: v0.54.8
+[8124] INFO: OTA Updater initialized, version: v0.54.8
+[8124] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9137] INFO: WiFi connected: 192.168.8.27
+[9137] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9137] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_291
+[9137] INFO: MQTT: User=smoltxt2
+[9626] INFO: MQTT: TLS enabled with R12 certificate
+[9627] INFO: Log buffer pruned, removed 125 old entries
+[9627] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9628] INFO: MQTT messenger initialized
+[10143] INFO: MQTT: Subscribed to 6 villages
+[10550] INFO: OTA: Boot update check
+[11778] INFO: OTA: Already on latest version
+[12548] INFO: MQTT: Connected - subscribed to 6 villages
+[12822] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[13177] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[13373] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[14048] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[14220] INFO: Village name received: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[262791] INFO: Join attempt with code: 60469586
+[267466] INFO: Subscribed to invite: 60469586
+[268442] INFO: Invite received: rufu
+[268442] INFO: Invite received: rufu
+[272054] INFO: Unsubscribed from invite: 60469586
+[272342] INFO: Joined village: rufu
+[278365] INFO: Village name received: rufu (ID: a8bf539d-9cce-cbef-2977-01b0ae1f0edf)
+[279677] INFO: MQTT SYSTEM sent: A new member joined the conversation
+[279878] ERROR: Load messages failed: village not initialized
+[279879] INFO: Sync: Request sent, last=0
+[279884] INFO: Sync request sent
+[280384] ERROR: Load messages failed: village not initialized
+[2286] INFO: ======== SYSTEM BOOT ========
+[2286] INFO: Build: Dec 12 2025 19:06:17
+[2287] INFO: System boot started
+[2287] INFO: Build: v0.54.8
+[8055] INFO: OTA Updater initialized, version: v0.54.8
+[8055] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9067] INFO: WiFi connected: 192.168.8.27
+[9068] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9068] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_242
+[9068] INFO: MQTT: User=smoltxt2
+[9499] INFO: MQTT: TLS enabled with R12 certificate
+[9499] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9500] INFO: MQTT messenger initialized
+[10087] INFO: MQTT: Subscribed to 7 villages
+[10088] INFO: OTA: Boot update check
+[11334] INFO: OTA: Already on latest version
+[13356] INFO: MQTT: Connected - subscribed to 7 villages
+[16007] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[22449] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[22643] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[2329] INFO: ======== SYSTEM BOOT ========
+[2329] INFO: Build: Dec 12 2025 19:06:17
+[2330] INFO: System boot started
+[2330] INFO: Build: v0.54.8
+[8097] INFO: OTA Updater initialized, version: v0.54.8
+[8097] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[14609] INFO: WiFi connected: 192.168.8.27
+[14610] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[14610] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_239
+[14610] INFO: MQTT: User=smoltxt2
+[15326] INFO: MQTT: TLS enabled with R12 certificate
+[15326] INFO: MQTT: Config set - clean_session=true keepalive=60
+[15327] INFO: MQTT messenger initialized
+[15700] INFO: MQTT: Subscribed to 7 villages
+[15700] INFO: OTA: Boot update check
+[21119] INFO: MQTT: Connected - subscribed to 7 villages
+[21184] INFO: OTA: Update available v0.54.9
+[21186] INFO: OTA: New version available: v0.54.9
+[22627] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[25617] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[2302] INFO: ======== SYSTEM BOOT ========
+[2302] INFO: Build: Dec 12 2025 19:24:00
+[2303] INFO: System boot started
+[2303] INFO: Build: v0.54.9
+[8069] INFO: OTA Updater initialized, version: v0.54.9
+[8070] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9082] INFO: WiFi connected: 192.168.8.27
+[9083] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9083] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_291
+[9083] INFO: MQTT: User=smoltxt2
+[9566] INFO: MQTT: TLS enabled with R12 certificate
+[9566] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9567] INFO: MQTT messenger initialized
+[10041] INFO: MQTT: Subscribed to 7 villages
+[10042] INFO: OTA: Boot update check
+[16039] INFO: MQTT: Connected - subscribed to 7 villages
+[19203] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[19316] INFO: OTA: Already on latest version
+[19833] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[19994] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[21075] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[21297] INFO: Village name received: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[21597] INFO: Village name received: rufu (ID: a8bf539d-9cce-cbef-2977-01b0ae1f0edf)
+[22009] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[22168] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[22712] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[137465] INFO: Join attempt with code: 65125413
+[142140] INFO: Subscribed to invite: 65125413
+[145357] INFO: Invite received: fird
+[145357] INFO: Invite received: fird
+[146715] INFO: Unsubscribed from invite: 65125413
+[147022] INFO: Joined village: fird
+[151809] INFO: Invite received: fird
+[151810] INFO: Invite received: fird
+[153239] INFO: MQTT SYSTEM sent: A new member joined the conversation
+[153459] INFO: Loading messages for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[154225] INFO: File stats: total=315 empty=0 parseErr=0 wrongUUID=315 matched=0
+[154225] INFO: Loaded 0 messages for village 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[154226] INFO: Sync: Request sent, last=0
+[154231] INFO: Sync request sent
+[154980] INFO: Invite received: fird
+[154980] INFO: Invite received: fird
+[155250] INFO: Loading messages for village: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[156017] INFO: File stats: total=315 empty=0 parseErr=0 wrongUUID=315 matched=0
+[156017] INFO: Loaded 0 messages for village 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[161337] INFO: Village name received: fird (ID: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c)
+[163085] INFO: Message saved: id=0002568600000001 from=SmolTxt village=9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c
+[163768] INFO: Updated message 0002568600000001 to status 2
+[164746] INFO: Saved 316 total lines (all villages preserved)
+[165432] INFO: Updated message 0002568600000001 to status 3
+[2363] INFO: ======== SYSTEM BOOT ========
+[2363] INFO: Build: Dec 12 2025 19:24:00
+[2364] INFO: System boot started
+[2364] INFO: Build: v0.54.9
+[8130] INFO: OTA Updater initialized, version: v0.54.9
+[8131] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9142] INFO: WiFi connected: 192.168.8.27
+[9143] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9143] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_242
+[9143] INFO: MQTT: User=smoltxt2
+[9670] INFO: MQTT: TLS enabled with R12 certificate
+[9671] INFO: Log buffer pruned, removed 125 old entries
+[9671] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9673] INFO: MQTT messenger initialized
+[10599] INFO: MQTT: Subscribed to 8 villages
+[11229] INFO: OTA: Boot update check
+[16096] INFO: MQTT: Connected - subscribed to 8 villages
+[19264] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[19377] INFO: OTA: Already on latest version
+[22444] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[22614] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[22910] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[23596] INFO: Village name received: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[23852] INFO: Village name received: rufu (ID: a8bf539d-9cce-cbef-2977-01b0ae1f0edf)
+[24211] INFO: Village name received: fird (ID: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c)
+[2285] INFO: ======== SYSTEM BOOT ========
+[2285] INFO: Build: Dec 12 2025 19:24:00
+[2286] INFO: System boot started
+[2286] INFO: Build: v0.54.9
+[8053] INFO: OTA Updater initialized, version: v0.54.9
+[8054] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[13565] INFO: WiFi connected: 192.168.8.27
+[13566] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[13566] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_239
+[13566] INFO: MQTT: User=smoltxt2
+[13992] INFO: MQTT: TLS enabled with R12 certificate
+[13993] INFO: MQTT: Config set - clean_session=true keepalive=60
+[13994] INFO: MQTT messenger initialized
+[14623] INFO: MQTT: Subscribed to 8 villages
+[14623] INFO: OTA: Boot update check
+[20934] INFO: MQTT: Connected - subscribed to 8 villages
+[20959] INFO: OTA: Already on latest version
+[22264] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[31773] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[35761] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[36753] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[36995] INFO: Village name received: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[37329] INFO: Village name received: rufu (ID: a8bf539d-9cce-cbef-2977-01b0ae1f0edf)
+[37778] INFO: Village name received: fird (ID: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c)
+[38628] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[41814] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[41980] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[42124] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[42302] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[42726] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[2314] INFO: ======== SYSTEM BOOT ========
+[2314] INFO: Build: Dec 12 2025 19:24:00
+[2315] INFO: System boot started
+[2315] INFO: Build: v0.54.9
+[8084] INFO: OTA Updater initialized, version: v0.54.9
+[8084] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[12596] INFO: WiFi connected: 192.168.8.27
+[12597] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[12597] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_239
+[12597] INFO: MQTT: User=smoltxt2
+[13089] INFO: MQTT: TLS enabled with R12 certificate
+[13089] INFO: MQTT: Config set - clean_session=true keepalive=60
+[13091] INFO: MQTT messenger initialized
+[13748] INFO: MQTT: Subscribed to 8 villages
+[13748] INFO: OTA: Boot update check
+[14969] INFO: OTA: Update available v0.54.11
+[14971] INFO: OTA: New version available: v0.54.11
+[18371] INFO: MQTT: Connected - subscribed to 8 villages
+[18836] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[20617] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[2324] INFO: ======== SYSTEM BOOT ========
+[2325] INFO: Build: Dec 12 2025 19:42:46
+[2325] INFO: System boot started
+[2325] INFO: Build: v0.54.11
+[8092] INFO: OTA Updater initialized, version: v0.54.11
+[8092] INFO: OTA source: GitHub zacknorman-dev/SmallText
+[9104] INFO: WiFi connected: 192.168.8.27
+[9105] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+[9105] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_290
+[9105] INFO: MQTT: User=smoltxt2
+[9599] INFO: MQTT: TLS enabled with R12 certificate
+[9600] INFO: MQTT: Config set - clean_session=true keepalive=60
+[9601] INFO: MQTT messenger initialized
+[10337] INFO: MQTT: Subscribed to 8 villages
+[10338] INFO: OTA: Boot update check
+[11559] INFO: OTA: Already on latest version
+[12842] INFO: MQTT: Connected - subscribed to 8 villages
+[25630] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[25786] INFO: Village name received: sss (ID: 7305849f-20cf-50f2-3adf-f678d4d7b555)
+[26135] INFO: Village name received: too2 (ID: 98fb754f-860f-dd10-5d11-acd6fea0697e)
+[26806] INFO: Village name received: uuuq (ID: 8878cbd3-8ec2-e317-b407-6f0b0fcc6e49)
+[27063] INFO: Village name received: llqq (ID: 95f4bb5b-01cc-a108-8d11-e6a51473ff19)
+[27404] INFO: Village name received: rufu (ID: a8bf539d-9cce-cbef-2977-01b0ae1f0edf)
+[28116] INFO: Village name received: fird (ID: 9b6ac2c3-8fed-8d93-73e5-58ec813bbe6c)
+[28375] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[28475] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[28559] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[28652] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[28943] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+[29014] INFO: Village name received: yyuu (ID: ea1b0f37-3f4e-7795-bc06-162592c1eb66)
+
+========== END LOG DUMP ==========
+
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[MainMenu] ENTER or RIGHT pressed - advancing to selection
+[201260][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+[201273][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[Conversations] Found 8 valid villages
+  Slot 0: yyuu
+  Slot 1: sss
+  Slot 2: momdad
+  Slot 3: too2
+  Slot 4: uuuq
+  Slot 5: llqq
+  Slot 6: rufu
+  Slot 7: fird
+_Update_Part : 766996
+_Update_Part : 766999
+[MainMenu] Opening conversation list
+[KB-READ] I2C byte: 0xB4 (180)
+[Keyboard] LEFT pressed
+[ConversationList] LEFT pressed - back to main menu
+_Update_Part : 766998
+_Update_Part : 766998
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[MainMenu] ENTER or RIGHT pressed - advancing to selection
+[207150][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+[207163][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[Conversations] Found 8 valid villages
+  Slot 0: yyuu
+  Slot 1: sss
+  Slot 2: momdad
+  Slot 3: too2
+  Slot 4: uuuq
+  Slot 5: llqq
+  Slot 6: rufu
+  Slot 7: fird
+_Update_Part : 766996
+_Update_Part : 766996
+[MainMenu] Opening conversation list
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[ConversationList] BACKSPACE pressed - deleting village: yyuu
+[209167][E][vfs_api.cpp:182] remove(): /messages_0.dat does not exists or is directory
+_Update_Part : 766996
+_Update_Part : 766996
+[ConversationList] Village deleted, returning to main menu
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[MainMenu] ENTER or RIGHT pressed - advancing to selection
+[212748][E][vfs_api.cpp:105] open(): /littlefs/village_0.dat does not exist, no permits for creation
+[213908][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+[213921][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[Conversations] Found 7 valid villages
+  Slot 1: sss
+  Slot 2: momdad
+  Slot 3: too2
+  Slot 4: uuuq
+  Slot 5: llqq
+  Slot 6: rufu
+  Slot 7: fird
+_Update_Part : 766996
+_Update_Part : 766998
+[MainMenu] Opening conversation list
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[ConversationList] BACKSPACE pressed - deleting village: sss
+[216492][E][vfs_api.cpp:182] remove(): /messages_1.dat does not exists or is directory
+_Update_Part : 766996
+_Update_Part : 766998
+[ConversationList] Village deleted, returning to main menu
+[Battery] Voltage: 4.14V, Percent: 93%
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[MainMenu] ENTER or RIGHT pressed - advancing to selection
+[218520][E][vfs_api.cpp:105] open(): /littlefs/village_0.dat does not exist, no permits for creation
+[218533][E][vfs_api.cpp:105] open(): /littlefs/village_1.dat does not exist, no permits for creation
+[219536][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+[219549][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[Conversations] Found 6 valid villages
+  Slot 2: momdad
+  Slot 3: too2
+  Slot 4: uuuq
+  Slot 5: llqq
+  Slot 6: rufu
+  Slot 7: fird
+_Update_Part : 766996
+_Update_Part : 766996
+[MainMenu] Opening conversation list
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[ConversationList] BACKSPACE pressed - deleting village: momdad
+[221561][E][vfs_api.cpp:182] remove(): /messages_2.dat does not exists or is directory
+_Update_Part : 766996
+_Update_Part : 766998
+[ConversationList] Village deleted, returning to main menu
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[MainMenu] ENTER or RIGHT pressed - advancing to selection
+[227518][E][vfs_api.cpp:105] open(): /littlefs/village_0.dat does not exist, no permits for creation
+[227531][E][vfs_api.cpp:105] open(): /littlefs/village_1.dat does not exist, no permits for creation
+[227543][E][vfs_api.cpp:105] open(): /littlefs/village_2.dat does not exist, no permits for creation
+[228371][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+[228384][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[Conversations] Found 5 valid villages
+  Slot 3: too2
+  Slot 4: uuuq
+  Slot 5: llqq
+  Slot 6: rufu
+  Slot 7: fird
+_Update_Part : 766996
+_Update_Part : 766996
+[MainMenu] Opening conversation list
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[ConversationList] BACKSPACE pressed - deleting village: too2
+[230580][E][vfs_api.cpp:182] remove(): /messages_3.dat does not exists or is directory
+_Update_Part : 766996
+_Update_Part : 766998
+[ConversationList] Village deleted, returning to main menu
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[MainMenu] ENTER or RIGHT pressed - advancing to selection
+[232564][E][vfs_api.cpp:105] open(): /littlefs/village_0.dat does not exist, no permits for creation
+[232575][E][vfs_api.cpp:105] open(): /littlefs/village_1.dat does not exist, no permits for creation
+[232586][E][vfs_api.cpp:105] open(): /littlefs/village_2.dat does not exist, no permits for creation
+[232596][E][vfs_api.cpp:105] open(): /littlefs/village_3.dat does not exist, no permits for creation
+[232847][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+[232857][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[Conversations] Found 4 valid villages
+  Slot 4: uuuq
+  Slot 5: llqq
+  Slot 6: rufu
+  Slot 7: fird
+_Update_Part : 766996
+_Update_Part : 766998
+[MainMenu] Opening conversation list
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[ConversationList] BACKSPACE pressed - deleting village: uuuq
+[234853][E][vfs_api.cpp:182] remove(): /messages_4.dat does not exists or is directory
+_Update_Part : 766996
+_Update_Part : 766996
+[ConversationList] Village deleted, returning to main menu
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[MainMenu] ENTER or RIGHT pressed - advancing to selection
+[236838][E][vfs_api.cpp:105] open(): /littlefs/village_0.dat does not exist, no permits for creation
+[236849][E][vfs_api.cpp:105] open(): /littlefs/village_1.dat does not exist, no permits for creation
+[236860][E][vfs_api.cpp:105] open(): /littlefs/village_2.dat does not exist, no permits for creation
+[236870][E][vfs_api.cpp:105] open(): /littlefs/village_3.dat does not exist, no permits for creation
+[236881][E][vfs_api.cpp:105] open(): /littlefs/village_4.dat does not exist, no permits for creation
+[237070][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+[237081][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[Conversations] Found 3 valid villages
+  Slot 5: llqq
+  Slot 6: rufu
+  Slot 7: fird
+_Update_Part : 766996
+_Update_Part : 766998
+[MainMenu] Opening conversation list
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[ConversationList] BACKSPACE pressed - deleting village: llqq
+[239075][E][vfs_api.cpp:182] remove(): /messages_5.dat does not exists or is directory
+_Update_Part : 766996
+_Update_Part : 766998
+[ConversationList] Village deleted, returning to main menu
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[MainMenu] ENTER or RIGHT pressed - advancing to selection
+[241059][E][vfs_api.cpp:105] open(): /littlefs/village_0.dat does not exist, no permits for creation
+[241070][E][vfs_api.cpp:105] open(): /littlefs/village_1.dat does not exist, no permits for creation
+[241081][E][vfs_api.cpp:105] open(): /littlefs/village_2.dat does not exist, no permits for creation
+[241091][E][vfs_api.cpp:105] open(): /littlefs/village_3.dat does not exist, no permits for creation
+[241102][E][vfs_api.cpp:105] open(): /littlefs/village_4.dat does not exist, no permits for creation
+[241113][E][vfs_api.cpp:105] open(): /littlefs/village_5.dat does not exist, no permits for creation
+[241243][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+[241253][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[Conversations] Found 2 valid villages
+  Slot 6: rufu
+  Slot 7: fird
+_Update_Part : 766996
+_Update_Part : 766998
+[MainMenu] Opening conversation list
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[ConversationList] BACKSPACE pressed - deleting village: rufu
+[243247][E][vfs_api.cpp:182] remove(): /messages_6.dat does not exists or is directory
+_Update_Part : 766996
+_Update_Part : 766996
+[ConversationList] Village deleted, returning to main menu
+[KB-READ] I2C byte: 0xB7 (183)
+[Keyboard] RIGHT pressed
+[MainMenu] ENTER or RIGHT pressed - advancing to selection
+[245351][E][vfs_api.cpp:105] open(): /littlefs/village_0.dat does not exist, no permits for creation
+[245362][E][vfs_api.cpp:105] open(): /littlefs/village_1.dat does not exist, no permits for creation
+[245373][E][vfs_api.cpp:105] open(): /littlefs/village_2.dat does not exist, no permits for creation
+[245384][E][vfs_api.cpp:105] open(): /littlefs/village_3.dat does not exist, no permits for creation
+[245394][E][vfs_api.cpp:105] open(): /littlefs/village_4.dat does not exist, no permits for creation
+[245405][E][vfs_api.cpp:105] open(): /littlefs/village_5.dat does not exist, no permits for creation
+[245415][E][vfs_api.cpp:105] open(): /littlefs/village_6.dat does not exist, no permits for creation
+[245488][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+[245498][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+[Conversations] Found 1 valid villages
+  Slot 7: fird
+_Update_Part : 766996
+_Update_Part : 766999
+[MainMenu] Opening conversation list
+[KB-READ] I2C byte: 0x8 (8)
+[Keyboard] BACKSPACE pressed! Raw key value: 8 (0x08)
+[Keyboard] Setting currentKey to: 8 (0x08)
+[ConversationList] BACKSPACE pressed - deleting village: fird
+[247493][E][vfs_api.cpp:182] remove(): /messages_7.dat does not exists or is directory
+_Update_Part : 766996
+_Update_Part : 766996
+[ConversationList] Village deleted, returning to main menu
+[Battery] Voltage: 4.13V, Percent: 93%
