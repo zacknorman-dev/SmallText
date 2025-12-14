@@ -2432,10 +2432,26 @@ void handleJoinCodeInput() {
       // FIXED: Consolidate verification screens to reduce flashing
       Serial.println("[Invite] Verifying code: " + code);
       ui.showMessage("Joining...", "Looking up\ninvite code:\n\n" + code + "\n\nPlease wait...", 0);
-      ui.update();
+      // NOTE: showMessage() handles display refresh - don't call ui.update() here!
       
       // Reset invite flag BEFORE subscribing (callback could trigger immediately)
       pendingInvite.received = false;
+      
+      // Check MQTT connection status
+      if (!mqttMessenger.isConnected()) {
+        Serial.println("[Invite] ERROR: Not connected to MQTT!");
+        logger.error("Join failed: MQTT not connected");
+        ui.showMessage("Error", "Not connected\nto network\n\nPress ENTER", 0);
+        keyboard.clearInput();
+        while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
+        keyboard.clearInput();
+        appState = APP_MAIN_MENU;
+        ui.setState(STATE_MAIN_HUB);
+        ui.resetMenuSelection();
+        ui.update();
+        smartDelay(300);
+        return;
+      }
       
       // Subscribe to invite topic
       if (mqttMessenger.subscribeToInvite(code)) {
@@ -2557,10 +2573,12 @@ void handleJoinCodeInput() {
           logger.error("Invite code timeout: " + code);
           String errorMsg = "Code not found\nor has expired\n\nCheck the code\nand try again\n\nPress ENTER";
           ui.showMessage("Not Found", errorMsg, 0);
+          keyboard.clearInput();  // Clear any buffered input before waiting
           while (!keyboard.isEnterPressed()) { keyboard.update(); smartDelay(50); }
-          appState = APP_MAIN_MENU;
-          ui.setState(STATE_MAIN_HUB);
-          ui.resetMenuSelection();
+          keyboard.clearInput();  // Clear ENTER press that exited the loop
+          appState = APP_JOIN_CODE_INPUT;  // Return to code entry to try again
+          ui.setState(STATE_JOIN_CODE_INPUT);
+          ui.setInputText("");  // Clear the failed code
           ui.update();
         }
       } else {

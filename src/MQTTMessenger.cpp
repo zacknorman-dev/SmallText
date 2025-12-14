@@ -419,12 +419,20 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
     // Check for invite code topics (smoltxt/invites/{code})
     if (topic.startsWith("smoltxt/invites/")) {
         String inviteCode = topic.substring(16);  // Skip "smoltxt/invites/"
+        Serial.println("[MQTT] ====== INVITE DATA RECEIVED ======");
         Serial.println("[MQTT] Received invite data for code: " + inviteCode);
+        Serial.println("[MQTT] Payload length: " + String(length));
         
         // Parse JSON payload
         String message = "";
         for (unsigned int i = 0; i < length; i++) {
             message += (char)payload[i];
+        }
+        Serial.println("[MQTT] Invite payload: " + message);
+        
+        if (message.length() == 0) {
+            Serial.println("[MQTT] Empty invite payload (unpublished/cleared)");
+            return;
         }
         
         JsonDocument doc;
@@ -438,6 +446,9 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
         String inviteVillageName = doc["villageName"] | "";
         String encodedKey = doc["key"] | "";
         
+        Serial.println("[MQTT] Parsed - Name: " + inviteVillageName + ", ID: " + inviteVillageId);
+        Serial.println("[MQTT] Encoded key length: " + String(encodedKey.length()));
+        
         // Decode the encryption key from base64
         uint8_t decodedKey[32];
         size_t decodedLen = 0;
@@ -449,11 +460,15 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
             logger.info("Invite received: " + inviteVillageName);
             
             if (onInviteReceived) {
+                Serial.println("[MQTT] Calling onInviteReceived callback");
                 onInviteReceived(inviteVillageId, inviteVillageName, decodedKey, 32);
+            } else {
+                Serial.println("[MQTT] WARNING: No onInviteReceived callback set!");
             }
         } else {
             Serial.println("[MQTT] Invite key decode failed: wrong length " + String(decodedLen));
         }
+        Serial.println("[MQTT] ===================================");
         return;
     }
     
@@ -1295,16 +1310,21 @@ bool MQTTMessenger::publishInvite(const String& inviteCode, const String& villag
     String payload;
     serializeJson(doc, payload);
     
+    Serial.println("[MQTT] ====== PUBLISHING INVITE ======");
     Serial.println("[MQTT] Publishing invite to code: " + inviteCode);
     Serial.println("[MQTT] Invite payload: " + payload);
+    Serial.println("[MQTT] Payload length: " + String(payload.length()));
     
     // Publish unencrypted to invite topic (the invite code itself is the secret)
     String topic = "smoltxt/invites/" + inviteCode;
+    Serial.println("[MQTT] Topic: " + topic);
+    Serial.println("[MQTT] QoS: 1, Retain: 1");
     int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), payload.c_str(), 
                                         payload.length(), 1, 1);  // QoS 1, retain=1
     
     if (msg_id >= 0) {
-        Serial.println("[MQTT] Invite published successfully");
+        Serial.println("[MQTT] Invite published successfully (msg_id=" + String(msg_id) + ")");
+        Serial.println("[MQTT] ==================================");
         logger.info("Invite published: code=" + inviteCode);
         
         // Wait a moment to ensure message is transmitted before any disconnect
@@ -1312,7 +1332,8 @@ bool MQTTMessenger::publishInvite(const String& inviteCode, const String& villag
         
         return true;
     } else {
-        Serial.println("[MQTT] Invite publish failed");
+        Serial.println("[MQTT] Invite publish FAILED (msg_id=" + String(msg_id) + ")");
+        Serial.println("[MQTT] ==================================");
         logger.error("Invite publish failed");
         return false;
     }
@@ -1341,18 +1362,20 @@ bool MQTTMessenger::unpublishInvite(const String& inviteCode) {
 bool MQTTMessenger::subscribeToInvite(const String& inviteCode) {
     if (!connected || !mqttClient) {
         Serial.println("[MQTT] Cannot subscribe to invite - not connected");
+        Serial.println("[MQTT] connected=" + String(connected) + " mqttClient=" + String((mqttClient != nullptr) ? "yes" : "no"));
         return false;
     }
     
     String topic = "smoltxt/invites/" + inviteCode;
+    Serial.println("[MQTT] Subscribing to topic: " + topic);
     int msg_id = esp_mqtt_client_subscribe(mqttClient, topic.c_str(), 1);
     
     if (msg_id >= 0) {
-        Serial.println("[MQTT] Subscribed to invite: " + inviteCode);
+        Serial.println("[MQTT] Subscribed to invite: " + inviteCode + " (msg_id=" + String(msg_id) + ")");
         logger.info("Subscribed to invite: " + inviteCode);
         return true;
     } else {
-        Serial.println("[MQTT] Failed to subscribe to invite");
+        Serial.println("[MQTT] Failed to subscribe to invite (msg_id=" + String(msg_id) + ")");
         logger.error("Invite subscribe failed");
         return false;
     }
