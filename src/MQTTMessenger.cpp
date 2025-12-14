@@ -1121,8 +1121,14 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
         // CRITICAL: Send ACK for synced messages that are NOT ours
         // This ensures the sender gets delivery confirmation even if recipient was offline
         if (msg.senderMAC != myMacStr && !msg.messageId.isEmpty()) {
-            Serial.println("[MQTT] Sending ACK for synced message: " + msg.messageId + " to " + msg.senderMAC);
-            sendAck(msg.messageId, msg.senderMAC, msg.villageId);
+            Serial.println("[MQTT] Sending ACK for synced message: " + msg.messageId);
+            Serial.println("[MQTT] DEBUG: senderMAC='" + msg.senderMAC + "' isEmpty=" + String(msg.senderMAC.isEmpty()));
+            Serial.println("[MQTT] DEBUG: villageId='" + msg.villageId + "'");
+            if (msg.senderMAC.isEmpty()) {
+                Serial.println("[MQTT] ERROR: Cannot send ACK - senderMAC is empty!");
+            } else {
+                sendAck(msg.messageId, msg.senderMAC, msg.villageId);
+            }
         }
         
         // Deliver to app via message callback (deduplication happens in Village::saveMessage)

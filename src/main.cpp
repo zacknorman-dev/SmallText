@@ -594,8 +594,8 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
     village.updateMessageStatus(messageId, MSG_RECEIVED);  // Persist to storage (skip during sync)
   }
   
-  // Always update UI when in messaging screen - fixes real-time status updates
-  if (inMessagingScreen && appState == APP_MESSAGING) {
+  // Update UI if viewing the messaging screen
+  if (appState == APP_MESSAGING) {
     ui.updateMessageStatus(messageId, MSG_RECEIVED);
     ui.updatePartial();
   }
@@ -609,8 +609,8 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
     village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage (skip during sync)
   }
   
-  // Always update UI when in messaging screen - fixes real-time status updates
-  if (inMessagingScreen && appState == APP_MESSAGING) {
+  // Update UI if viewing the messaging screen
+  if (appState == APP_MESSAGING) {
     ui.updateMessageStatus(messageId, MSG_READ);
     ui.updatePartial();
   }

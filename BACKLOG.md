@@ -28,6 +28,15 @@ When a user is actively viewing a conversation (in the messaging screen) and rec
 
 ## Medium Priority
 
+### Hide "My Conversations" Menu Item When No Conversations Exist
+When there are no active conversations (all village slots are empty), the "My Conversations" menu item should not appear in the main menu. This prevents users from selecting an empty option and provides a cleaner UI when starting fresh. The menu should dynamically show/hide this item based on whether any conversations exist.
+
+### Persist Username in Settings and Reuse Across Conversations
+Save the username (display name) that the user chooses to a persistent settings field. When creating or joining new conversations, check if a username is already stored:
+- If username exists in settings: automatically use it without prompting
+- If no username exists: prompt for username and save to settings for future use
+This eliminates repetitive username entry and provides a consistent identity across all conversations. Consider adding a "Change Username" option in Settings menu to update the stored name.
+
 ### UI Text: "Join Conversation" → "Join a Conversation"
 Change menu text from "Join Conversation" to "Join a Conversation" for better grammar and clarity.
 
@@ -61,3 +70,39 @@ When navigating into a conversation from the conversation list, the display shou
 ## Low Priority
 
 ## Ideas / Future Consideration
+### Refactor All Messages to JSON Format (Transport-Agnostic Architecture)
+**MAJOR REFACTORING** - Convert entire messaging system from colon-delimited string format to pure JSON. This would:
+
+**Benefits:**
+- Eliminate parsing bugs between sync and regular message paths (current bug source)
+- Single unified parser for all message types
+- Transport-agnostic: same JSON works for MQTT, LoRa, HTTP, WebSocket, Bluetooth
+- Easy to extend with new fields without breaking existing code
+- Self-documenting structure with named fields
+- Handles special characters in content without escaping issues
+- Future-proof for switching transport layers or adding new ones
+
+**Implementation:**
+1. Define JSON schema for all message types (SHOUT, ACK, READ_RECEIPT, etc.)
+2. Add message version field for future compatibility
+3. Create unified JSON parser with type-based routing
+4. Update all send functions to generate JSON instead of colon-strings
+5. Update all receive handlers to parse JSON
+6. Optional: Create Transport interface for easy provider swapping
+
+**Scope:**
+- MQTTMessenger.cpp: Major rewrite of parsing and formatting
+- All message send/receive handlers
+- Breaking change: Old/new versions can't communicate
+- Alternative: Add version negotiation for gradual migration
+
+**Files to modify:**
+- src/MQTTMessenger.cpp (core changes)
+- src/MQTTMessenger.h (message structures)
+- src/Messages.h (message format definitions)
+
+**Testing required:**
+- All message types (SHOUT, ACK, READ_RECEIPT)
+- Sync flow (request/response)
+- Multi-device scenarios
+- Edge cases (empty fields, special characters)

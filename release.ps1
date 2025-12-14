@@ -23,6 +23,14 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Stop any running monitor jobs first
+Write-Host "`n========================================" -ForegroundColor Cyan
+Write-Host "Stopping monitor jobs..." -ForegroundColor Cyan
+Write-Host "========================================`n" -ForegroundColor Cyan
+Stop-Job -Name Monitor_* -ErrorAction SilentlyContinue
+Remove-Job -Name Monitor_* -ErrorAction SilentlyContinue
+Write-Host "      Monitor jobs stopped" -ForegroundColor Green
+
 # Auto-detect next version if not specified
 if (-not $Version) {
     Write-Host "`n========================================" -ForegroundColor Cyan
