@@ -157,7 +157,7 @@ bool isUsbPowered() {
   // ESP32-S3 can detect USB power via battery voltage
   // When USB connected, battery reads higher voltage (charging)
   float voltage = battery.getVoltage();
-  return (voltage > 4.3);  // USB charging typically shows >4.3V
+  return (voltage > 4.1);  // USB charging shows ~4.14-4.15V (lowered from 4.3V)
 }
 
 // Ringtone types
