@@ -93,6 +93,7 @@ public:
     std::vector<Message> loadMessages();
     bool clearMessages();  // Clear all stored messages
     bool updateMessageStatus(const String& messageId, int newStatus);  // Update status of existing message
+    bool updateMessageStatusIfLower(const String& messageId, int newStatus);  // Update status only if new status is higher (prevents downgrading)
     bool batchUpdateMessageStatus(const std::vector<String>& messageIds, int newStatus);  // Batch update multiple messages
     bool messageIdExists(const String& messageId);  // Check if message already saved
     void rebuildMessageIdCache();  // Rebuild in-memory cache of message IDs

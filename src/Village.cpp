@@ -738,6 +738,94 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
     return true;
 }
 
+bool Village::updateMessageStatusIfLower(const String& messageId, int newStatus) {
+    if (!initialized) return false;
+    
+    // Skip empty messageIds
+    if (messageId.isEmpty()) {
+        logger.error("Skipping status update for empty messageId");
+        return false;
+    }
+    
+    // Load the message to check current status
+    std::vector<String> allLines;
+    File readFile = LittleFS.open("/messages.dat", "r");
+    if (!readFile) {
+        logger.error("Failed to open messages.dat for status check");
+        return false;
+    }
+    
+    String currentVillageId = String(villageId);
+    
+    // Read all lines
+    while (readFile.available()) {
+        String line = readFile.readStringUntil('\n');
+        line.trim();
+        allLines.push_back(line);
+    }
+    readFile.close();
+    
+    // Find message and check current status
+    bool found = false;
+    int currentStatus = MSG_SENT;
+    
+    for (int i = allLines.size() - 1; i >= 0 && !found; i--) {
+        String& line = allLines[i];
+        
+        if (line.length() == 0) continue;
+        
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, line);
+        
+        if (error) continue;
+        
+        String msgVillage = doc["village"] | "";
+        String msgId = doc["messageId"] | "";
+        
+        if (msgVillage == currentVillageId && msgId == messageId) {
+            currentStatus = doc["status"] | MSG_SENT;
+            found = true;
+            
+            // Only update if new status is higher
+            if (newStatus > currentStatus) {
+                doc["status"] = newStatus;
+                String updatedLine;
+                serializeJson(doc, updatedLine);
+                allLines[i] = updatedLine;
+                
+                logger.info("Updated message " + messageId + " from status " + String(currentStatus) + " to " + String(newStatus));
+            } else {
+                logger.info("Skipping status update for " + messageId + " - current status " + String(currentStatus) + " >= new status " + String(newStatus));
+                return true;  // Not an error, just no update needed
+            }
+        }
+    }
+    
+    if (!found) {
+        logger.error("Message not found: " + messageId);
+        return false;
+    }
+    
+    // Rewrite file only if we made changes
+    if (found && newStatus > currentStatus) {
+        File writeFile = LittleFS.open("/messages.dat", "w");
+        if (!writeFile) {
+            logger.critical("Failed to reopen messages.dat for writing");
+            return false;
+        }
+        
+        for (const String& line : allLines) {
+            writeFile.println(line);
+        }
+        
+        writeFile.flush();
+        writeFile.close();
+        logger.info("Saved " + String(allLines.size()) + " total lines (all villages preserved)");
+    }
+    
+    return true;
+}
+
 bool Village::batchUpdateMessageStatus(const std::vector<String>& messageIds, int newStatus) {
     if (!initialized) return false;
     if (messageIds.empty()) return true;  // Nothing to update

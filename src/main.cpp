@@ -600,8 +600,9 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
   Serial.println("[Message] ACK received for: " + messageId + " from " + fromMAC);
   
   // Update storage FIRST - this is the source of truth and always works
+  // IMPORTANT: Only update if current status is SENT (1). Don't downgrade from READ (3) to RECEIVED (2)
   if (!isSyncing) {
-    village.updateMessageStatus(messageId, MSG_RECEIVED);  // Persist to storage (skip during sync)
+    village.updateMessageStatusIfLower(messageId, MSG_RECEIVED);  // Only upgrade, never downgrade
   }
   
   // Update UI if viewing the messaging screen
@@ -615,6 +616,7 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
   Serial.println("[Message] Read receipt for: " + messageId + " from " + fromMAC);
   
   // Update storage FIRST - this is the source of truth and always works
+  // Read receipts always upgrade to READ status (this is the highest status)
   if (!isSyncing) {
     village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage (skip during sync)
   }
