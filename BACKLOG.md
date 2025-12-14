@@ -11,6 +11,9 @@ When the creator displays an invite code and the joiner successfully joins, the 
 ### Creator Bounces to Main Menu After Seeing Both Members Join
 After the creator sees the system message showing both members have joined the conversation (e.g., "creator joined" and "joiner joined"), the creator is unexpectedly bounced back to the main menu instead of remaining in the messaging screen. The creator should stay in the active conversation to continue chatting.
 
+### Back Button in Conversation Should Return to Conversation List
+When pressing the back button while viewing a conversation, the app currently returns to the main menu. It should instead return to "My Conversations" list, allowing users to quickly navigate between conversations without going through the main menu each time. This makes conversation switching much more fluid.
+
 ### Activity Timer Not Resetting During Text Input
 Device goes to sleep (nap mode) while actively entering invite codes or other text input. Keystroke activity should reset the inactivity timer to prevent sleep interruption during active use. This is particularly problematic during the invite code entry flow where the 5-minute timeout can be interrupted by the device sleeping.
 

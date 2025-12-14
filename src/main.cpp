@@ -783,8 +783,8 @@ void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp)
   Serial.println("[Sync] DEBUG: Filtering " + String(allMessages.size()) + " messages");
   for (const Message& msg : allMessages) {
     Serial.println("[Sync] DEBUG: msg.id=" + msg.messageId + " ts=" + String(msg.timestamp) + " vs requested=" + String(requestedTimestamp) + " isEmpty=" + String(msg.messageId.isEmpty()));
-    // Filter: Must have message ID AND be newer than requested timestamp
-    if (!msg.messageId.isEmpty() && msg.timestamp > requestedTimestamp) {
+    // Filter: Must have message ID AND be equal to or newer than requested timestamp
+    if (!msg.messageId.isEmpty() && msg.timestamp >= requestedTimestamp) {
       Serial.println("[Sync] DEBUG: INCLUDED");
       newMessages.push_back(msg);
     } else {
@@ -793,7 +793,7 @@ void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp)
   }
   
   if (newMessages.empty()) {
-    Serial.println("[Sync] No new messages to send (all messages <= " + String(requestedTimestamp) + ")");
+    Serial.println("[Sync] No new messages to send (all messages < " + String(requestedTimestamp) + ")");
     logger.info("Sync: No new messages for " + requestorMAC);
     return;
   }
@@ -1294,7 +1294,9 @@ void loop() {
   }
   
   // Periodic background sync - request messages from all villages every 30 seconds
-  if (village.isInitialized() && (millis() - lastPeriodicSync >= PERIODIC_SYNC_INTERVAL)) {
+  // Skip if already viewing the messaging screen (messages arrive in real-time via MQTT shout)
+  bool inMessagingView = (appState == APP_MESSAGING && inMessagingScreen);
+  if (village.isInitialized() && !inMessagingView && (millis() - lastPeriodicSync >= PERIODIC_SYNC_INTERVAL)) {
     Serial.println("[App] Periodic sync check");
     
     // Get timestamp of most recent message for sync optimization
