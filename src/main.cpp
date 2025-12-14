@@ -2791,6 +2791,9 @@ void handleMessaging() {
       // Add to local message history
       Message localMsg;
       localMsg.sender = village.getUsername();
+      char myMAC[13];
+      sprintf(myMAC, "%012llx", ESP.getEfuseMac());
+      localMsg.senderMAC = String(myMAC);
       localMsg.content = messageText;
       localMsg.timestamp = getCurrentTime();
       localMsg.received = false;
@@ -2885,6 +2888,9 @@ void handleMessageCompose() {
       
       Message sentMsg;
       sentMsg.sender = village.getUsername();
+      char myMAC[13];
+      sprintf(myMAC, "%012llx", ESP.getEfuseMac());
+      sentMsg.senderMAC = String(myMAC);
       sentMsg.content = currentText;
       sentMsg.timestamp = millis();
       sentMsg.received = false;
