@@ -568,8 +568,8 @@ void onMessageReceived(const Message& msg) {
     // Mark that we just transmitted (the ACK)
     lastTransmission = millis();
     
-    // Queue read receipt for background sending
-    if (!msg.senderMAC.isEmpty()) {
+    // Queue read receipt for background sending (but not for system messages)
+    if (!msg.senderMAC.isEmpty() && msg.senderMAC != "system") {
       ReadReceiptQueueItem item;
       item.messageId = msg.messageId;
       item.recipientMAC = msg.senderMAC;
@@ -594,13 +594,11 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
     village.updateMessageStatus(messageId, MSG_RECEIVED);  // Persist to storage (skip during sync)
   }
   
-  // Update UI only if we're actively viewing the messaging screen
-  if (inMessagingScreen) {
+  // Always update UI when in messaging screen - fixes real-time status updates
+  if (inMessagingScreen && appState == APP_MESSAGING) {
     ui.updateMessageStatus(messageId, MSG_RECEIVED);
     ui.updatePartial();
   }
-  // If not in messaging screen, the status update in storage will be reflected
-  // when the user next enters the messaging screen and messages are reloaded
 }
 
 void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
@@ -611,13 +609,11 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
     village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage (skip during sync)
   }
   
-  // Update UI only if we're actively viewing the messaging screen
-  if (inMessagingScreen) {
+  // Always update UI when in messaging screen - fixes real-time status updates
+  if (inMessagingScreen && appState == APP_MESSAGING) {
     ui.updateMessageStatus(messageId, MSG_READ);
     ui.updatePartial();
   }
-  // If not in messaging screen, the status update in storage will be reflected
-  // when the user next enters the messaging screen and messages are reloaded
 }
 
 void onCommandReceived(const String& command) {
@@ -1576,8 +1572,8 @@ void handleVillageMenu() {
           // Add to batch list for storage update
           messagesToMarkRead.push_back(msg.messageId);
           
-          // Queue read receipt to sender
-          if (!msg.senderMAC.isEmpty()) {
+          // Queue read receipt to sender (but not for system messages)
+          if (!msg.senderMAC.isEmpty() && msg.senderMAC != "system") {
             ReadReceiptQueueItem item;
             item.messageId = msg.messageId;
             item.recipientMAC = msg.senderMAC;
@@ -2134,8 +2130,8 @@ void handleUsernameInput() {
           // Add to batch list for storage update
           messagesToMarkRead.push_back(msg.messageId);
           
-          // Queue read receipt to sender
-          if (!msg.senderMAC.isEmpty()) {
+          // Queue read receipt to sender (but not for system messages)
+          if (!msg.senderMAC.isEmpty() && msg.senderMAC != "system") {
             ReadReceiptQueueItem item;
             item.messageId = msg.messageId;
             item.recipientMAC = msg.senderMAC;
