@@ -2282,17 +2282,16 @@ void handleInviteCodeDisplay() {
     // Unpublish invite code from MQTT to clear retained message
     mqttMessenger.unpublishInvite(code);
     
-    String infoMsg = "The invite code has\nexpired.\n\nPress ENTER to continue";
-    ui.showMessage("Code Expired", infoMsg, 0);
-    while (!keyboard.isEnterPressed() && !keyboard.isRightPressed()) {
-      keyboard.update();
-      smartDelay(50);
-    }
+    Serial.println("[Invite] Code expired after 5 minutes - transitioning to messaging");
     
-    appState = APP_MAIN_MENU;
-    ui.setState(STATE_MAIN_HUB);
-    ui.resetMenuSelection();
-    ui.updateClean();
+    // FIXED: Instead of showing \"Code Expired\" error, just transition to messaging
+    // The user created a conversation and is waiting - take them to the conversation
+    // If no one joined yet, they can invite again from the conversation menu
+    appState = APP_MESSAGING;
+    ui.setState(STATE_MESSAGING);
+    inMessagingScreen = true;
+    lastMessagingActivity = millis();
+    ui.update();
     smartDelay(300);
     return;
   }
@@ -2401,11 +2400,10 @@ void handleJoinCodeInput() {
       Serial.println("[Invite] Attempting to join with code: " + code);
       logger.info("Join attempt with code: " + code);
       
-      // Show verification screen with the code they entered
-      String verifyMsg = "Checking code:\n" + code + "\n\nPlease wait...";
-      ui.showMessage("Verifying", verifyMsg, 0);
+      // FIXED: Consolidate verification screens to reduce flashing
+      Serial.println("[Invite] Verifying code: " + code);
+      ui.showMessage("Joining...", "Looking up\ninvite code:\n\n" + code + "\n\nPlease wait...", 0);
       ui.update();
-      smartDelay(500);  // Brief pause so user can verify the code
       
       // Reset invite flag BEFORE subscribing (callback could trigger immediately)
       pendingInvite.received = false;
@@ -2413,8 +2411,6 @@ void handleJoinCodeInput() {
       // Subscribe to invite topic
       if (mqttMessenger.subscribeToInvite(code)) {
         Serial.println("[Invite] Subscribed, waiting for invite data...");
-        ui.showMessage("Looking up...", "Searching for\ninvite code\n\nThis may take a\nmoment...", 0);
-        ui.update();
         
         // Wait up to 15 seconds for invite data
         unsigned long startWait = millis();
@@ -2484,13 +2480,9 @@ void handleJoinCodeInput() {
                 ui.setExistingConversationName(village.getVillageName());
                 encryption.setKey(village.getEncryptionKey());
                 
-                // Show success screen
-                String successMsg = "Successfully\njoined:\n\n" + pendingInvite.villageName;
-                ui.showMessage("Success!", successMsg, 0);
-                ui.update();
-                smartDelay(2000);  // Show success for 2 seconds
+                // FIXED: Reduce success screen time to minimize flashing
+                Serial.println("[Invite] Successfully joined: " + pendingInvite.villageName);
                 
-                // FIXED: Prompt for username before sending join announcement
                 // Clear everything aggressively to prevent pre-filling
                 keyboard.clearInput();
                 ui.setInputText("");
@@ -2609,8 +2601,18 @@ void handleJoinUsernameInput() {
       // Request message sync to get creator's join message and any other history
       if (mqttMessenger.isConnected()) {
         mqttMessenger.requestSync(0);  // Request all messages from the beginning
-        smartDelay(500);  // Give time for sync to arrive
       }
+      
+      // Clear old messages and load messages for this conversation
+      ui.clearMessages();
+      std::vector<Message> messages = village.loadMessages();
+      
+      // Calculate pagination: show last MAX_MESSAGES_TO_LOAD messages
+      int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+      for (int i = startIndex; i < messages.size(); i++) {
+        ui.addMessage(messages[i]);
+      }
+      Serial.println("[Join] Displaying " + String(messages.size() - startIndex) + " of " + String(messages.size()) + " messages");
       
       // Transition to messaging screen
       appState = APP_MESSAGING;

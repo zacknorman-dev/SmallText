@@ -28,6 +28,15 @@ Add a "Reset to Factory" option in Settings menu that:
 ### UI Text: "Join Conversation" → "Join a Conversation"
 Change menu text from "Join Conversation" to "Join a Conversation" for better grammar and clarity.
 
+### Remove Village Reference in Conversation Deletion Confirmation
+The conversation deletion confirmation dialog still references "village" terminology. Update to use "conversation" consistently with the rest of the UI.
+
+### Change "Leave Group" to "Leave Conversation" in Menu
+The conversation menu currently shows "Leave Group" but should say "Leave Conversation" to match the updated terminology throughout the app.
+
+### Update Conversation Naming Screen Text
+The conversation creation screen still references "village name". Update the prompt to "Pick a name for this conversation" to match the updated terminology throughout the app.
+
 ## Low Priority
 
 ## Ideas / Future Consideration
