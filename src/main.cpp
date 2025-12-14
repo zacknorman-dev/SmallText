@@ -351,8 +351,10 @@ void markVisibleMessagesAsRead() {
   // Process visible messages
   for (int i = startIndex; i < messages.size(); i++) {
     const Message& msg = messages[i];
+    Serial.println("[DEBUG] Checking message: id=" + msg.messageId + ", status=" + String((int)msg.status) + ", received=" + String(msg.received ? "true" : "false"));
     // Only process received messages that aren't already read
     if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
+      Serial.println("[DEBUG] Marking as read: id=" + msg.messageId);
       // Mark as read in UI
       ui.updateMessageStatus(msg.messageId, MSG_READ);
       
