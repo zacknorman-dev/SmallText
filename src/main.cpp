@@ -309,6 +309,8 @@ const int MAX_MESSAGES_TO_LOAD = 30;  // Only load most recent 30 messages
 const int MAX_READ_RECEIPTS = 10;  // Only send read receipts for last 10 unread messages
 unsigned long lastTransmission = 0;  // Track when last transmitted (for timing read receipts)
 unsigned long lastOTACheck = 0;  // Track automatic OTA update checks
+unsigned long lastPeriodicSync = 0;  // Track periodic background sync
+const unsigned long PERIODIC_SYNC_INTERVAL = 30000;  // Sync every 30 seconds when active
 
 // Helper function: Send ACKs for received messages that haven't been acknowledged yet
 // This catches messages that were received via sync while offline
@@ -1289,6 +1291,25 @@ void loop() {
     lastReadReceiptSent = millis();
     lastTransmission = millis();
     lastActivityTime = millis();  // Reset activity timer on message send
+  }
+  
+  // Periodic background sync - request messages from all villages every 30 seconds
+  if (village.isInitialized() && (millis() - lastPeriodicSync >= PERIODIC_SYNC_INTERVAL)) {
+    Serial.println("[App] Periodic sync check");
+    
+    // Get timestamp of most recent message for sync optimization
+    std::vector<Message> messages = village.loadMessages();
+    unsigned long lastMsgTime = 0;
+    for (const auto& msg : messages) {
+      if (msg.timestamp > lastMsgTime) {
+        lastMsgTime = msg.timestamp;
+      }
+    }
+    
+    mqttMessenger.requestSync(lastMsgTime);
+    lastPeriodicSync = millis();
+    Serial.println("[App] Periodic sync requested (last message: " + String(lastMsgTime) + ")");
+    logger.info("Periodic sync requested");
   }
   
   // Check for inactivity timeout - enter napping mode after 5 minutes

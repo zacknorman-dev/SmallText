@@ -2,6 +2,15 @@
 
 ## High Priority
 
+### Periodic Background Sync for All Conversations - FIXED v0.56.15
+App now performs automatic sync every 30 seconds while active, pulling new messages from all conversations even when not viewing the specific conversation. Previously messages only synced when entering a conversation, causing delays in receiving messages while on other screens (main menu, conversation list, settings, etc.). The periodic sync ensures messages arrive promptly regardless of which screen the user is viewing.
+
+### Creator Invite Screen Doesn't End When Joiner Joins
+When the creator displays an invite code and the joiner successfully joins, the creator remains stuck on the invite code display screen. The screen should automatically transition to the messaging screen when a join is detected, allowing both users to start chatting immediately without manual intervention.
+
+### Creator Bounces to Main Menu After Seeing Both Members Join
+After the creator sees the system message showing both members have joined the conversation (e.g., "creator joined" and "joiner joined"), the creator is unexpectedly bounced back to the main menu instead of remaining in the messaging screen. The creator should stay in the active conversation to continue chatting.
+
 ### Activity Timer Not Resetting During Text Input
 Device goes to sleep (nap mode) while actively entering invite codes or other text input. Keystroke activity should reset the inactivity timer to prevent sleep interruption during active use. This is particularly problematic during the invite code entry flow where the 5-minute timeout can be interrupted by the device sleeping.
 
