@@ -450,9 +450,10 @@ void onMessageReceived(const Message& msg) {
   lastActivityTime = millis();
   Serial.println("[Power] Activity timer reset - message received");
   
-  // AUTO-TRANSITION: If creator is on invite screen and someone joins, go to messaging
+  // AUTO-TRANSITION: If creator is on invite screen and someone joins, DON'T auto-transition
+  // Let them manually proceed so the joiner has time to see/share the code
   if (appState == APP_INVITE_CODE_DISPLAY && msg.content.endsWith(" joined the conversation")) {
-    Serial.println("[Invite] New member joined - auto-transitioning to messaging");
+    Serial.println("[Invite] New member joined - showing success message instead of auto-transitioning");
     String code = ui.getInviteCode();
     ui.clearInviteCode();
     // Unpublish invite
@@ -460,6 +461,15 @@ void onMessageReceived(const Message& msg) {
       mqttMessenger.unsubscribeFromInvite(code);
       mqttMessenger.unpublishInvite(code);
     }
+    
+    // Show success message and wait for user to proceed
+    ui.showMessage("Success!", msg.sender + " joined!\n\nPress ENTER\nto continue", 0);
+    keyboard.clearInput();
+    while (!keyboard.isEnterPressed()) { 
+      keyboard.update(); 
+      smartDelay(50); 
+    }
+    keyboard.clearInput();
     
     // FIXED: Properly initialize messaging screen (same as normal entry path)
     ui.setInputText("");  // Clear any text in input field
@@ -472,7 +482,7 @@ void onMessageReceived(const Message& msg) {
     for (int i = startIndex; i < messages.size(); i++) {
       ui.addMessage(messages[i]);
     }
-    Serial.println("[Invite] Auto-transition: Loaded " + String(messages.size() - startIndex) + " of " + String(messages.size()) + " messages");
+    Serial.println("[Invite] Manual transition: Loaded " + String(messages.size() - startIndex) + " of " + String(messages.size()) + " messages");
     
     // Transition to messaging
     appState = APP_MESSAGING;
