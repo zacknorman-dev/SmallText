@@ -594,14 +594,13 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
     village.updateMessageStatus(messageId, MSG_RECEIVED);  // Persist to storage (skip during sync)
   }
   
-  // Then try to update UI - this may fail if message not in UI yet (race condition with message save)
-  ui.updateMessageStatus(messageId, MSG_RECEIVED);
-  
-  // Update display if we're actively viewing messaging screen OR if we're in village/main menu
-  // (so status changes are visible even when not actively in the messaging screen)
-  if (inMessagingScreen || appState == APP_CONVERSATION_MENU || appState == APP_MAIN_MENU) {
+  // Update UI only if we're actively viewing the messaging screen
+  if (inMessagingScreen) {
+    ui.updateMessageStatus(messageId, MSG_RECEIVED);
     ui.updatePartial();
   }
+  // If not in messaging screen, the status update in storage will be reflected
+  // when the user next enters the messaging screen and messages are reloaded
 }
 
 void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
@@ -612,14 +611,13 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
     village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage (skip during sync)
   }
   
-  // Then try to update UI - this may fail if message not in UI yet (race condition with message save)
-  ui.updateMessageStatus(messageId, MSG_READ);
-  
-  // Update display if we're actively viewing messaging screen OR if we're in village/main menu
-  // (so status changes are visible even when not actively in the messaging screen)
-  if (inMessagingScreen || appState == APP_CONVERSATION_MENU || appState == APP_MAIN_MENU) {
+  // Update UI only if we're actively viewing the messaging screen
+  if (inMessagingScreen) {
+    ui.updateMessageStatus(messageId, MSG_READ);
     ui.updatePartial();
   }
+  // If not in messaging screen, the status update in storage will be reflected
+  // when the user next enters the messaging screen and messages are reloaded
 }
 
 void onCommandReceived(const String& command) {
@@ -2645,10 +2643,6 @@ void handleJoinUsernameInput() {
       mqttMessenger.sendSystemMessage(announcement, "SmolTxt");
       logger.info("User joined: " + currentName);
       
-      // FIXED: Don't request sync here - messages will arrive naturally via MQTT
-      // Requesting sync here causes duplicates because we load from storage below,
-      // then sync adds the same messages again when the response arrives
-      
       // Clear old messages and load messages for this conversation
       ui.clearMessages();
       std::vector<Message> messages = village.loadMessages();
@@ -2659,6 +2653,11 @@ void handleJoinUsernameInput() {
         ui.addMessage(messages[i]);
       }
       Serial.println("[Join] Displaying " + String(messages.size() - startIndex) + " of " + String(messages.size()) + " messages");
+      
+      // Request sync to get historical messages (e.g., creator's join message)
+      // Pass 0 to get all messages since this is a new join
+      Serial.println("[Join] Requesting message sync from other participants");
+      mqttMessenger.requestSync(0);
       
       // Transition to messaging screen
       appState = APP_MESSAGING;

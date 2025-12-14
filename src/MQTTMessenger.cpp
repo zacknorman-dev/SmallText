@@ -1097,6 +1097,10 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
     JsonArray msgArray = doc["messages"];
     int msgCount = 0;
     
+    // Normalize our MAC for comparison
+    String myMacStr = String(myMAC, HEX);
+    myMacStr.toLowerCase();
+    
     for (JsonObject msgObj : msgArray) {
         Message msg;
         msg.sender = msgObj["sender"] | "";
@@ -1112,6 +1116,13 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
         if (msgCount == 0 && batch == 1 && phase == 1 && !msg.senderMAC.isEmpty()) {
             syncTargetMAC = msg.senderMAC;
             Serial.println("[MQTT] Stored sync target MAC: " + syncTargetMAC + " for background phases");
+        }
+        
+        // CRITICAL: Send ACK for synced messages that are NOT ours
+        // This ensures the sender gets delivery confirmation even if recipient was offline
+        if (msg.senderMAC != myMacStr && !msg.messageId.isEmpty()) {
+            Serial.println("[MQTT] Sending ACK for synced message: " + msg.messageId + " to " + msg.senderMAC);
+            sendAck(msg.messageId, msg.senderMAC, msg.villageId);
         }
         
         // Deliver to app via message callback (deduplication happens in Village::saveMessage)

@@ -40,6 +40,12 @@ The conversation creation screen still references "village name". Update the pro
 ### Refresh Conversation List When Returning From Conversation View
 When navigating back to "My Conversations" from a conversation view, the list should refresh/rebuild to show updated conversation names, message counts, or other changes that may have occurred. Currently the list may show stale data if changes were made while viewing the conversation.
 
+### Full Refresh on Generated Code Screen
+The invite code display screen needs a full display refresh to ensure proper rendering. Currently may show artifacts or incomplete rendering when transitioning to the code display state.
+
+### Improve Username Entry Description When Joining Conversation
+The screen where joiners enter their display name after successfully entering an invite code needs a better, more descriptive prompt. Current text may not clearly explain that this is setting the name other members will see. Should clarify: "Enter your display name" or "Choose how others will see you in this conversation".
+
 ## Low Priority
 
 ## Ideas / Future Consideration
