@@ -98,6 +98,7 @@ bool Village::createVillage(const String& name) {
     isOwner = true;
     initialized = true;
     members.clear();
+    rebuildMessageIdCache();  // Build cache to prevent duplicate messages
     
     return true;  // Don't save here - main.cpp will save to correct slot
 }
@@ -293,6 +294,11 @@ bool Village::loadFromSlot(int slot) {
         strncpy(member.passwordHash, memberObj["passwordHash"], 64);
         member.active = memberObj["active"];
         members.push_back(member);
+    }
+    
+    // Rebuild message ID cache to prevent duplicates
+    if (initialized) {
+        rebuildMessageIdCache();
     }
     
     return true;
