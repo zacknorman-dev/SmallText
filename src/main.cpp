@@ -1294,9 +1294,8 @@ void loop() {
   }
   
   // Periodic background sync - request messages from all villages every 30 seconds
-  // Skip if already viewing the messaging screen (messages arrive in real-time via MQTT shout)
-  bool inMessagingView = (appState == APP_MESSAGING && inMessagingScreen);
-  if (village.isInitialized() && !inMessagingView && (millis() - lastPeriodicSync >= PERIODIC_SYNC_INTERVAL)) {
+  // Skip if in APP_MESSAGING state (conversation list or viewing messages)
+  if (village.isInitialized() && appState != APP_MESSAGING && (millis() - lastPeriodicSync >= PERIODIC_SYNC_INTERVAL)) {
     Serial.println("[App] Periodic sync check");
     
     // Get timestamp of most recent message for sync optimization
@@ -2002,13 +2001,7 @@ void handleUsernameInput() {
         Serial.println("[Invite] Setting username after invite join: " + currentName);
         village.setUsername(currentName);
         
-        // Send join announcement NOW that we have username
-        String joinAnnouncement = currentName + " joined the conversation";
-        String systemMsgId = mqttMessenger.sendSystemMessage(joinAnnouncement, "SmolTxt");
-        if (systemMsgId.isEmpty()) {
-          mqttMessenger.sendShout(joinAnnouncement);
-        }
-        logger.info("MQTT SYSTEM sent: " + joinAnnouncement);
+        // (Removed duplicate join announcement; now only sent when entering messaging screen)
       }
       // FIXED: Different flow for creators vs joiners
       if (!isCreatingVillage) {
