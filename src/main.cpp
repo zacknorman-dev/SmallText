@@ -310,6 +310,71 @@ const int MAX_READ_RECEIPTS = 10;  // Only send read receipts for last 10 unread
 unsigned long lastTransmission = 0;  // Track when last transmitted (for timing read receipts)
 unsigned long lastOTACheck = 0;  // Track automatic OTA update checks
 
+// Helper function: Send ACKs for received messages that haven't been acknowledged yet
+// This catches messages that were received via sync while offline
+void sendPendingAcks() {
+  std::vector<Message> messages = village.loadMessages();
+  int acksSent = 0;
+  
+  // Look for received messages (from others) that need ACKs
+  // We check all messages, not just visible ones, to ensure offline messages get ACK'd
+  for (const Message& msg : messages) {
+    // Only ACK messages we received (not our own) that are in RECEIVED state
+    // Status MSG_RECEIVED (2) means we got it but haven't necessarily viewed it yet
+    if (msg.received && !msg.messageId.isEmpty() && !msg.senderMAC.isEmpty() && msg.senderMAC != "system") {
+      // Send ACK to let sender know we have the message
+      mqttMessenger.sendAck(msg.messageId, msg.senderMAC, String(village.getVillageId()));
+      acksSent++;
+    }
+  }
+  
+  if (acksSent > 0) {
+    Serial.println("[App] Sent " + String(acksSent) + " pending ACKs for sync'd messages");
+  }
+}
+
+// Helper function: Mark visible messages as read when entering messaging screen
+void markVisibleMessagesAsRead() {
+  // First, send any pending ACKs for messages received while offline
+  sendPendingAcks();
+  
+  std::vector<Message> messages = village.loadMessages();
+  int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+  
+  // Clear queue and prepare batch list
+  readReceiptQueue.clear();
+  std::vector<String> messagesToMarkRead;
+  int unreadCount = 0;
+  
+  // Process visible messages
+  for (int i = startIndex; i < messages.size(); i++) {
+    const Message& msg = messages[i];
+    // Only process received messages that aren't already read
+    if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
+      // Mark as read in UI
+      ui.updateMessageStatus(msg.messageId, MSG_READ);
+      
+      // Add to batch list for storage update
+      messagesToMarkRead.push_back(msg.messageId);
+      
+      // Queue read receipt to sender (but not for system messages)
+      if (!msg.senderMAC.isEmpty() && msg.senderMAC != "system") {
+        ReadReceiptQueueItem item;
+        item.messageId = msg.messageId;
+        item.recipientMAC = msg.senderMAC;
+        readReceiptQueue.push_back(item);
+        unreadCount++;
+      }
+    }
+  }
+  
+  // Batch update all messages at once
+  if (!messagesToMarkRead.empty()) {
+    village.batchUpdateMessageStatus(messagesToMarkRead, MSG_READ);
+    Serial.println("[App] Marked " + String(unreadCount) + " unread messages as read on screen entry");
+  }
+}
+
 // Power management - use single key long-press since CardKB can't detect simultaneous keys
 unsigned long shutdownHoldStart = 0;
 const unsigned long SHUTDOWN_HOLD_TIME = 3000;  // 3 seconds to trigger shutdown
@@ -489,6 +554,7 @@ void onMessageReceived(const Message& msg) {
     ui.setState(STATE_MESSAGING);
     inMessagingScreen = true;
     lastMessagingActivity = millis();
+    markVisibleMessagesAsRead();
     ui.update();
   }
   
@@ -1570,36 +1636,8 @@ void handleVillageMenu() {
       }
       Serial.println("[App] Displaying last " + String(displayCount) + " of " + String(messages.size()) + " messages (paginated, consistent across devices)");
       
-      // Mark all received (but not yet read) messages as read and queue read receipts
-      readReceiptQueue.clear();  // Clear any old queue items
-      std::vector<String> messagesToMarkRead;  // Batch list
-      int unreadCount = 0;
-      for (int i = startIndex; i < messages.size(); i++) {
-        const Message& msg = messages[i];
-        // Only process received messages that aren't already read
-        if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
-          // Mark as read in UI
-          ui.updateMessageStatus(msg.messageId, MSG_READ);
-          
-          // Add to batch list for storage update
-          messagesToMarkRead.push_back(msg.messageId);
-          
-          // Queue read receipt to sender (but not for system messages)
-          if (!msg.senderMAC.isEmpty() && msg.senderMAC != "system") {
-            ReadReceiptQueueItem item;
-            item.messageId = msg.messageId;
-            item.recipientMAC = msg.senderMAC;
-            readReceiptQueue.push_back(item);
-            unreadCount++;
-          }
-        }
-      }
-      
-      // Batch update all messages at once (single file write instead of N writes)
-      if (!messagesToMarkRead.empty()) {
-        village.batchUpdateMessageStatus(messagesToMarkRead, MSG_READ);
-        Serial.println("[App] Marked " + String(unreadCount) + " unread messages as read, queued receipts");
-      }
+      // Mark unread messages as read
+      markVisibleMessagesAsRead();
       
       ui.update();  // Always refresh to show any messages received
     } else if (selection == 1) {
@@ -1990,6 +2028,7 @@ void handleUsernameInput() {
         appState = APP_MESSAGING;
         ui.setState(STATE_MESSAGING);
         keyboard.clearInput();  // MOVED: Clear after state transition to prevent residual chars
+        markVisibleMessagesAsRead();
         ui.update();
         return;  // Exit early for joiners
       }
@@ -2128,36 +2167,8 @@ void handleUsernameInput() {
       }
       Serial.println("[App] Displaying last " + String(displayCount) + " of " + String(messages.size()) + " messages (paginated, consistent across devices)");
       
-      // Mark all received (but not yet read) messages as read and queue read receipts
-      readReceiptQueue.clear();  // Clear any old queue items
-      std::vector<String> messagesToMarkRead;  // Batch list
-      int unreadCount = 0;
-      for (int i = startIndex; i < messages.size(); i++) {
-        const Message& msg = messages[i];
-        // Only process received messages that aren't already read
-        if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
-          // Mark as read in UI
-          ui.updateMessageStatus(msg.messageId, MSG_READ);
-          
-          // Add to batch list for storage update
-          messagesToMarkRead.push_back(msg.messageId);
-          
-          // Queue read receipt to sender (but not for system messages)
-          if (!msg.senderMAC.isEmpty() && msg.senderMAC != "system") {
-            ReadReceiptQueueItem item;
-            item.messageId = msg.messageId;
-            item.recipientMAC = msg.senderMAC;
-            readReceiptQueue.push_back(item);
-            unreadCount++;
-          }
-        }
-      }
-      
-      // Batch update all messages at once (single file write instead of N writes)
-      if (!messagesToMarkRead.empty()) {
-        village.batchUpdateMessageStatus(messagesToMarkRead, MSG_READ);
-        Serial.println("[App] Marked " + String(unreadCount) + " unread messages as read, queued receipts");
-      }
+      // Mark unread messages as read
+      markVisibleMessagesAsRead();
       
       ui.setInputText("");  // Clear input field before entering messaging
       ui.update();
@@ -2200,6 +2211,7 @@ void handleVillageCreated() {
     appState = APP_MESSAGING;
     inMessagingScreen = true;
     ui.setState(STATE_MESSAGING);
+    markVisibleMessagesAsRead();
     ui.update();
     smartDelay(300);
     return;
@@ -2323,6 +2335,7 @@ void handleInviteCodeDisplay() {
     appState = APP_MESSAGING;
     ui.setState(STATE_MESSAGING);
     inMessagingScreen = true;
+    markVisibleMessagesAsRead();
     lastMessagingActivity = millis();
     ui.update();
     smartDelay(300);
@@ -2673,9 +2686,10 @@ void handleJoinUsernameInput() {
       ui.setCurrentUsername(currentName);
       ui.setInputText("");
       keyboard.clearInput();
-      ui.update();
       inMessagingScreen = true;
       lastMessagingActivity = millis();
+      markVisibleMessagesAsRead();
+      ui.update();
       
       pendingInvite.received = false;  // Clear invite flag
     }
@@ -2843,6 +2857,7 @@ void handleMessageCompose() {
     appState = APP_MESSAGING;
     ui.setCurrentUsername(village.getUsername());  // Set username for message display
     ui.setState(STATE_MESSAGING);
+    markVisibleMessagesAsRead();
     ui.setInputText("");
     ui.update();
     smartDelay(300);
@@ -2911,6 +2926,7 @@ void handleMessageCompose() {
       appState = APP_MESSAGING;
       ui.setCurrentUsername(village.getUsername());  // Set username for message display
       ui.setState(STATE_MESSAGING);
+      markVisibleMessagesAsRead();
       ui.update();
     }
     smartDelay(300);
