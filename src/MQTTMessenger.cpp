@@ -275,6 +275,16 @@ void MQTTMessenger::cleanupSeenMessages() {
         Serial.println("[MQTT] Clearing old seen message IDs (" + String(seenMessageIds.size()) + " entries)");
         seenMessageIds.clear();
     }
+    
+    // Clean up processed ACKs/receipts maps
+    if (processedAcks.size() > 100) {
+        Serial.println("[MQTT] Clearing old processed ACKs (" + String(processedAcks.size()) + " entries)");
+        processedAcks.clear();
+    }
+    if (processedReadReceipts.size() > 100) {
+        Serial.println("[MQTT] Clearing old processed read receipts (" + String(processedReadReceipts.size()) + " entries)");
+        processedReadReceipts.clear();
+    }
 }
 
 // ESP-MQTT unified event handler
@@ -511,6 +521,16 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
     
     // Handle ACK messages
     if (msg.type == MSG_ACK && msg.target == myMacStr) {
+        // Check if we've already processed an ACK for this original message
+        auto it = processedAcks.find(msg.content);
+        if (it != processedAcks.end()) {
+            Serial.println("[MQTT] Duplicate ACK for message " + msg.content + ", ignoring (already processed ACK " + it->second + ")");
+            return;
+        }
+        
+        // Track this ACK to prevent duplicates
+        processedAcks[msg.content] = msg.messageId;
+        
         Serial.println("[MQTT] Received ACK for message: " + msg.content);
         if (onMessageAcked) {
             onMessageAcked(msg.content, msg.senderMAC);
@@ -520,6 +540,16 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
     
     // Handle read receipts
     if (msg.type == MSG_READ_RECEIPT && msg.target == myMacStr) {
+        // Check if we've already processed a read receipt for this original message
+        auto it = processedReadReceipts.find(msg.content);
+        if (it != processedReadReceipts.end()) {
+            Serial.println("[MQTT] Duplicate read receipt for message " + msg.content + ", ignoring (already processed receipt " + it->second + ")");
+            return;
+        }
+        
+        // Track this receipt to prevent duplicates
+        processedReadReceipts[msg.content] = msg.messageId;
+        
         Serial.println("[MQTT] Received read receipt for message: " + msg.content);
         if (onMessageRead) {
             onMessageRead(msg.content, msg.senderMAC);

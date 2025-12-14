@@ -56,6 +56,8 @@ private:
     
     // Duplicate detection
     std::set<String> seenMessageIds;
+    std::map<String, String> processedReadReceipts;  // originalMessageId -> receiptId (track which messages we've receipted)
+    std::map<String, String> processedAcks;          // originalMessageId -> ackId (track which messages we've acked)
     unsigned long lastSeenCleanup;
     
     // Sync phase tracking for progressive background sync
