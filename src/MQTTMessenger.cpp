@@ -944,8 +944,9 @@ bool MQTTMessenger::sendSyncResponse(const String& targetMAC, const std::vector<
             msgObj["content"] = phaseMessages[j].content;
             msgObj["timestamp"] = phaseMessages[j].timestamp;
             msgObj["messageId"] = phaseMessages[j].messageId;
-            msgObj["received"] = phaseMessages[j].received;
-            msgObj["status"] = (int)phaseMessages[j].status;
+            // FIXED: Don't send received/status - receiver determines these based on senderMAC
+            // msgObj["received"] = phaseMessages[j].received;
+            // msgObj["status"] = (int)phaseMessages[j].status;
             msgObj["villageId"] = phaseMessages[j].villageId;  // Include village ID for multi-village support
         }
         

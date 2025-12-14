@@ -37,6 +37,9 @@ The conversation menu currently shows "Leave Group" but should say "Leave Conver
 ### Update Conversation Naming Screen Text
 The conversation creation screen still references "village name". Update the prompt to "Pick a name for this conversation" to match the updated terminology throughout the app.
 
+### Refresh Conversation List When Returning From Conversation View
+When navigating back to "My Conversations" from a conversation view, the list should refresh/rebuild to show updated conversation names, message counts, or other changes that may have occurred. Currently the list may show stale data if changes were made while viewing the conversation.
+
 ## Low Priority
 
 ## Ideas / Future Consideration

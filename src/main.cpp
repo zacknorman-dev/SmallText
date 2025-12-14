@@ -460,7 +460,21 @@ void onMessageReceived(const Message& msg) {
       mqttMessenger.unsubscribeFromInvite(code);
       mqttMessenger.unpublishInvite(code);
     }
-    // Go directly to messaging
+    
+    // FIXED: Properly initialize messaging screen (same as normal entry path)
+    ui.setInputText("");  // Clear any text in input field
+    ui.setCurrentUsername(village.getUsername());  // Set username for message display
+    
+    // Load messages from storage
+    ui.clearMessages();
+    std::vector<Message> messages = village.loadMessages();
+    int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+    for (int i = startIndex; i < messages.size(); i++) {
+      ui.addMessage(messages[i]);
+    }
+    Serial.println("[Invite] Auto-transition: Loaded " + String(messages.size() - startIndex) + " of " + String(messages.size()) + " messages");
+    
+    // Transition to messaging
     appState = APP_MESSAGING;
     ui.setState(STATE_MESSAGING);
     inMessagingScreen = true;
@@ -2164,6 +2178,19 @@ void handleVillageCreated() {
   
   // Left arrow to go back
   if (keyboard.isLeftPressed()) {
+    // FIXED: Properly initialize messaging screen (clear old messages and load current conversation)
+    ui.setInputText("");  // Clear input field
+    ui.setCurrentUsername(village.getUsername());  // Set username
+    
+    // Clear old messages and load messages for current conversation
+    ui.clearMessages();
+    std::vector<Message> messages = village.loadMessages();
+    int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+    for (int i = startIndex; i < messages.size(); i++) {
+      ui.addMessage(messages[i]);
+    }
+    Serial.println("[VillageCreated] Back pressed: Loaded " + String(messages.size() - startIndex) + " of " + String(messages.size()) + " messages");
+    
     appState = APP_MESSAGING;
     inMessagingScreen = true;
     ui.setState(STATE_MESSAGING);
@@ -2316,8 +2343,10 @@ void handleInviteCodeDisplay() {
   }
   
   // Refresh display to update countdown timer every second
+  // FIXED: Check if we're still in invite display state before refreshing
+  // (auto-transition might have changed appState during message callback)
   static unsigned long lastRefresh = 0;
-  if (millis() - lastRefresh > 1000) {
+  if (appState == APP_INVITE_CODE_DISPLAY && millis() - lastRefresh > 1000) {
     ui.updatePartial();
     lastRefresh = millis();
   }
@@ -2598,10 +2627,9 @@ void handleJoinUsernameInput() {
       mqttMessenger.sendSystemMessage(announcement, "SmolTxt");
       logger.info("User joined: " + currentName);
       
-      // Request message sync to get creator's join message and any other history
-      if (mqttMessenger.isConnected()) {
-        mqttMessenger.requestSync(0);  // Request all messages from the beginning
-      }
+      // FIXED: Don't request sync here - messages will arrive naturally via MQTT
+      // Requesting sync here causes duplicates because we load from storage below,
+      // then sync adds the same messages again when the response arrives
       
       // Clear old messages and load messages for this conversation
       ui.clearMessages();
