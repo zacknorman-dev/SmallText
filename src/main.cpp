@@ -606,7 +606,6 @@ void onMessageReceived(const Message& msg) {
     if (shouldUpdateUI) {
       ui.addMessage(msg);
       Serial.println("[Message] Added to UI. Total messages in history: " + String(ui.getMessageCount()));
-      
       // Play ringtone if: real-time message AND not viewing this conversation AND ringtone enabled
       bool isRealTime = (syncPhase == 0);
       bool notViewingConversation = !(appState == APP_MESSAGING && inMessagingScreen);
@@ -615,6 +614,11 @@ void onMessageReceived(const Message& msg) {
       }
     } else {
       Serial.println("[Message] Silently cached (not added to UI)");
+      // NEW: If this is a new message (even from sync), and we're in the messaging screen, add to UI and reset scroll
+      if (isNewMessage && appState == APP_MESSAGING && inMessagingScreen) {
+        ui.addMessage(msg);
+        Serial.println("[Message] [Sync] Added to UI due to active messaging screen. Total messages in history: " + String(ui.getMessageCount()));
+      }
     }
     
     // For incoming messages (not our own), ensure status is persisted as MSG_RECEIVED (status 2)
@@ -1608,7 +1612,7 @@ void handleVillageMenu() {
     appState = APP_MAIN_MENU;
     ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
-    ui.updateClean();  // Clean transition
+    ui.updateClean();
     smartDelay(300);
     return;
   }
@@ -1874,7 +1878,7 @@ void handleVillageJoinName() {
   // Handle enter - save village name and join
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     String villageName = ui.getInputText();
-    if (villageName.length() > 0) {
+       if (villageName.length() > 0) {
       tempVillageName = villageName;
       
       // DON'T create village here - just store the name
@@ -3023,7 +3027,7 @@ void handleSettingsMenu() {
       appState = APP_OTA_CHECKING;
       ui.setState(STATE_OTA_CHECK);
       ui.setInputText("Checking...\nCurrent: " + String(FIRMWARE_VERSION));
-      ui.updateFull();
+      ui.update();
       
       // Perform check (blocking)
       if (otaUpdater.checkForUpdate()) {
@@ -3117,6 +3121,7 @@ void handleWiFiSetupMenu() {
     return;
   }
   
+  // Right arrow to open submenu
   if (keyboard.isRightPressed()) {
     int selection = ui.getMenuSelection();
     int savedCount = wifiManager.getSavedNetworkCount();
