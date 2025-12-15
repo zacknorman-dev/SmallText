@@ -1507,17 +1507,6 @@ int UI::getMessageCount() const {
     return messageHistory.size();
 }
 
-void UI::updateMessageStatus(const String& messageId, MessageStatus newStatus) {
-    for (Message& msg : messageHistory) {
-        if (msg.messageId == messageId) {
-            msg.status = newStatus;
-            Serial.println("[UI] Updated message " + messageId + " to status " + String((int)newStatus));
-            return;
-        }
-    }
-    Serial.println("[UI] Message not found: " + messageId);
-}
-
 // Member list
 void UI::setMemberList(const std::vector<String>& members) {
     memberList = members;

@@ -47,8 +47,6 @@ MQTTMessenger::MQTTMessenger() {
     currentUsername = "";
     myMAC = ESP.getEfuseMac();
     onMessageReceived = nullptr;
-    onMessageAcked = nullptr;
-    onMessageRead = nullptr;
     onCommandReceived = nullptr;
     onSyncRequest = nullptr;
     onInviteReceived = nullptr;
@@ -193,13 +191,7 @@ void MQTTMessenger::setMessageCallback(void (*callback)(const Message& msg)) {
     onMessageReceived = callback;
 }
 
-void MQTTMessenger::setAckCallback(void (*callback)(const String& messageId, const String& fromMAC)) {
-    onMessageAcked = callback;
-}
 
-void MQTTMessenger::setReadCallback(void (*callback)(const String& messageId, const String& fromMAC)) {
-    onMessageRead = callback;
-}
 
 void MQTTMessenger::setCommandCallback(void (*callback)(const String& command)) {
     onCommandReceived = callback;
@@ -276,15 +268,7 @@ void MQTTMessenger::cleanupSeenMessages() {
         seenMessageIds.clear();
     }
     
-    // Clean up processed ACKs/receipts maps
-    if (processedAcks.size() > 100) {
-        Serial.println("[MQTT] Clearing old processed ACKs (" + String(processedAcks.size()) + " entries)");
-        processedAcks.clear();
-    }
-    if (processedReadReceipts.size() > 100) {
-        Serial.println("[MQTT] Clearing old processed read receipts (" + String(processedReadReceipts.size()) + " entries)");
-        processedReadReceipts.clear();
-    }
+
 }
 
 // ESP-MQTT unified event handler
@@ -534,89 +518,15 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
     String myMacStr = String(myMAC, HEX);
     myMacStr.toLowerCase();
     
-    // Handle ACK messages
-    if (msg.type == MSG_ACK && msg.target == myMacStr) {
-        // Check if we've already processed an ACK for this original message
-        auto it = processedAcks.find(msg.content);
-        if (it != processedAcks.end()) {
-            Serial.println("[MQTT] Duplicate ACK for message " + msg.content + ", ignoring (already processed ACK " + it->second + ")");
+
+            if (onMessageRead) {
+                onMessageRead(msg.content, msg.senderMAC);
+            }
             return;
         }
-        
-        // Track this ACK to prevent duplicates
-        processedAcks[msg.content] = msg.messageId;
-        
-        Serial.println("[MQTT] Received ACK for message: " + msg.content);
-        if (onMessageAcked) {
-            onMessageAcked(msg.content, msg.senderMAC);
-        }
-        return;
-    }
-    
-    // Handle read receipts
-    if (msg.type == MSG_READ_RECEIPT && msg.target == myMacStr) {
-        // Check if we've already processed a read receipt for this original message
-        auto it = processedReadReceipts.find(msg.content);
-        if (it != processedReadReceipts.end()) {
-            Serial.println("[MQTT] Duplicate read receipt for message " + msg.content + ", ignoring (already processed receipt " + it->second + ")");
-            return;
-        }
-        
-        // Track this receipt to prevent duplicates
-        processedReadReceipts[msg.content] = msg.messageId;
-        
-        Serial.println("[MQTT] Received read receipt for message: " + msg.content);
-        if (onMessageRead) {
-            onMessageRead(msg.content, msg.senderMAC);
-        }
-        return;
-    }
     
     // Handle regular messages (SHOUT or WHISPER)
-    if (msg.type == MSG_SHOUT || (msg.type == MSG_WHISPER && msg.target == myMacStr)) {
-        // Don't process our own messages
-        if (msg.senderMAC == myMacStr) {
-            Serial.println("[MQTT] Ignoring our own message");
-            return;
-        }
-        
-        // Send ACK
-        Serial.println("[MQTT] Sending ACK for message: " + msg.messageId + " to " + msg.senderMAC);
-        sendAck(msg.messageId, msg.senderMAC, msg.villageId);
-        
-        // Deliver message to app
-        if (onMessageReceived) {
-            extern unsigned long getCurrentTime();
-            
-            // Find which village this message is for
-            VillageSubscription* msgVillage = findVillageSubscription(msg.villageId);
-            
-            Message m;
-            m.sender = msg.senderName;
-            m.senderMAC = msg.senderMAC;
-            m.content = msg.content;
-            m.timestamp = getCurrentTime();
-            m.villageId = msg.villageId;  // Pass village ID for multi-village support
-            
-            // Determine if this is a received message or our own sent message
-            // Compare sender MAC address with our MAC address (NOT username!)
-            if (msg.senderMAC == myMacStr) {
-                // This is OUR message (synced back from another device)
-                m.received = false;
-                m.status = MSG_SENT;  // Our sent messages start as MSG_SENT
-                Serial.println("[MQTT] Received our own sent message: " + msg.messageId);
-            } else {
-                // This is someone else's message
-                m.received = true;
-                m.status = MSG_RECEIVED;
-                Serial.println("[MQTT] Received message from " + msg.senderName);
-            }
-            
-            m.messageId = msg.messageId;
-            onMessageReceived(m);
-        }
-    }
-}
+
 
 ParsedMessage MQTTMessenger::parseMessage(const String& decrypted) {
     ParsedMessage msg;

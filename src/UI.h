@@ -172,7 +172,7 @@ public:
     void scrollMessagesDown();
     void resetMessageScroll();
     int getMessageCount() const;
-    void updateMessageStatus(const String& messageId, MessageStatus newStatus);
+
     
     // Member list
     void setMemberList(const std::vector<String>& members);

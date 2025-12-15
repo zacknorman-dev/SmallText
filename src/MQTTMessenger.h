@@ -16,7 +16,7 @@
 #define MQTT_PASSWORD "QdgMc7VnQ2D8dhTV"
 
 // Topic structure: smoltxt/{villageId}/{messageType}
-// messageType: shout, whisper/{recipientMAC}, ack/{targetMAC}, read/{targetMAC}
+// messageType: shout, whisper/{recipientMAC}
 
 // Village subscription info for multi-village support
 struct VillageSubscription {
@@ -42,7 +42,6 @@ private:
     
     // Callbacks (reuse from LoRaMessenger)
     void (*onMessageReceived)(const Message& msg);
-    void (*onMessageAcked)(const String& messageId, const String& fromMAC);
     void (*onMessageRead)(const String& messageId, const String& fromMAC);
     void (*onCommandReceived)(const String& command);
     void (*onSyncRequest)(const String& requestorMAC, unsigned long timestamp);  // Sync request from peer
@@ -56,8 +55,6 @@ private:
     
     // Duplicate detection
     std::set<String> seenMessageIds;
-    std::map<String, String> processedReadReceipts;  // originalMessageId -> receiptId (track which messages we've receipted)
-    std::map<String, String> processedAcks;          // originalMessageId -> ackId (track which messages we've acked)
     unsigned long lastSeenCleanup;
     
     // Sync phase tracking for progressive background sync
@@ -100,8 +97,7 @@ public:
     int getSubscribedVillageCount() const { return subscribedVillages.size(); }
     
     void setMessageCallback(void (*callback)(const Message& msg));
-    void setAckCallback(void (*callback)(const String& messageId, const String& fromMAC));
-    void setReadCallback(void (*callback)(const String& messageId, const String& fromMAC));
+
     void setCommandCallback(void (*callback)(const String& command));
     void setSyncRequestCallback(void (*callback)(const String& requestorMAC, unsigned long timestamp));
     void setVillageNameCallback(void (*callback)(const String& villageId, const String& villageName));

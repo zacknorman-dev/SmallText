@@ -59,6 +59,12 @@
 			"label": "Build v0.56.10",
 			"type": "shell",
 			"command": "C:\\Users\\zackn\\.platformio\\penv\\Scripts\\platformio.exe run --target upload"
+		},
+		{
+			"label": "PlatformIO: Build",
+			"type": "shell",
+			"command": "platformio run",
+			"group": "build"
 		}
 	]
 }

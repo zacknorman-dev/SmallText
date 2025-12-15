@@ -299,85 +299,12 @@ bool isUserTyping() {
   return (millis() - lastKeystroke) < TYPING_TIMEOUT;
 }
 
-// Read receipt queue for async processing
-struct ReadReceiptQueueItem {
-  String messageId;
-  String recipientMAC;
-};
-std::vector<ReadReceiptQueueItem> readReceiptQueue;
 const int MAX_MESSAGES_TO_LOAD = 30;  // Only load most recent 30 messages
-const int MAX_READ_RECEIPTS = 10;  // Only send read receipts for last 10 unread messages
-unsigned long lastTransmission = 0;  // Track when last transmitted (for timing read receipts)
 unsigned long lastOTACheck = 0;  // Track automatic OTA update checks
 unsigned long lastPeriodicSync = 0;  // Track periodic background sync
 const unsigned long PERIODIC_SYNC_INTERVAL = 30000;  // Sync every 30 seconds when active
 
-// Helper function: Send ACKs for received messages that haven't been acknowledged yet
-// This catches messages that were received via sync while offline
-void sendPendingAcks() {
-  std::vector<Message> messages = village.loadMessages();
-  int acksSent = 0;
-  
-  // Look for received messages (from others) that need ACKs
-  // We check all messages, not just visible ones, to ensure offline messages get ACK'd
-  for (const Message& msg : messages) {
-    // Only ACK messages we received (not our own) that are in RECEIVED state
-    // Status MSG_RECEIVED (2) means we got it but haven't necessarily viewed it yet
-    if (msg.received && !msg.messageId.isEmpty() && !msg.senderMAC.isEmpty() && msg.senderMAC != "system") {
-      // Send ACK to let sender know we have the message
-      mqttMessenger.sendAck(msg.messageId, msg.senderMAC, String(village.getVillageId()));
-      acksSent++;
-    }
-  }
-  
-  if (acksSent > 0) {
-    Serial.println("[App] Sent " + String(acksSent) + " pending ACKs for sync'd messages");
-  }
-}
 
-// Helper function: Mark visible messages as read when entering messaging screen
-void markVisibleMessagesAsRead() {
-  // First, send any pending ACKs for messages received while offline
-  sendPendingAcks();
-  
-  std::vector<Message> messages = village.loadMessages();
-  int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
-  
-  // Clear queue and prepare batch list
-  readReceiptQueue.clear();
-  std::vector<String> messagesToMarkRead;
-  int unreadCount = 0;
-  
-  // Process visible messages
-  for (int i = startIndex; i < messages.size(); i++) {
-    const Message& msg = messages[i];
-    Serial.println("[DEBUG] Checking message: id=" + msg.messageId + ", status=" + String((int)msg.status) + ", received=" + String(msg.received ? "true" : "false"));
-    // Only process received messages that aren't already read
-    if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
-      Serial.println("[DEBUG] Marking as read: id=" + msg.messageId);
-      // Mark as read in UI
-      ui.updateMessageStatus(msg.messageId, MSG_READ);
-      
-      // Add to batch list for storage update
-      messagesToMarkRead.push_back(msg.messageId);
-      
-      // Queue read receipt to sender (but not for system messages)
-      if (!msg.senderMAC.isEmpty() && msg.senderMAC != "system") {
-        ReadReceiptQueueItem item;
-        item.messageId = msg.messageId;
-        item.recipientMAC = msg.senderMAC;
-        readReceiptQueue.push_back(item);
-        unreadCount++;
-      }
-    }
-  }
-  
-  // Batch update all messages at once
-  if (!messagesToMarkRead.empty()) {
-    village.batchUpdateMessageStatus(messagesToMarkRead, MSG_READ);
-    Serial.println("[App] Marked " + String(unreadCount) + " unread messages as read on screen entry");
-  }
-}
 
 // Power management - use single key long-press since CardKB can't detect simultaneous keys
 unsigned long shutdownHoldStart = 0;
@@ -558,7 +485,7 @@ void onMessageReceived(const Message& msg) {
     ui.setState(STATE_MESSAGING);
     inMessagingScreen = true;
     lastMessagingActivity = millis();
-    markVisibleMessagesAsRead();
+    // ...removed markVisibleMessagesAsRead();
     ui.update();
   }
   
@@ -621,12 +548,7 @@ void onMessageReceived(const Message& msg) {
       }
     }
     
-    // For incoming messages (not our own), ensure status is persisted as MSG_RECEIVED (status 2)
-    // This happens for all received messages, regardless of which screen we're on
-    if (!isSyncing && msg.received && msg.status == MSG_RECEIVED) {
-      village.updateMessageStatus(msg.messageId, MSG_RECEIVED);
-      Serial.println("[Message] Marked incoming message as received (status 2)");
-    }
+    // ...removed ACK/read receipt status handling
   } else {
     // Message is for a different village - save to messages.dat without updating UI
     Serial.println("[Message] Message for different village (" + msg.villageId + ") - saving to storage only");
@@ -641,28 +563,7 @@ void onMessageReceived(const Message& msg) {
   
   // Only mark as read if this is a NEW message (not a synced historical message)
   // AND if we're actively viewing the messaging screen AND it's for the current village
-  // This upgrades the message from MSG_RECEIVED (status 2) to MSG_READ (status 3)
-  if (!isSyncing && msg.received && appState == APP_MESSAGING && inMessagingScreen && isForCurrentVillage) {
-    Serial.println("[App] Already in messaging screen, marking NEW message as read (status 3)");
-    
-    // Mark message as read locally
-    ui.updateMessageStatus(msg.messageId, MSG_READ);
-    village.updateMessageStatus(msg.messageId, MSG_READ);
-    
-    // Mark that we just transmitted (the ACK)
-    lastTransmission = millis();
-    
-    // Queue read receipt for background sending (but not for system messages)
-    if (!msg.senderMAC.isEmpty() && msg.senderMAC != "system") {
-      ReadReceiptQueueItem item;
-      item.messageId = msg.messageId;
-      item.recipientMAC = msg.senderMAC;
-      readReceiptQueue.push_back(item);
-      Serial.println("[App] Queued immediate read receipt for: " + msg.messageId);
-    }
-    
-    smartDelay(100);  // Brief delay after transmission
-  }
+  // ...removed MSG_RECEIVED/MSG_READ status upgrade block
   
   // Always update display when in messaging screen (even if not marked as read yet)
   if (appState == APP_MESSAGING && inMessagingScreen) {
@@ -670,37 +571,7 @@ void onMessageReceived(const Message& msg) {
   }
 }
 
-void onMessageAcked(const String& messageId, const String& fromMAC) {
-  Serial.println("[Message] ACK received for: " + messageId + " from " + fromMAC);
-  
-  // Update storage FIRST - this is the source of truth and always works
-  // IMPORTANT: Only update if current status is SENT (1). Don't downgrade from READ (3) to RECEIVED (2)
-  if (!isSyncing) {
-    village.updateMessageStatusIfLower(messageId, MSG_RECEIVED);  // Only upgrade, never downgrade
-  }
-  
-  // Update UI if viewing the messaging screen
-  if (appState == APP_MESSAGING) {
-    ui.updateMessageStatus(messageId, MSG_RECEIVED);
-    ui.updatePartial();
-  }
-}
 
-void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
-  Serial.println("[Message] Read receipt for: " + messageId + " from " + fromMAC);
-  
-  // Update storage FIRST - this is the source of truth and always works
-  // Read receipts always upgrade to READ status (this is the highest status)
-  if (!isSyncing) {
-    village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage (skip during sync)
-  }
-  
-  // Update UI if viewing the messaging screen
-  if (appState == APP_MESSAGING) {
-    ui.updateMessageStatus(messageId, MSG_READ);
-    ui.updatePartial();
-  }
-}
 
 void onCommandReceived(const String& command) {
   Serial.println("[Command] Received: " + command);
@@ -1024,8 +895,7 @@ void setup() {
         
         // Set up MQTT callbacks
         mqttMessenger.setMessageCallback(onMessageReceived);
-        mqttMessenger.setAckCallback(onMessageAcked);
-        mqttMessenger.setReadCallback(onMessageReadReceipt);
+        // ...removed setAckCallback/onMessageAcked and setReadCallback/onMessageReadReceipt
         mqttMessenger.setCommandCallback(onCommandReceived);
         mqttMessenger.setSyncRequestCallback(onSyncRequest);
         mqttMessenger.setVillageNameCallback(onVillageNameReceived);
@@ -1145,60 +1015,14 @@ void setup() {
     if (village.isInitialized()) {
       std::vector<Message> messages = village.loadMessages();
       for (const Message& msg : messages) {
-        if (msg.status != MSG_READ && msg.status != MSG_SEEN) {
+        // ...removed MSG_READ/MSG_SEEN status check
           unreadCount++;
         }
       }
     }
-    
-    if (unreadCount > 0) {
-      // Show message notification screen
-      Serial.println("[Power] Showing new message notification");
-      ui.setState(STATE_SPLASH);  // Use splash state for simple text display
-      String notificationText = "SmolTxt Napping\n\n";
-      notificationText += "You have " + String(unreadCount) + " new message";
-      if (unreadCount > 1) notificationText += "s";
-      notificationText += "\n\nPress any key to view";
-      ui.setInputText(notificationText);
-      ui.updateClean();  // Show the notification
-      
-      int alertCount = min(unreadCount, 5);  // Max 5 ringtones
-      Serial.println("[Power] Playing " + String(alertCount) + " alerts");
-      for (int i = 0; i < alertCount; i++) {
-        playRingtoneSound(selectedRingtone);
-        smartDelay(1000);
-      }
-      
-      // Keep message visible for a few seconds before sleeping
-      Serial.println("[Power] Keeping notification visible");
-      smartDelay(3000);
-    } else {
-      Serial.println("[Power] No new messages - staying asleep");
-    }
-    
-    // Show napping screen before going back to sleep
-    Serial.println("[Power] Showing napping screen");
-    ui.showNappingScreen(battery.getVoltage(), wifiManager.isConnected());
-    smartDelay(1000);
-    
-    // Go back to sleep
-    Serial.println("[Power] Returning to nap mode");
-    powerMode = POWER_NAPPING;
-    enterDeepSleep();
-    // Never returns - device enters deep sleep
   }
-  
-  appState = APP_MAIN_MENU;
-  ui.setState(STATE_MAIN_HUB);
-  ui.resetMenuSelection();
-  Serial.println("[System] About to call ui.update() for village select...");
-  ui.updateClean();  // Clean transition to main menu
-  Serial.println("[System] Village select displayed");
-  
-  Serial.println("[System] Setup complete!");
-}
 
-void loop() {
+  void loop() {
   // Update logger (checks for serial connection, processes commands)
   logger.update();
   
@@ -1285,19 +1109,7 @@ void loop() {
     }
   }
   
-  // Process read receipt queue in background (send one per loop iteration)
-  static unsigned long lastReadReceiptSent = 0;
-  if (!readReceiptQueue.empty() && (millis() - lastTransmission > 150) && (millis() - lastReadReceiptSent > 150)) {
-    ReadReceiptQueueItem item = readReceiptQueue.front();
-    readReceiptQueue.erase(readReceiptQueue.begin());
-    
-    Serial.println("[App] Sending queued read receipt for: " + item.messageId);
-    mqttMessenger.sendReadReceipt(item.messageId, item.recipientMAC);
-    
-    lastReadReceiptSent = millis();
-    lastTransmission = millis();
-    lastActivityTime = millis();  // Reset activity timer on message send
-  }
+
   
   // Periodic background sync - request messages from all villages every 30 seconds
   // Skip if in APP_MESSAGING state (conversation list or viewing messages)
@@ -1664,8 +1476,7 @@ void handleVillageMenu() {
       }
       Serial.println("[App] Displaying last " + String(displayCount) + " of " + String(messages.size()) + " messages (paginated, consistent across devices)");
       
-      // Mark unread messages as read
-      markVisibleMessagesAsRead();
+      // ...removed markVisibleMessagesAsRead();
       
       ui.update();  // Always refresh to show any messages received
     } else if (selection == 1) {
@@ -1791,6 +1602,11 @@ void handleVillageCreate() {
 }
 
 void handleVillageJoinPassword() {
+  Serial.println("[DEBUG] Entering handleVillageJoinPassword");
+  if (&keyboard == nullptr || &ui == nullptr) {
+    Serial.println("[ERROR] Null pointer in handleVillageJoinPassword");
+    return;
+  }
   keyboard.update();
   
   // Left arrow to go back to main menu
@@ -1800,6 +1616,7 @@ void handleVillageJoinPassword() {
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
+    Serial.println("[DEBUG] Exiting handleVillageJoinPassword (left pressed)");
     return;
   }
   
@@ -1810,6 +1627,7 @@ void handleVillageJoinPassword() {
       ui.updatePartial();
     }
     smartDelay(150);
+    Serial.println("[DEBUG] Exiting handleVillageJoinPassword (backspace pressed)");
     return;
   }
   
@@ -1834,6 +1652,7 @@ void handleVillageJoinPassword() {
       ui.update();
     }
     smartDelay(300);
+    Serial.println("[DEBUG] Exiting handleVillageJoinPassword (enter/right pressed)");
     return;
   }
   
@@ -1850,9 +1669,15 @@ void handleVillageJoinPassword() {
     keyboard.clearInput();
     ui.updatePartial();
   }
+  Serial.println("[DEBUG] Exiting handleVillageJoinPassword (normal exit)");
 }
 
 void handleVillageJoinName() {
+  Serial.println("[DEBUG] Entering handleVillageJoinName");
+  if (&keyboard == nullptr || &ui == nullptr) {
+    Serial.println("[ERROR] Null pointer in handleVillageJoinName");
+    return;
+  }
   keyboard.update();
   
   // Left arrow to cancel and go back to passphrase
@@ -1862,6 +1687,7 @@ void handleVillageJoinName() {
     ui.setInputText(tempVillagePassword);  // Restore passphrase
     ui.update();
     smartDelay(300);
+    Serial.println("[DEBUG] Exiting handleVillageJoinName (left pressed)");
     return;
   }
   
@@ -1872,6 +1698,7 @@ void handleVillageJoinName() {
       ui.updatePartial();
     }
     smartDelay(150);
+    Serial.println("[DEBUG] Exiting handleVillageJoinName (backspace pressed)");
     return;
   }
   
@@ -1893,6 +1720,7 @@ void handleVillageJoinName() {
       ui.update();
     }
     smartDelay(300);
+    Serial.println("[DEBUG] Exiting handleVillageJoinName (enter/right pressed)");
     return;
   }
   
@@ -1909,6 +1737,7 @@ void handleVillageJoinName() {
     keyboard.clearInput();
     ui.updatePartial();
   }
+  Serial.println("[DEBUG] Exiting handleVillageJoinName (normal exit)");
 }
 
 void handlePasswordInput() {
@@ -2050,7 +1879,6 @@ void handleUsernameInput() {
         appState = APP_MESSAGING;
         ui.setState(STATE_MESSAGING);
         keyboard.clearInput();  // MOVED: Clear after state transition to prevent residual chars
-        markVisibleMessagesAsRead();
         ui.update();
         return;  // Exit early for joiners
       }
@@ -2190,7 +2018,6 @@ void handleUsernameInput() {
       Serial.println("[App] Displaying last " + String(displayCount) + " of " + String(messages.size()) + " messages (paginated, consistent across devices)");
       
       // Mark unread messages as read
-      markVisibleMessagesAsRead();
       
       ui.setInputText("");  // Clear input field before entering messaging
       ui.update();
@@ -2233,7 +2060,7 @@ void handleVillageCreated() {
     appState = APP_MESSAGING;
     inMessagingScreen = true;
     ui.setState(STATE_MESSAGING);
-    markVisibleMessagesAsRead();
+    // ...removed markVisibleMessagesAsRead();
     ui.update();
     smartDelay(300);
     return;
@@ -2357,7 +2184,6 @@ void handleInviteCodeDisplay() {
     appState = APP_MESSAGING;
     ui.setState(STATE_MESSAGING);
     inMessagingScreen = true;
-    markVisibleMessagesAsRead();
     lastMessagingActivity = millis();
     ui.update();
     smartDelay(300);
@@ -2394,6 +2220,11 @@ void handleInviteCodeDisplay() {
 }
 
 void handleJoinExplain() {
+  Serial.println("[DEBUG] Entering handleJoinExplain");
+  if (&keyboard == nullptr || &ui == nullptr) {
+    Serial.println("[ERROR] Null pointer in handleJoinExplain");
+    return;
+  }
   keyboard.update();
   
   // Left arrow to go back
@@ -2403,6 +2234,7 @@ void handleJoinExplain() {
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
+    Serial.println("[DEBUG] Exiting handleJoinExplain (left pressed)");
     return;
   }
   
@@ -2411,6 +2243,7 @@ void handleJoinExplain() {
     ui.menuUp();
     ui.updatePartial();
     smartDelay(150);
+    Serial.println("[DEBUG] Exiting handleJoinExplain (up pressed)");
     return;
   }
   
@@ -2418,6 +2251,7 @@ void handleJoinExplain() {
     ui.menuDown();
     ui.updatePartial();
     smartDelay(150);
+    Serial.println("[DEBUG] Exiting handleJoinExplain (down pressed)");
     return;
   }
   
@@ -2436,11 +2270,18 @@ void handleJoinExplain() {
       ui.update();
     }
     smartDelay(300);
+    Serial.println("[DEBUG] Exiting handleJoinExplain (enter/right pressed)");
     return;
   }
+  Serial.println("[DEBUG] Exiting handleJoinExplain (normal exit)");
 }
 
 void handleJoinCodeInput() {
+  Serial.println("[DEBUG] Entering handleJoinCodeInput");
+  if (&keyboard == nullptr || &ui == nullptr) {
+    Serial.println("[ERROR] Null pointer in handleJoinCodeInput");
+    return;
+  }
   keyboard.update();
   
   // Left arrow to go back to main menu
@@ -2450,6 +2291,7 @@ void handleJoinCodeInput() {
     ui.resetMenuSelection();
     ui.update();
     smartDelay(300);
+    Serial.println("[DEBUG] Exiting handleJoinCodeInput (left pressed)");
     return;
   }
   
@@ -2460,6 +2302,7 @@ void handleJoinCodeInput() {
       ui.updatePartial();
     }
     smartDelay(150);
+    Serial.println("[DEBUG] Exiting handleJoinCodeInput (backspace pressed)");
     return;
   }
   
@@ -2488,13 +2331,16 @@ void handleJoinCodeInput() {
         keyboard.clearInput();
         appState = APP_MAIN_MENU;
         ui.setState(STATE_MAIN_HUB);
+        Serial.println("[DEBUG] Exiting handleJoinCodeInput (MQTT not connected)");
         ui.resetMenuSelection();
         ui.update();
         smartDelay(300);
         return;
       }
+    Serial.println("[DEBUG] Exiting handleJoinCodeInput (enter/right pressed)");
       
       // Subscribe to invite topic
+  Serial.println("[DEBUG] Exiting handleJoinCodeInput (normal exit)");
       if (mqttMessenger.subscribeToInvite(code)) {
         Serial.println("[Invite] Subscribed, waiting for invite data...");
         
@@ -2710,7 +2556,7 @@ void handleJoinUsernameInput() {
       keyboard.clearInput();
       inMessagingScreen = true;
       lastMessagingActivity = millis();
-      markVisibleMessagesAsRead();
+      // ...removed markVisibleMessagesAsRead();
       ui.update();
       
       pendingInvite.received = false;  // Clear invite flag
@@ -2781,6 +2627,11 @@ void handleMessaging() {
   
   // Arrow keys for scrolling message history
   if (keyboard.isUpPressed()) {
+    Serial.println("[DEBUG] Entering handleJoinUsernameInput");
+    if (&keyboard == nullptr || &ui == nullptr) {
+      Serial.println("[ERROR] Null pointer in handleJoinUsernameInput");
+      return;
+    }
     ui.scrollMessagesUp();
     ui.updatePartial();
     lastMessagingActivity = millis();  // Update timestamp after scrolling
@@ -2792,6 +2643,7 @@ void handleMessaging() {
     lastMessagingActivity = millis();  // Update timestamp after scrolling
     lastKeyPress = millis();
     return;
+      Serial.println("[DEBUG] Exiting handleJoinUsernameInput (left pressed)");
   }
   
   // Handle backspace
@@ -2830,8 +2682,10 @@ void handleMessaging() {
       Message localMsg;
       localMsg.sender = village.getUsername();
       char myMAC[13];
+      Serial.println("[DEBUG] Exiting handleJoinUsernameInput (enter pressed)");
       sprintf(myMAC, "%012llx", ESP.getEfuseMac());
       localMsg.senderMAC = String(myMAC);
+    Serial.println("[DEBUG] Exiting handleJoinUsernameInput (normal exit)");
       localMsg.content = messageText;
       localMsg.timestamp = getCurrentTime();
       localMsg.received = false;
@@ -2879,7 +2733,7 @@ void handleMessageCompose() {
     appState = APP_MESSAGING;
     ui.setCurrentUsername(village.getUsername());  // Set username for message display
     ui.setState(STATE_MESSAGING);
-    markVisibleMessagesAsRead();
+    // ...removed markVisibleMessagesAsRead();
     ui.setInputText("");
     ui.update();
     smartDelay(300);
@@ -2948,7 +2802,7 @@ void handleMessageCompose() {
       appState = APP_MESSAGING;
       ui.setCurrentUsername(village.getUsername());  // Set username for message display
       ui.setState(STATE_MESSAGING);
-      markVisibleMessagesAsRead();
+      // ...removed markVisibleMessagesAsRead();
       ui.update();
     }
     smartDelay(300);
