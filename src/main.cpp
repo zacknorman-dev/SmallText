@@ -33,6 +33,9 @@
 // Keyboard interrupt pin (same as I2C SDA - CardKB pulls LOW when key pressed)
 #define KEYBOARD_INT_PIN 39
 
+// USER button for wake from sleep
+#define USER_BUTTON_PIN 21
+
 // Global objects
 Village village;
 Encryption encryption;
@@ -463,10 +466,12 @@ void enterDeepSleep() {
     esp_sleep_enable_timer_wakeup(NAP_WAKE_INTERVAL * 1000ULL);  // Convert ms to microseconds
     Serial.println("[Power] Timer wake enabled: 15 minutes");
     
-    // Wake on keyboard interrupt (GPIO 39 = I2C SDA / CardKB INT)
-    // CardKB pulls line LOW when any key is pressed
-    esp_sleep_enable_ext0_wakeup((gpio_num_t)KEYBOARD_INT_PIN, 0);
-    Serial.println("[Power] Keyboard wake enabled: GPIO 39 (any key press)");
+    // Wake on multiple GPIO pins using ext1 (supports multiple pins)
+    // GPIO 39 = CardKB INT (pulls LOW when key pressed)
+    // GPIO 21 = USER button (pulls LOW when pressed)
+    uint64_t ext1_mask = (1ULL << KEYBOARD_INT_PIN) | (1ULL << USER_BUTTON_PIN);
+    esp_sleep_enable_ext1_wakeup(ext1_mask, ESP_EXT1_WAKEUP_ANY_LOW);
+    Serial.println("[Power] Wake enabled: GPIO 39 (CardKB) + GPIO 21 (USER button)");
   }
   
   Serial.println("[Power] Entering deep sleep now");
@@ -895,6 +900,10 @@ void setup() {
     Serial.println("[Power] Woke from nap - reason: " + String(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER ? "TIMER" : "KEY_PRESS"));
   }
   
+  // Configure USER button for wake from sleep
+  pinMode(USER_BUTTON_PIN, INPUT_PULLUP);
+  Serial.println("[Button] USER button configured on GPIO 21");
+  
   // Initialize buzzer
   // First, explicitly detach GPIO 9 (old buzzer pin) to prevent dual activation
   ledcDetachPin(9);
@@ -1245,15 +1254,17 @@ void loop() {
   battery.update();
   ui.setBatteryStatus(battery.getVoltage(), battery.getPercent());
   
-  // Check for shutdown using Tab key held for 3 seconds
+  // Check for shutdown using Tab key OR USER button held for 3 seconds
   // Tab key is 0x09 - simple and rarely used in normal operation
+  // USER button is GPIO 21 - physical button for sleep/wake
   bool tabCurrentlyHeld = keyboard.isTabHeld();
+  bool userButtonHeld = (digitalRead(USER_BUTTON_PIN) == LOW);  // Active LOW with pullup
   
-  if (!isShuttingDown && tabCurrentlyHeld) {
+  if (!isShuttingDown && (tabCurrentlyHeld || userButtonHeld)) {
     if (shutdownHoldStart == 0) {
       shutdownHoldStart = millis();
-      lastShutdownKey = 'T';  // Mark as Tab key
-      Serial.println("[Power] Tab key hold detected - hold for 3s to sleep");
+      lastShutdownKey = userButtonHeld ? 'U' : 'T';  // Mark which input triggered
+      Serial.println(String("[Power] ") + (userButtonHeld ? "USER button" : "Tab key") + " hold detected - hold for 3s to sleep");
     }
     
     unsigned long holdDuration = millis() - shutdownHoldStart;
@@ -1277,9 +1288,9 @@ void loop() {
       lastShutdownKey = '1';  // Mark we've shown 1s message
     }
   } else {
-    // Tab key released - reset timer only if not already shutting down
+    // Key/button released - reset timer only if not already shutting down
     if (shutdownHoldStart != 0 && !isShuttingDown) {
-      Serial.println("[Power] Shutdown cancelled - Tab key released (tabHeld=" + String(tabCurrentlyHeld) + ")");
+      Serial.println("[Power] Shutdown cancelled - input released");
       shutdownHoldStart = 0;
       lastShutdownKey = 0;
     }

@@ -1689,9 +1689,9 @@ void UI::drawSleeping() {
     
     display->setFont(&FreeSans9pt7b);
     display->setCursor(10, 70);
-    display->print("Hold Tab 3s to sleep");
+    display->print("Hold USER btn 3s: sleep");
     display->setCursor(10, 95);
-    display->print("Press reset to wake");
+    display->print("Press USER btn: wake");
 }
 
 void UI::drawConversationCreated() {
