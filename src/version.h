@@ -1,6 +1,6 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define BUILD_NUMBER "v0.56.35"
+#define BUILD_NUMBER "v0.56.36"
 
 #endif // VERSION_H

@@ -219,7 +219,7 @@ void MQTTMessenger::setUsernameCallback(void (*callback)(const String& villageId
     onUsernameReceived = callback;
 }
 
-void MQTTMessenger::setInviteCallback(void (*callback)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType)) {
+void MQTTMessenger::setInviteCallback(void (*callback)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType, const String& creatorUsername)) {
     onInviteReceived = callback;
 }
 
@@ -452,8 +452,12 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
         String inviteVillageName = doc["villageName"] | "";
         String encodedKey = doc["key"] | "";
         int conversationType = doc["type"] | 0;  // Default to 0 (GROUP) if not present
+        String creatorUsername = doc["creatorUsername"] | "";  // Get creator's username
         
         Serial.println("[MQTT] Parsed - Name: " + inviteVillageName + ", ID: " + inviteVillageId + ", Type: " + String(conversationType));
+        if (!creatorUsername.isEmpty()) {
+            Serial.println("[MQTT] Creator username: " + creatorUsername);
+        }
         Serial.println("[MQTT] Encoded key length: " + String(encodedKey.length()));
         
         // Decode the encryption key from base64
@@ -468,7 +472,7 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
             
             if (onInviteReceived) {
                 Serial.println("[MQTT] Calling onInviteReceived callback");
-                onInviteReceived(inviteVillageId, inviteVillageName, decodedKey, 32, conversationType);
+                onInviteReceived(inviteVillageId, inviteVillageName, decodedKey, 32, conversationType, creatorUsername);
             } else {
                 Serial.println("[MQTT] WARNING: No onInviteReceived callback set!");
             }
@@ -1371,6 +1375,7 @@ bool MQTTMessenger::publishInvite(const String& inviteCode, const String& villag
     encodedKey[encodedLen] = '\0';
     doc["key"] = String(encodedKey);
     doc["type"] = conversationType;  // Add conversation type from parameter
+    doc["creatorUsername"] = currentUsername;  // Include creator's username
     
     String payload;
     serializeJson(doc, payload);

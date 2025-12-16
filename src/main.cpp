@@ -568,8 +568,16 @@ void onMessageReceived(const Message& msg) {
     
     // Extract username from "Username joined the conversation" message
     String joinedUsername = msg.content;
-    joinedUsername.replace(" joined the conversation", "");
+    int joinIndex = joinedUsername.indexOf(" joined the conversation");
+    if (joinIndex > 0) {
+      joinedUsername = joinedUsername.substring(0, joinIndex);
+    }
     joinedUsername.trim();  // Remove any extra whitespace
+    
+    // Validate we have a reasonable username (not empty, not too long)
+    if (joinedUsername.isEmpty() || joinedUsername.length() > 50) {
+      joinedUsername = "Someone";  // Fallback
+    }
     
     // Show success message with auto-transition  
     ui.showMessage("Success!", joinedUsername + " joined!\n\nLoading messages...", 1500);
@@ -886,10 +894,11 @@ struct PendingInvite {
   String villageName;
   uint8_t encryptionKey[32];
   int conversationType;  // 0=GROUP, 1=INDIVIDUAL
+  String creatorUsername;  // Creator's username for individual conversations
   bool received = false;
 } pendingInvite;
 
-void onInviteReceived(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType) {
+void onInviteReceived(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType, const String& creatorUsername) {
   Serial.println("[Invite] Received invite data: " + villageName + " (" + villageId + ") type=" + String(conversationType));
   logger.info("Invite received: " + villageName);
   
@@ -898,6 +907,7 @@ void onInviteReceived(const String& villageId, const String& villageName, const 
   pendingInvite.villageName = villageName;
   memcpy(pendingInvite.encryptionKey, encryptedKey, 32);
   pendingInvite.conversationType = conversationType;
+  pendingInvite.creatorUsername = creatorUsername;
   pendingInvite.received = true;
 }
 
@@ -975,8 +985,12 @@ void onUsernameReceived(const String& villageId, const String& username) {
   if (currentName == "Chat" || currentName.isEmpty() || currentName == tempVillage.getUsername()) {
     Serial.println("[Individual] Updating conversation name from '" + currentName + "' to '" + username + "'");
     tempVillage.setVillageName(username);
-    if (tempVillage.saveToSlot(slot)) {
+    
+    // Save to persistent storage
+    bool saved = tempVillage.saveToSlot(slot);
+    if (saved) {
       Serial.println("[Individual] ✓ Updated conversation name in slot " + String(slot) + " to: " + username);
+      logger.info("Individual conv name saved: slot=" + String(slot) + " name=" + username);
       
       // If this is the current village, update UI
       if (slot == currentVillageSlot) {
@@ -987,6 +1001,7 @@ void onUsernameReceived(const String& villageId, const String& username) {
       }
     } else {
       Serial.println("[Individual] ERROR: Failed to save to slot " + String(slot));
+      logger.error("Individual conv name save failed: slot=" + String(slot));
     }
   } else {
     Serial.println("[Individual] Not updating - current name '" + currentName + "' is acceptable");
@@ -1792,6 +1807,24 @@ void handleVillageMenu() {
       ui.clearMessages();  // Clear any old messages from UI
       std::vector<Message> messages = village.loadMessages();
       Serial.println("[Village] Loaded " + String(messages.size()) + " messages from storage");
+      
+      // For individual conversations with placeholder name: try to update from message history
+      if (village.isIndividualConversation()) {
+        String currentName = village.getVillageName();
+        String myUsername = village.getUsername();
+        if (currentName == "Chat" || currentName.isEmpty() || currentName == myUsername) {
+          // Find the other person's name from messages
+          for (const auto& msg : messages) {
+            if (msg.sender != myUsername && msg.sender != "SmolTxt" && msg.sender != "system" && !msg.sender.isEmpty()) {
+              Serial.println("[Individual] Recovering name from message history: '" + msg.sender + "'");
+              village.setVillageName(msg.sender);
+              village.saveToSlot(currentVillageSlot);
+              ui.setExistingConversationName(msg.sender);
+              break;
+            }
+          }
+        }
+      }
       
       // Calculate pagination: always show last MAX_MESSAGES_TO_LOAD messages
       // This ensures both devices see the SAME window of recent conversation
@@ -2765,7 +2798,15 @@ void handleJoinCodeInput() {
             // Build village JSON manually
             JsonDocument doc;
             doc["villageId"] = pendingInvite.villageId;
-            doc["villageName"] = pendingInvite.villageName;
+            
+            // For individual conversations, use creator's username as the conversation name
+            if (pendingInvite.conversationType == CONVERSATION_INDIVIDUAL && !pendingInvite.creatorUsername.isEmpty()) {
+              doc["villageName"] = pendingInvite.creatorUsername;
+              Serial.println("[Individual] Setting conversation name to creator: " + pendingInvite.creatorUsername);
+            } else {
+              doc["villageName"] = pendingInvite.villageName;
+            }
+            
             doc["password"] = "invite-joined";  // Placeholder password
             doc["isOwner"] = false;
             doc["username"] = "member";  // FIXED: Use "username" not "myUsername" to match loadFromSlot()
@@ -3081,6 +3122,7 @@ void handleMessaging() {
     lastMessagingActivity = millis();
     appState = APP_CONVERSATION_MENU;
     ui.setState(STATE_CONVERSATION_MENU);
+    ui.setIsIndividualConversation(village.isIndividualConversation());  // Preserve conversation type for menu
     ui.resetMenuSelection();
     ui.setInputText("");  // Clear any typed text
     ui.update();

@@ -48,7 +48,7 @@ private:
     void (*onSyncRequest)(const String& requestorMAC, unsigned long timestamp);  // Sync request from peer
     void (*onVillageNameReceived)(const String& villageId, const String& villageName);  // Village name announcement
     void (*onUsernameReceived)(const String& villageId, const String& username);  // Username announcement for individual conversations
-    void (*onInviteReceived)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType);  // Invite code data
+    void (*onInviteReceived)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType, const String& creatorUsername);  // Invite code data
     
     // Connection management
     unsigned long lastReconnectAttempt;
@@ -107,7 +107,7 @@ public:
     void setSyncRequestCallback(void (*callback)(const String& requestorMAC, unsigned long timestamp));
     void setVillageNameCallback(void (*callback)(const String& villageId, const String& villageName));
     void setUsernameCallback(void (*callback)(const String& villageId, const String& username));
-    void setInviteCallback(void (*callback)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType));
+    void setInviteCallback(void (*callback)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType, const String& creatorUsername));
     
     // Village coordination
     bool announceVillageName(const String& villageName);  // Creator broadcasts village name
