@@ -555,10 +555,9 @@ void onMessageReceived(const Message& msg) {
   lastActivityTime = millis();
   Serial.println("[Power] Activity timer reset - message received");
   
-  // AUTO-TRANSITION: If creator is on invite screen and someone joins, DON'T auto-transition
-  // Let them manually proceed so the joiner has time to see/share the code
+  // AUTO-TRANSITION: If creator is on invite screen and someone joins, auto-transition after brief success message
   if (appState == APP_INVITE_CODE_DISPLAY && msg.content.endsWith(" joined the conversation")) {
-    Serial.println("[Invite] New member joined - showing success message instead of auto-transitioning");
+    Serial.println("[Invite] New member joined - auto-transitioning to conversation");
     String code = ui.getInviteCode();
     ui.clearInviteCode();
     // Unpublish invite
@@ -567,14 +566,9 @@ void onMessageReceived(const Message& msg) {
       mqttMessenger.unpublishInvite(code);
     }
     
-    // Show success message and wait for user to proceed
-    ui.showMessage("Success!", msg.sender + " joined!\n\nPress ENTER\nto continue", 0);
-    keyboard.clearInput();
-    while (!keyboard.isEnterPressed()) { 
-      keyboard.update(); 
-      smartDelay(50); 
-    }
-    keyboard.clearInput();
+    // Show success message with auto-transition
+    ui.showMessage("Success!", msg.sender + " joined!\n\nLoading messages...", 1500);
+    smartDelay(1500);
     
     // FIXED: Properly initialize messaging screen (same as normal entry path)
     ui.setInputText("");  // Clear any text in input field
@@ -587,7 +581,7 @@ void onMessageReceived(const Message& msg) {
     for (int i = startIndex; i < messages.size(); i++) {
       ui.addMessage(messages[i]);
     }
-    Serial.println("[Invite] Manual transition: Loaded " + String(messages.size() - startIndex) + " of " + String(messages.size()) + " messages");
+    Serial.println("[Invite] Auto transition: Loaded " + String(messages.size() - startIndex) + " of " + String(messages.size()) + " messages");
     
     // Transition to messaging
     appState = APP_MESSAGING;
@@ -2803,17 +2797,75 @@ void handleJoinCodeInput() {
                 // FIXED: Reduce success screen time to minimize flashing
                 Serial.println("[Invite] Successfully joined: " + pendingInvite.villageName);
                 
-                // Clear everything aggressively to prevent pre-filling
-                keyboard.clearInput();
-                ui.setInputText("");
-                ui.setCurrentUsername("");  // Clear any cached username
-                appState = APP_JOIN_USERNAME_INPUT;
-                ui.setState(STATE_INPUT_USERNAME);
-                ui.update();
-                
-                // Set flags for username handler to know we're joining (not creating)
-                isCreatingVillage = false;
-                tempVillageName = pendingInvite.villageName;  // Store for reference
+                // Check if username already saved - if so, skip username screen
+                if (hasGlobalUsername()) {
+                  // Auto-use saved username, proceed directly to messaging
+                  String savedUsername = getGlobalUsername();
+                  Serial.println("[Join] Using saved username: " + savedUsername);
+                  
+                  // Update village with actual username
+                  village.setUsername(savedUsername);
+                  village.saveToSlot(currentVillageSlot);
+                  
+                  // Re-subscribe to village with updated username
+                  mqttMessenger.addVillageSubscription(village.getVillageId(), village.getVillageName(), 
+                                                      savedUsername, village.getEncryptionKey());
+                  mqttMessenger.setActiveVillage(village.getVillageId());
+                  
+                  // Send join announcement with actual username
+                  String announcement = savedUsername + " joined the conversation";
+                  mqttMessenger.sendSystemMessage(announcement, "SmolTxt");
+                  logger.info("User joined: " + savedUsername);
+                  
+                  // Announce username for individual conversations
+                  if (village.isIndividualConversation()) {
+                    mqttMessenger.announceUsername(savedUsername);
+                    Serial.println("[Individual] Announced username: " + savedUsername);
+                  }
+                  
+                  // AUTO-TRANSITION: Show success and transition automatically
+                  ui.showMessage("Success!", "Joined conversation\n" + village.getVillageName() + "\n\nLoading messages...", 1500);
+                  smartDelay(1500);
+                  
+                  // Load messages and transition to messaging
+                  ui.clearMessages();
+                  std::vector<Message> messages = village.loadMessages();
+                  int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+                  for (int i = startIndex; i < messages.size(); i++) {
+                    ui.addMessage(messages[i]);
+                  }
+                  Serial.println("[Join] Auto-skip username: Displaying " + String(messages.size() - startIndex) + " of " + String(messages.size()) + " messages");
+                  
+                  // Request sync to get historical messages
+                  Serial.println("[Join] Requesting message sync from other participants");
+                  mqttMessenger.requestSync(0);
+                  
+                  // Transition to messaging screen
+                  appState = APP_MESSAGING;
+                  ui.setState(STATE_MESSAGING);
+                  ui.setCurrentUsername(savedUsername);
+                  ui.setInputText("");
+                  keyboard.clearInput();
+                  inMessagingScreen = true;
+                  lastMessagingActivity = millis();
+                  markVisibleMessagesAsRead();
+                  ui.update();
+                  
+                  pendingInvite.received = false;
+                } else {
+                  // No saved username - prompt for it
+                  Serial.println("[Join] No saved username - prompting for input");
+                  keyboard.clearInput();
+                  ui.setInputText("");
+                  ui.setCurrentUsername("");  // Clear any cached username
+                  appState = APP_JOIN_USERNAME_INPUT;
+                  ui.setState(STATE_INPUT_USERNAME);
+                  ui.update();
+                  
+                  // Set flags for username handler to know we're joining (not creating)
+                  isCreatingVillage = false;
+                  tempVillageName = pendingInvite.villageName;  // Store for reference
+                }
               } else {
                 Serial.println("[Invite] Failed to load village after save");
                 ui.showMessage("Error", "Failed to load\nvillage data\n\nPress ENTER", 0);
@@ -2904,6 +2956,9 @@ void handleJoinUsernameInput() {
     currentName.trim();
     
     if (currentName.length() > 0) {
+      // Save username globally for future conversations
+      setGlobalUsername(currentName);
+      
       // Update village with actual username
       village.setUsername(currentName);
       village.saveToSlot(currentVillageSlot);

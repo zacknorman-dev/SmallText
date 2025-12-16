@@ -79,6 +79,17 @@ When pressing the back button while viewing a conversation, the navigation shoul
 ### Full Refresh When Entering Conversation View
 When navigating into a conversation from the conversation list, the display should perform a full refresh instead of a partial update. This ensures the conversation view renders cleanly without artifacts or incomplete rendering from the previous screen state.
 
+### Device Information Screen in Settings
+Add a "Device Info" or "About Device" option in the Settings menu that displays:
+- MAC Address (for debugging network issues and device identification)
+- IP Address (current WiFi network connection)
+- WiFi SSID (network name)
+- Signal strength (RSSI)
+- Firmware version
+- Free storage space
+
+This information is useful for troubleshooting connectivity issues, verifying device identity for MQTT/network debugging, and helping users understand their device status. The screen should be read-only with a back button to return to settings.
+
 ## Low Priority
 
 ### Message Storage Architecture: Per-Conversation Files
