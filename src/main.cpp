@@ -566,8 +566,12 @@ void onMessageReceived(const Message& msg) {
       mqttMessenger.unpublishInvite(code);
     }
     
+    // Extract username from message content ("Username joined the conversation")
+    String joinedUsername = msg.content;
+    joinedUsername.replace(" joined the conversation", "");
+    
     // Show success message with auto-transition
-    ui.showMessage("Success!", msg.sender + " joined!\n\nLoading messages...", 1500);
+    ui.showMessage("Success!", joinedUsername + " joined!\n\nLoading messages...", 1500);
     smartDelay(1500);
     
     // FIXED: Properly initialize messaging screen (same as normal entry path)
@@ -589,7 +593,7 @@ void onMessageReceived(const Message& msg) {
     inMessagingScreen = true;
     lastMessagingActivity = millis();
     markVisibleMessagesAsRead();
-    ui.update();
+    ui.updateFull();  // Force full refresh to clear any ghosting/artifacts
   }
   
   // Check if this message is for the currently loaded village
@@ -649,10 +653,11 @@ void onMessageReceived(const Message& msg) {
   // Save message - only save to active village if it matches, otherwise skip UI update
   if (isForCurrentVillage) {
     // Message is for current village - save and optionally update UI
-    village.saveMessage(msg);
+    bool wasSaved = village.saveMessage(msg);
+    bool isDuplicate = !wasSaved || village.messageIdExists(msg.messageId);
     
-    // Conditionally update UI
-    if (shouldUpdateUI) {
+    // Conditionally update UI - ONLY if not a duplicate
+    if (shouldUpdateUI && !isDuplicate) {
       ui.addMessage(msg);
       Serial.println("[Message] Added to UI. Total messages in history: " + String(ui.getMessageCount()));
       // Play ringtone if: real-time message AND not viewing this conversation AND ringtone enabled
@@ -661,10 +666,12 @@ void onMessageReceived(const Message& msg) {
       if (isRealTime && notViewingConversation && isNewMessage) {
         playRingtone();
       }
+    } else if (isDuplicate) {
+      Serial.println("[Message] Duplicate detected - NOT added to UI");
     } else {
       Serial.println("[Message] Silently cached (not added to UI)");
       // NEW: If this is a new message (even from sync), and we're in the messaging screen, add to UI and reset scroll
-      if (isNewMessage && appState == APP_MESSAGING && inMessagingScreen) {
+      if (isNewMessage && appState == APP_MESSAGING && inMessagingScreen && !isDuplicate) {
         ui.addMessage(msg);
         Serial.println("[Message] [Sync] Added to UI due to active messaging screen. Total messages in history: " + String(ui.getMessageCount()));
       }
@@ -1767,6 +1774,7 @@ void handleVillageMenu() {
       ui.setCurrentUsername(village.getUsername());  // Set username for message display
       ui.setState(STATE_MESSAGING);
       ui.resetMessageScroll();  // Reset scroll to show latest messages
+      ui.updateFull();  // Force full refresh to clear any ghosting/artifacts
       
       // Request message sync when entering messaging screen
       std::vector<Message> existingMsgs = village.loadMessages();
@@ -2402,6 +2410,7 @@ void handleUsernameInput() {
       ui.setCurrentUsername(village.getUsername());  // Set username for message display
       ui.setState(STATE_MESSAGING);
       ui.resetMessageScroll();  // Reset scroll to show latest messages
+      ui.updateFull();  // Force full refresh to clear any ghosting/artifacts
       keyboard.clearInput();  // MOVED: Clear buffer AFTER state transition to prevent residual chars
       
       // Load messages with pagination - show last N messages (same window for both devices)
@@ -2854,7 +2863,7 @@ void handleJoinCodeInput() {
                   inMessagingScreen = true;
                   lastMessagingActivity = millis();
                   markVisibleMessagesAsRead();
-                  ui.update();
+                  ui.updateFull();  // Force full refresh to clear any ghosting/artifacts
                   
                   pendingInvite.received = false;
                 } else {
@@ -3015,7 +3024,7 @@ void handleJoinUsernameInput() {
       inMessagingScreen = true;
       lastMessagingActivity = millis();
       markVisibleMessagesAsRead();
-      ui.update();
+      ui.updateFull();  // Force full refresh to clear any ghosting/artifacts
       
       pendingInvite.received = false;  // Clear invite flag
     }
