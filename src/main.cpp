@@ -2,6 +2,7 @@
 #include <Wire.h>
 #include <LittleFS.h>
 #include <mbedtls/base64.h>
+#include <driver/rtc_io.h>
 #include "version.h"
 #include "Village.h"
 #include "Encryption.h"
@@ -466,6 +467,13 @@ void enterDeepSleep() {
     esp_sleep_enable_timer_wakeup(NAP_WAKE_INTERVAL * 1000ULL);  // Convert ms to microseconds
     Serial.println("[Power] Timer wake enabled: 15 minutes");
     
+    // Configure USER button GPIO for RTC wakeup with internal pullup
+    rtc_gpio_init((gpio_num_t)USER_BUTTON_PIN);
+    rtc_gpio_set_direction((gpio_num_t)USER_BUTTON_PIN, RTC_GPIO_MODE_INPUT_ONLY);
+    rtc_gpio_pullup_en((gpio_num_t)USER_BUTTON_PIN);
+    rtc_gpio_pulldown_dis((gpio_num_t)USER_BUTTON_PIN);
+    Serial.println("[Power] USER button (GPIO 21) configured for RTC wakeup");
+    
     // Wake on multiple GPIO pins using ext1 (supports multiple pins)
     // GPIO 39 = CardKB INT (pulls LOW when key pressed)
     // GPIO 21 = USER button (pulls LOW when pressed)
@@ -898,6 +906,11 @@ void setup() {
   
   if (wokeFromNap) {
     Serial.println("[Power] Woke from nap - reason: " + String(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER ? "TIMER" : "KEY_PRESS"));
+    
+    // If we used RTC GPIO for wakeup, deinitialize it to restore normal GPIO function
+    if (rtc_gpio_is_valid_gpio((gpio_num_t)USER_BUTTON_PIN)) {
+      rtc_gpio_deinit((gpio_num_t)USER_BUTTON_PIN);
+    }
   }
   
   // Configure USER button for wake from sleep
