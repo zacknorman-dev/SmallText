@@ -91,6 +91,10 @@ Write-Host "`n[2/8] Cleaning and building firmware..." -ForegroundColor Yellow
 & C:\Users\zackn\.platformio\penv\Scripts\platformio.exe run
 if ($LASTEXITCODE -ne 0) {
     Write-Host "      Build failed!" -ForegroundColor Red
+    # Clean up tag if it was created
+    $ErrorActionPreference = "SilentlyContinue"
+    git tag -d "v$Version" 2>&1 | Out-Null
+    $ErrorActionPreference = "Stop"
     exit 1
 }
 Write-Host "      Build successful" -ForegroundColor Green
@@ -100,6 +104,10 @@ Write-Host "`n[3/8] Verifying firmware.bin..." -ForegroundColor Yellow
 $firmwarePath = ".pio\build\heltec_vision_master_e290\firmware.bin"
 if (!(Test-Path $firmwarePath)) {
     Write-Host "      firmware.bin not found!" -ForegroundColor Red
+    # Clean up tag if it was created
+    $ErrorActionPreference = "SilentlyContinue"
+    git tag -d "v$Version" 2>&1 | Out-Null
+    $ErrorActionPreference = "Stop"
     exit 1
 }
 $fileSize = (Get-Item $firmwarePath).Length
@@ -169,6 +177,10 @@ if ($tagExitCode -eq 0) {
 } else {
     Write-Host "      WARNING: Tag push failed" -ForegroundColor Red
     Write-Host "      Error: $tagOutput" -ForegroundColor Red
+    # Clean up local tag
+    $ErrorActionPreference = "SilentlyContinue"
+    git tag -d "v$Version" 2>&1 | Out-Null
+    $ErrorActionPreference = "Stop"
     exit 1
 }
 

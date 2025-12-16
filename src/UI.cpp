@@ -1480,7 +1480,10 @@ void UI::menuDown() {
             break;
         }
         case STATE_SETTINGS_MENU:
-            maxItems = 2;  // Ringtone, WiFi, Updates (0-2)
+            maxItems = 3;  // Display Name, Ringtone, WiFi, Updates (0-3)
+            break;
+        case STATE_CONVERSATION_TYPE_SELECT:
+            maxItems = 1;  // 1 on 1, Group (0-1)
             break;
         case STATE_RINGTONE_SELECT:
             maxItems = 11;  // 12 ringtone options (0-11)

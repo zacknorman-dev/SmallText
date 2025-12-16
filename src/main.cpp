@@ -633,6 +633,18 @@ void onMessageReceived(const Message& msg) {
     Serial.println("[Message] Background sync or duplicate - silent save only (no UI update)");
   }
   
+  // For individual conversations: Update conversation name to be the other person's name
+  if (isForCurrentVillage && village.isIndividualConversation() && msg.sender != village.getUsername()) {
+    String currentName = village.getVillageName();
+    // Only update if the current name is the placeholder "Chat"
+    if (currentName == "Chat") {
+      village.setVillageName(msg.sender);
+      village.saveToSlot(currentVillageSlot);
+      ui.setExistingConversationName(msg.sender);
+      Serial.println("[Individual] Updated conversation name to: " + msg.sender);
+    }
+  }
+  
   // Save message - only save to active village if it matches, otherwise skip UI update
   if (isForCurrentVillage) {
     // Message is for current village - save and optionally update UI
@@ -3214,6 +3226,9 @@ void handleConversationTypeSelect() {
     if (selection == 0) {
       // Individual conversation
       tempConversationType = CONVERSATION_INDIVIDUAL;
+      
+      // Generate a temporary name for the conversation (will be updated with recipient's name)
+      tempVillageName = "Chat";
       
       // Skip to username input (no group name needed)
       appState = APP_USERNAME_INPUT;
