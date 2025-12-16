@@ -461,10 +461,12 @@ void UI::drawConversationMenu() {
         itemIndex++;
     }
     
-    // View Members - always shown
-    drawMenuItem("View Members", y, itemIndex == menuSelection, lineHeight);
-    y += lineHeight;
-    itemIndex++;
+    // View Members - only for group conversations
+    if (!isIndividualConversation) {
+        drawMenuItem("View Members", y, itemIndex == menuSelection, lineHeight);
+        y += lineHeight;
+        itemIndex++;
+    }
     
     // Delete - text varies by type
     String deleteText = isIndividualConversation ? "Delete Chat" : "Delete Group";
@@ -1489,7 +1491,9 @@ void UI::menuDown() {
             maxItems = 11;  // 12 ringtone options (0-11)
             break;
         case STATE_CONVERSATION_MENU:
-            maxItems = 3;
+            // Individual: Messages, Delete (0-1)
+            // Group: Messages, Invite, View Members, Delete (0-3)
+            maxItems = isIndividualConversation ? 1 : 3;
             break;
         case STATE_WIFI_SETUP_MENU:
             // If we have saved networks: Network Details/Saved Networks, Scan Networks (0-1)

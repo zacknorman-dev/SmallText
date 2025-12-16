@@ -51,6 +51,8 @@ MQTTMessenger::MQTTMessenger() {
     onMessageRead = nullptr;
     onCommandReceived = nullptr;
     onSyncRequest = nullptr;
+    onVillageNameReceived = nullptr;
+    onUsernameReceived = nullptr;
     onInviteReceived = nullptr;
     lastReconnectAttempt = 0;
     lastPingTime = 0;
@@ -211,6 +213,10 @@ void MQTTMessenger::setSyncRequestCallback(void (*callback)(const String& reques
 
 void MQTTMessenger::setVillageNameCallback(void (*callback)(const String& villageId, const String& villageName)) {
     onVillageNameReceived = callback;
+}
+
+void MQTTMessenger::setUsernameCallback(void (*callback)(const String& villageId, const String& username)) {
+    onUsernameReceived = callback;
 }
 
 void MQTTMessenger::setInviteCallback(void (*callback)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen)) {
@@ -487,6 +493,22 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
         return;
     }
     
+    // Check for username announcement (smoltxt/{villageId}/username/{MAC})
+    if (topic.indexOf("/username/") > 0) {
+        String username = "";
+        for (unsigned int i = 0; i < length; i++) {
+            username += (char)payload[i];
+        }
+        
+        Serial.println("[MQTT] Received username announcement: " + username + " for village: " + villageId);
+        logger.info("Username received: " + username + " (Village ID: " + villageId + ")");
+        
+        if (onUsernameReceived) {
+            onUsernameReceived(villageId, username);
+        }
+        return;
+    }
+    
     // Check for sync-request topics (from other devices)
     if (topic.startsWith("smoltxt/" + villageId + "/sync-request/")) {
         handleSyncRequest(villageId, payload, length);
@@ -676,6 +698,30 @@ bool MQTTMessenger::announceVillageName(const String& villageName) {
     }
     
     Serial.println("[MQTT] Failed to announce village name");
+    return false;
+}
+
+bool MQTTMessenger::announceUsername(const String& username) {
+    if (!isConnected() || currentVillageId.isEmpty()) {
+        Serial.println("[MQTT] Cannot announce username: not connected or no active village");
+        return false;
+    }
+    
+    // Topic: smoltxt/{villageId}/username/{myMAC}
+    char macStr[13];
+    sprintf(macStr, "%012llx", myMAC);
+    String topic = "smoltxt/" + currentVillageId + "/username/" + String(macStr);
+    
+    // Payload is the username
+    // Use retained flag so it's available when the other user joins
+    int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), username.c_str(), 
+                                        username.length(), 1, 1);  // QoS 1, retain=1
+    if (msg_id >= 0) {
+        Serial.println("[MQTT] Username announced (retained, QoS 1): " + username);
+        return true;
+    }
+    
+    Serial.println("[MQTT] Failed to announce username");
     return false;
 }
 

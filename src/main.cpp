@@ -634,14 +634,21 @@ void onMessageReceived(const Message& msg) {
   }
   
   // For individual conversations: Update conversation name to be the other person's name
-  if (isForCurrentVillage && village.isIndividualConversation() && msg.sender != village.getUsername()) {
+  if (isForCurrentVillage && village.isIndividualConversation()) {
     String currentName = village.getVillageName();
-    // Only update if the current name is the placeholder "Chat"
-    if (currentName == "Chat") {
-      village.setVillageName(msg.sender);
-      village.saveToSlot(currentVillageSlot);
-      ui.setExistingConversationName(msg.sender);
-      Serial.println("[Individual] Updated conversation name to: " + msg.sender);
+    String myUsername = village.getUsername();
+    
+    Serial.println("[Individual] Checking name update - Current: '" + currentName + "', My name: '" + myUsername + "', Sender: '" + msg.sender + "'");
+    
+    // Update if current name is placeholder OR if it's our own name (shouldn't happen but fix it)
+    if (currentName == "Chat" || currentName.isEmpty() || currentName == myUsername) {
+      // Look for the other person's name (not us, not system)
+      if (msg.sender != myUsername && msg.sender != "SmolTxt" && msg.sender != "system" && !msg.sender.isEmpty()) {
+        village.setVillageName(msg.sender);
+        village.saveToSlot(currentVillageSlot);
+        ui.setExistingConversationName(msg.sender);
+        Serial.println("[Individual] ✓ Updated conversation name from '" + currentName + "' to '" + msg.sender + "'");
+      }
     }
   }
   
@@ -926,6 +933,50 @@ void onVillageNameReceived(const String& villageId, const String& villageName) {
   }
 }
 
+void onUsernameReceived(const String& villageId, const String& username) {
+  Serial.println("[Individual] Received username announcement for " + villageId + ": " + username);
+  
+  // Find which slot has this village ID
+  int slot = Village::findVillageSlotById(villageId);
+  if (slot < 0) {
+    Serial.println("[Individual] WARNING: No slot found for village ID " + villageId);
+    return;
+  }
+  
+  // Load the village to check if it's individual conversation
+  Village tempVillage;
+  if (!tempVillage.loadFromSlot(slot)) {
+    Serial.println("[Individual] WARNING: Failed to load village from slot " + String(slot));
+    return;
+  }
+  
+  // Only update name for individual conversations, and only if it's not our own name
+  if (!tempVillage.isIndividualConversation()) {
+    Serial.println("[Individual] Ignoring username - not an individual conversation");
+    return;
+  }
+  
+  if (username == tempVillage.getUsername()) {
+    Serial.println("[Individual] Ignoring username - it's our own name");
+    return;
+  }
+  
+  String currentName = tempVillage.getVillageName();
+  if (currentName == "Chat" || currentName.isEmpty() || currentName == tempVillage.getUsername()) {
+    tempVillage.setVillageName(username);
+    if (tempVillage.saveToSlot(slot)) {
+      Serial.println("[Individual] ✓ Updated conversation name in slot " + String(slot) + " to: " + username);
+      
+      // If this is the current village, update UI
+      if (slot == currentVillageSlot) {
+        village.setVillageName(username);
+        ui.setExistingConversationName(username);
+        ui.update();  // Force full update to show new name
+      }
+    }
+  }
+}
+
 void setup() {
   // Enable Vext power for peripherals
   pinMode(18, OUTPUT);
@@ -1086,6 +1137,7 @@ void setup() {
         mqttMessenger.setCommandCallback(onCommandReceived);
         mqttMessenger.setSyncRequestCallback(onSyncRequest);
         mqttMessenger.setVillageNameCallback(onVillageNameReceived);
+        mqttMessenger.setUsernameCallback(onUsernameReceived);
         mqttMessenger.setInviteCallback(onInviteReceived);
         
         // Set encryption
@@ -1686,11 +1738,11 @@ void handleVillageMenu() {
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     int selection = ui.getMenuSelection();
     
-    // Adjust selection for individual conversations (skip invite option)
+    // Adjust selection for individual conversations (skip invite AND view members options)
     bool isIndividual = village.isIndividualConversation();
     int adjustedSelection = selection;
     if (isIndividual && selection >= 1) {
-      adjustedSelection = selection + 1;  // Skip invite option
+      adjustedSelection = selection + 2;  // Skip both invite and view members
     }
     
     if (adjustedSelection == 0) {
@@ -2182,6 +2234,12 @@ void handleUsernameInput() {
         if (mqttMessenger.isConnected()) {
           mqttMessenger.announceVillageName(village.getVillageName());
           Serial.println("[Village] Announced village name: " + village.getVillageName());
+          
+          // For individual conversations, also announce username
+          if (village.isIndividualConversation()) {
+            mqttMessenger.announceUsername(village.getUsername());
+            Serial.println("[Individual] Announced username: " + village.getUsername());
+          }
         }
         
         // Send initial message to the conversation from SmolTxt
