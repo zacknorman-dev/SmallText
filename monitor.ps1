@@ -125,13 +125,15 @@ Write-Host ""
 # Stream output from both jobs
 try {
     while ($true) {
-        Start-Sleep -Milliseconds 500
+        Start-Sleep -Milliseconds 200
         foreach ($port in $ports) {
             $jobName = "Monitor_$port"
             $output = Receive-Job -Name $jobName -ErrorAction SilentlyContinue
             if ($output) {
-                Write-Host "[$port] " -NoNewline -ForegroundColor Cyan
-                Write-Host $output
+                foreach ($line in $output) {
+                    Write-Host "[${port}] " -NoNewline -ForegroundColor Cyan
+                    Write-Host $line
+                }
             }
         }
     }

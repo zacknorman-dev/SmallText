@@ -3551,22 +3551,27 @@ void handleRingtoneSelect() {
   int currentSelection = ui.getMenuSelection();
   
   if (keyboard.isUpPressed()) {
-    lastSelection = -1;  // Force preview on next selection
     ui.menuUp();
+    currentSelection = ui.getMenuSelection();  // Get new selection immediately
     ui.updatePartial();
+    
+    // Play preview for new selection
+    if (currentSelection != lastSelection) {
+      lastSelection = currentSelection;
+      playRingtoneSound((RingtoneType)currentSelection);
+    }
     smartDelay(200);
   } else if (keyboard.isDownPressed()) {
-    lastSelection = -1;  // Force preview on next selection
     ui.menuDown();
+    currentSelection = ui.getMenuSelection();  // Get new selection immediately
     ui.updatePartial();
+    
+    // Play preview for new selection
+    if (currentSelection != lastSelection) {
+      lastSelection = currentSelection;
+      playRingtoneSound((RingtoneType)currentSelection);
+    }
     smartDelay(200);
-  }
-  
-  // Play preview when selection changes
-  currentSelection = ui.getMenuSelection();
-  if (currentSelection != lastSelection) {
-    lastSelection = currentSelection;
-    playRingtoneSound((RingtoneType)currentSelection);
   }
   
   // Left arrow - go back without changing selection
