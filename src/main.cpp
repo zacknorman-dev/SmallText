@@ -886,17 +886,19 @@ struct PendingInvite {
   String villageId;
   String villageName;
   uint8_t encryptionKey[32];
+  int conversationType;  // 0=GROUP, 1=INDIVIDUAL
   bool received = false;
 } pendingInvite;
 
-void onInviteReceived(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen) {
-  Serial.println("[Invite] Received invite data: " + villageName + " (" + villageId + ")");
+void onInviteReceived(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType) {
+  Serial.println("[Invite] Received invite data: " + villageName + " (" + villageId + ") type=" + String(conversationType));
   logger.info("Invite received: " + villageName);
   
   // Store invite data for processing in main loop
   pendingInvite.villageId = villageId;
   pendingInvite.villageName = villageName;
   memcpy(pendingInvite.encryptionKey, encryptedKey, 32);
+  pendingInvite.conversationType = conversationType;
   pendingInvite.received = true;
 }
 
@@ -2167,6 +2169,21 @@ void handleUsernameInput() {
           village.getEncryptionKey()
         );
         
+        // Send join message
+        String joinMsg = currentName + " joined the conversation";
+        mqttMessenger.sendSystemMessage(village.getVillageId(), joinMsg);
+        Serial.println("[Invite] Sent join announcement: " + joinMsg);
+        
+        // Announce username for individual conversations
+        if (village.isIndividualConversation()) {
+          mqttMessenger.announceUsername(currentName);
+          Serial.println("[Individual] Announced username: " + currentName);
+        }
+        
+        // AUTO-TRANSITION: Show success and transition automatically
+        ui.showMessage("Success!", "Joined conversation\\n" + village.getVillageName() + "\\n\\nLoading messages...", 1500);
+        smartDelay(1500);
+        
         // Load messages and go to messaging screen (skip invite code flow continuation)
         ui.clearMessages();
         std::vector<Message> messages = village.loadMessages();
@@ -2471,7 +2488,7 @@ void handleInviteExplain() {
       ui.showMessage("Publishing...", "Creating invite\ncode\n\nPlease wait...", 0);
       ui.update();
       
-      if (mqttMessenger.publishInvite(code, village.getVillageId(), village.getVillageName(), village.getEncryptionKey())) {
+      if (mqttMessenger.publishInvite(code, village.getVillageId(), village.getVillageName(), village.getEncryptionKey(), (int)village.getConversationType())) {
         Serial.println("[Invite] Code published successfully");
         logger.info("Invite code published: " + code);
         smartDelay(300);  // Brief pause after publishing
@@ -2689,6 +2706,7 @@ void handleJoinCodeInput() {
             doc["isOwner"] = false;
             doc["username"] = "member";  // FIXED: Use "username" not "myUsername" to match loadFromSlot()
             doc["initialized"] = true;  // Mark as initialized so loadMessages() works
+            doc["conversationType"] = pendingInvite.conversationType;  // CRITICAL: Set type from invite
             
             // FIXED: Convert encryption key to hex format (not base64) to match saveToSlot()
             String keyHex = "";
@@ -2841,6 +2859,16 @@ void handleJoinUsernameInput() {
       String announcement = currentName + " joined the conversation";
       mqttMessenger.sendSystemMessage(announcement, "SmolTxt");
       logger.info("User joined: " + currentName);
+      
+      // Announce username for individual conversations
+      if (village.isIndividualConversation()) {
+        mqttMessenger.announceUsername(currentName);
+        Serial.println("[Individual] Announced username: " + currentName);
+      }
+      
+      // AUTO-TRANSITION: Show success and transition automatically
+      ui.showMessage("Success!", "Joined conversation\\n" + village.getVillageName() + "\\n\\nLoading messages...", 1500);
+      smartDelay(1500);
       
       // Clear old messages and load messages for this conversation
       ui.clearMessages();

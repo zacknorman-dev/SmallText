@@ -48,7 +48,7 @@ private:
     void (*onSyncRequest)(const String& requestorMAC, unsigned long timestamp);  // Sync request from peer
     void (*onVillageNameReceived)(const String& villageId, const String& villageName);  // Village name announcement
     void (*onUsernameReceived)(const String& villageId, const String& username);  // Username announcement for individual conversations
-    void (*onInviteReceived)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen);  // Invite code data
+    void (*onInviteReceived)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType);  // Invite code data
     
     // Connection management
     unsigned long lastReconnectAttempt;
@@ -107,14 +107,14 @@ public:
     void setSyncRequestCallback(void (*callback)(const String& requestorMAC, unsigned long timestamp));
     void setVillageNameCallback(void (*callback)(const String& villageId, const String& villageName));
     void setUsernameCallback(void (*callback)(const String& villageId, const String& username));
-    void setInviteCallback(void (*callback)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen));
+    void setInviteCallback(void (*callback)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType));
     
     // Village coordination
     bool announceVillageName(const String& villageName);  // Creator broadcasts village name
     bool announceUsername(const String& username);  // For individual conversations - both users announce
     
     // Invite code system
-    bool publishInvite(const String& inviteCode, const String& villageId, const String& villageName, const uint8_t* encryptionKey);
+    bool publishInvite(const String& inviteCode, const String& villageId, const String& villageName, const uint8_t* encryptionKey, int conversationType);
     bool unpublishInvite(const String& inviteCode);
     bool subscribeToInvite(const String& inviteCode);
     bool unsubscribeFromInvite(const String& inviteCode);

@@ -219,7 +219,7 @@ void MQTTMessenger::setUsernameCallback(void (*callback)(const String& villageId
     onUsernameReceived = callback;
 }
 
-void MQTTMessenger::setInviteCallback(void (*callback)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen)) {
+void MQTTMessenger::setInviteCallback(void (*callback)(const String& villageId, const String& villageName, const uint8_t* encryptedKey, size_t keyLen, int conversationType)) {
     onInviteReceived = callback;
 }
 
@@ -451,8 +451,9 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
         String inviteVillageId = doc["villageId"] | "";
         String inviteVillageName = doc["villageName"] | "";
         String encodedKey = doc["key"] | "";
+        int conversationType = doc["type"] | 0;  // Default to 0 (GROUP) if not present
         
-        Serial.println("[MQTT] Parsed - Name: " + inviteVillageName + ", ID: " + inviteVillageId);
+        Serial.println("[MQTT] Parsed - Name: " + inviteVillageName + ", ID: " + inviteVillageId + ", Type: " + String(conversationType));
         Serial.println("[MQTT] Encoded key length: " + String(encodedKey.length()));
         
         // Decode the encryption key from base64
@@ -462,12 +463,12 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
                             (const unsigned char*)encodedKey.c_str(), encodedKey.length());
         
         if (decodedLen == 32) {
-            Serial.println("[MQTT] Invite received: " + inviteVillageName + " (" + inviteVillageId + ")");
+            Serial.println("[MQTT] Invite received: " + inviteVillageName + " (" + inviteVillageId + ") type=" + String(conversationType));
             logger.info("Invite received: " + inviteVillageName);
             
             if (onInviteReceived) {
                 Serial.println("[MQTT] Calling onInviteReceived callback");
-                onInviteReceived(inviteVillageId, inviteVillageName, decodedKey, 32);
+                onInviteReceived(inviteVillageId, inviteVillageName, decodedKey, 32, conversationType);
             } else {
                 Serial.println("[MQTT] WARNING: No onInviteReceived callback set!");
             }
@@ -1350,7 +1351,7 @@ VillageSubscription* MQTTMessenger::findVillageSubscription(const String& villag
 
 // ============ Invite Code Protocol ============
 
-bool MQTTMessenger::publishInvite(const String& inviteCode, const String& villageId, const String& villageName, const uint8_t* encryptionKey) {
+bool MQTTMessenger::publishInvite(const String& inviteCode, const String& villageId, const String& villageName, const uint8_t* encryptionKey, int conversationType) {
     if (!connected || !mqttClient) {
         Serial.println("[MQTT] Cannot publish invite - not connected");
         logger.error("Invite publish failed: not connected");
@@ -1369,6 +1370,7 @@ bool MQTTMessenger::publishInvite(const String& inviteCode, const String& villag
     mbedtls_base64_encode((unsigned char*)encodedKey, sizeof(encodedKey), &encodedLen, encryptionKey, 32);
     encodedKey[encodedLen] = '\0';
     doc["key"] = String(encodedKey);
+    doc["type"] = conversationType;  // Add conversation type from parameter
     
     String payload;
     serializeJson(doc, payload);
