@@ -1688,10 +1688,13 @@ void UI::drawSleeping() {
     display->print("SmolTxt Sleeping");
     
     display->setFont(&FreeSans9pt7b);
-    display->setCursor(10, 70);
+    display->setCursor(5, 70);
     display->print("Hold USER btn 3s: sleep");
-    display->setCursor(10, 95);
+    display->setCursor(5, 95);
     display->print("Press USER btn: wake");
+    display->setFont();
+    display->setCursor(5, 110);
+    display->print("(Keyboard can't wake)");
 }
 
 void UI::drawConversationCreated() {

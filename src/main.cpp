@@ -31,10 +31,7 @@
 #define BUZZER_PIN 40
 #define BUZZER_CHANNEL 0
 
-// Keyboard interrupt pin (same as I2C SDA - CardKB pulls LOW when key pressed)
-#define KEYBOARD_INT_PIN 39
-
-// USER button for wake from sleep
+// USER button for sleep/wake control
 #define USER_BUTTON_PIN 21
 
 // Global objects
@@ -468,18 +465,17 @@ void enterDeepSleep() {
     Serial.println("[Power] Timer wake enabled: 15 minutes");
     
     // Configure USER button GPIO for RTC wakeup with internal pullup
+    // Note: GPIO 39 is NOT RTC-capable on ESP32-S3, so we can only use GPIO 21
     rtc_gpio_init((gpio_num_t)USER_BUTTON_PIN);
     rtc_gpio_set_direction((gpio_num_t)USER_BUTTON_PIN, RTC_GPIO_MODE_INPUT_ONLY);
     rtc_gpio_pullup_en((gpio_num_t)USER_BUTTON_PIN);
     rtc_gpio_pulldown_dis((gpio_num_t)USER_BUTTON_PIN);
     Serial.println("[Power] USER button (GPIO 21) configured for RTC wakeup");
     
-    // Wake on multiple GPIO pins using ext1 (supports multiple pins)
-    // GPIO 39 = CardKB INT (pulls LOW when key pressed)
-    // GPIO 21 = USER button (pulls LOW when pressed)
-    uint64_t ext1_mask = (1ULL << KEYBOARD_INT_PIN) | (1ULL << USER_BUTTON_PIN);
-    esp_sleep_enable_ext1_wakeup(ext1_mask, ESP_EXT1_WAKEUP_ANY_LOW);
-    Serial.println("[Power] Wake enabled: GPIO 39 (CardKB) + GPIO 21 (USER button)");
+    // Wake on USER button (GPIO 21) - button pulls LOW when pressed
+    // Using ext0 for single GPIO wakeup (GPIO 39 is not RTC-capable on ESP32-S3)
+    esp_sleep_enable_ext0_wakeup((gpio_num_t)USER_BUTTON_PIN, 0);
+    Serial.println("[Power] Wake enabled: GPIO 21 (USER button)");
   }
   
   Serial.println("[Power] Entering deep sleep now");
