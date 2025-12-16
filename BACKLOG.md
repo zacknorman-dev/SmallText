@@ -81,6 +81,45 @@ When navigating into a conversation from the conversation list, the display shou
 
 ## Low Priority
 
+### Message Storage Architecture: Per-Conversation Files
+**ARCHITECTURAL CHANGE** - Refactor message storage from single global `/messages.dat` to per-conversation files (`/village_X_messages.dat`). Current architecture orphans messages when conversations are deleted, gradually filling flash storage with inaccessible data.
+
+**Current Problem:**
+- All messages stored in `/messages.dat`, filtered by `villageId` at load time
+- Deleting a conversation (village slot) leaves orphaned messages in the file
+- No automatic cleanup - flash fills with unrecoverable messages
+- Users cannot free space by deleting old conversations
+
+**Proposed Solution (Hybrid Architecture):**
+- Metadata: `/village_0.dat` through `/village_9.dat` (conversation info)
+- Messages: `/village_0_messages.dat` through `/village_9_messages.dat` (per-conversation)
+- Deleting slot X removes both `village_X.dat` and `village_X_messages.dat` atomically
+- Messages remain append-only (flash-friendly)
+- Each conversation is self-contained and portable
+
+**Benefits:**
+- True space recovery when deleting conversations
+- Self-contained conversations (easy backup/export)
+- No orphaned data accumulation
+- Cleaner mental model (1 conversation = 2 related files)
+
+**Implementation:**
+- Update `Village::loadMessages()` to read from slot-specific file
+- Update message save logic to write to slot-specific file
+- Update `Village::deleteSlot()` to remove both files
+- Migration: Copy messages from global file to per-slot files on first load
+- Handle slot reassignment edge cases
+
+**Files to modify:**
+- src/Village.cpp (loadMessages, saveMessage, deleteSlot)
+- src/Village.h (method signatures if needed)
+
+**Testing required:**
+- Message persistence across restarts
+- Conversation deletion fully frees space
+- Migration from old to new format
+- Slot reuse scenarios
+
 ## Ideas / Future Consideration
 ### Refactor All Messages to JSON Format (Transport-Agnostic Architecture)
 **MAJOR REFACTORING** - Convert entire messaging system from colon-delimited string format to pure JSON. This would:

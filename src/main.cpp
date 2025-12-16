@@ -1907,11 +1907,71 @@ void handleVillageCreate() {
       // Store user's custom village name (this will be used as actual name)
       tempVillageName = currentName;
       
-      // Now ask for username (passphrase will be generated after username)
-      appState = APP_USERNAME_INPUT;
-      ui.setState(STATE_INPUT_USERNAME);
-      ui.setInputText("");
-      ui.update();
+      // Check if username already saved - if so, skip username screen
+      if (hasGlobalUsername()) {
+        // Auto-use saved username, proceed directly to next step
+        String savedUsername = getGlobalUsername();
+        Serial.println("[Create] Using saved username: " + savedUsername);
+        
+        // Simulate what handleUsernameInput would do
+        village.clearVillage();
+        village.createVillage(tempVillageName, tempConversationType);
+        ui.setExistingConversationName(tempVillageName);
+        village.setUsername(savedUsername);
+        
+        // Find slot and save (same logic as handleUsernameInput)
+        currentVillageSlot = -1;
+        String villageId = village.getVillageId();
+        currentVillageSlot = Village::findVillageSlotById(villageId);
+        
+        if (currentVillageSlot == -1) {
+          for (int i = 0; i < 10; i++) {
+            if (!Village::hasVillageInSlot(i)) {
+              currentVillageSlot = i;
+              break;
+            }
+          }
+        }
+        
+        if (currentVillageSlot == -1) {
+          currentVillageSlot = 0;
+        }
+        
+        village.saveToSlot(currentVillageSlot);
+        encryption.setKey(village.getEncryptionKey());
+        
+        mqttMessenger.addVillageSubscription(
+          village.getVillageId(),
+          village.getVillageName(),
+          village.getUsername(),
+          village.getEncryptionKey()
+        );
+        mqttMessenger.setActiveVillage(village.getVillageId());
+        
+        if (mqttMessenger.isConnected()) {
+          smartDelay(500);
+          mqttMessenger.loop();
+        }
+        
+        if (mqttMessenger.isConnected()) {
+          mqttMessenger.announceVillageName(village.getVillageName());
+          if (village.isIndividualConversation()) {
+            mqttMessenger.announceUsername(village.getUsername());
+          }
+        }
+        
+        // Proceed to invite screen
+        appState = APP_INVITE_EXPLAIN;
+        ui.setState(STATE_INVITE_EXPLAIN);
+        ui.resetMenuSelection();
+        ui.updateClean();
+      } else {
+        // No saved username - ask for it
+        appState = APP_USERNAME_INPUT;
+        ui.setState(STATE_INPUT_USERNAME);
+        ui.setInputText("");
+        ui.update();
+      }
     }
     smartDelay(300);
     return;
@@ -3258,11 +3318,26 @@ void handleChangeDisplayName() {
     return;
   }
   
-  // Handle backspace
+  // Handle backspace - DELETE SAVED USERNAME (debug tool)
   if (keyboard.isBackspacePressed()) {
+    // Clear the text field
     if (ui.getInputText().length() > 0) {
       ui.removeInputChar();
       ui.updatePartial();
+    } else {
+      // Field is empty - delete the saved username from preferences
+      Serial.println("[DEBUG] Deleting saved username from preferences");
+      preferences.begin("smoltxt", false);
+      preferences.remove("username");
+      preferences.end();
+      
+      ui.showMessage("Debug", "Username deleted\\nfrom preferences", 1500);
+      smartDelay(1500);
+      
+      appState = APP_SETTINGS_MENU;
+      ui.setState(STATE_SETTINGS_MENU);
+      ui.resetMenuSelection();
+      ui.updateClean();
     }
     smartDelay(150);
     return;
