@@ -1954,6 +1954,11 @@ void handleVillageCreate() {
           }
         }
         
+        // Send creator's join announcement
+        String joinMsg = savedUsername + " joined the conversation";
+        String systemMsgId = mqttMessenger.sendSystemMessage(joinMsg, "SmolTxt");
+        Serial.println("[Create] Sent creator join announcement: " + joinMsg);
+        
         // Proceed to invite screen
         appState = APP_INVITE_EXPLAIN;
         ui.setState(STATE_INVITE_EXPLAIN);

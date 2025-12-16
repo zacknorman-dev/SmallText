@@ -64,11 +64,8 @@ The conversation creation screen still references "village name". Update the pro
 ### Refresh Conversation List When Returning From Conversation View
 When navigating back to "My Conversations" from a conversation view, the list should refresh/rebuild to show updated conversation names, message counts, or other changes that may have occurred. Currently the list may show stale data if changes were made while viewing the conversation.
 
-### Full Refresh on Generated Code Screen
-The invite code display screen needs a full display refresh to ensure proper rendering. Currently may show artifacts or incomplete rendering when transitioning to the code display state.
-
-### Full Refresh on Invite a Friend Screen
-The "Invite a Friend" screen needs a full display refresh to ensure proper rendering. Currently may show artifacts or incomplete rendering when transitioning to the invite friend display state.
+### Full Refresh on Invite Code Display Screen - READABILITY ISSUE
+The invite code display screen (where the generated 8-digit code is shown after clicking "Invite a Friend") has poor readability due to incomplete display refresh. The screen needs a full display refresh instead of partial update to ensure the code is clearly legible. Currently shows artifacts or ghosting from the previous screen, making the invite code hard to read. This affects the core invite flow as users struggle to read the code they need to share.
 
 ### Improve Username Entry Description When Joining Conversation
 The screen where joiners enter their display name after successfully entering an invite code needs a better, more descriptive prompt. Current text may not clearly explain that this is setting the name other members will see. Should clarify: "Enter your display name" or "Choose how others will see you in this conversation".
@@ -89,6 +86,17 @@ Add a "Device Info" or "About Device" option in the Settings menu that displays:
 - Free storage space
 
 This information is useful for troubleshooting connectivity issues, verifying device identity for MQTT/network debugging, and helping users understand their device status. The screen should be read-only with a back button to return to settings.
+
+### Hide "Delete My Conversations" for New Users
+When the user has no active conversations (all village slots empty), hide the "Delete My Conversations" menu item from the main menu. For new users with no conversations, this option is confusing and not applicable. Instead, the main menu should emphasize conversation creation options:
+- Show: "New Conversation" or "Create Conversation"
+- Show: "Join a Conversation" 
+- Hide: "Delete My Conversations" (only show when at least one conversation exists)
+
+This provides better first-run UX by guiding new users toward creating or joining their first conversation rather than presenting a delete option when nothing exists to delete. The menu should dynamically show/hide this item based on whether any conversations exist.
+
+### Simplify Settings Menu Text: "Change Display Name" → "Display Name"
+In the Settings menu, change the menu item text from "Change Display Name" to just "Display Name". The word "Change" is redundant since selecting any settings menu item implies an action to change that setting. Shorter text is clearer and makes better use of limited screen space.
 
 ## Low Priority
 
