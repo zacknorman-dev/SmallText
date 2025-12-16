@@ -3,6 +3,7 @@
 #include <LittleFS.h>
 #include <mbedtls/base64.h>
 #include <driver/rtc_io.h>
+#include <Preferences.h>
 #include "version.h"
 #include "Village.h"
 #include "Encryption.h"
@@ -44,12 +45,34 @@ Battery battery;
 WiFiManager wifiManager;
 OTAUpdater otaUpdater;
 // Logger is declared in Logger.cpp
+Preferences preferences;  // For global username storage
+
+// Global username helpers
+String getGlobalUsername() {
+  preferences.begin("smoltxt", true);  // Read-only
+  String username = preferences.getString("username", "");
+  preferences.end();
+  return username;
+}
+
+void setGlobalUsername(const String& username) {
+  preferences.begin("smoltxt", false);  // Read-write
+  preferences.putString("username", username);
+  preferences.end();
+  Serial.println("[Username] Saved global username: " + username);
+}
+
+bool hasGlobalUsername() {
+  String username = getGlobalUsername();
+  return username.length() > 0;
+}
 
 // Application state
 enum AppState {
   APP_MAIN_MENU,
   APP_CONVERSATION_LIST,
   APP_SETTINGS_MENU,
+  APP_CHANGE_DISPLAY_NAME,
   APP_RINGTONE_SELECT,
   APP_WIFI_SETUP_MENU,
   APP_WIFI_NETWORK_LIST,
@@ -63,6 +86,7 @@ enum AppState {
   APP_OTA_CHECKING,
   APP_OTA_UPDATING,
   APP_CONVERSATION_MENU,
+  APP_CONVERSATION_TYPE_SELECT,
   APP_CONVERSATION_CREATE,
   APP_CONVERSATION_CREATED,
   APP_INVITE_EXPLAIN,
@@ -85,6 +109,7 @@ String messageComposingText = "";
 String tempVillageName = "";  // Temp storage during village creation
 String tempWiFiSSID = "";     // Temp storage during WiFi setup
 String tempWiFiPassword = ""; // Temp storage during WiFi setup
+ConversationType tempConversationType = CONVERSATION_GROUP;  // Temp storage during conversation creation
 
 // Conversation list tracking
 struct ConversationEntry {
@@ -491,6 +516,8 @@ void enterDeepSleep() {
 void handleMainMenu();
 void handleConversationList();
 void handleSettingsMenu();
+void handleChangeDisplayName();
+void handleConversationTypeSelect();
 void handleRingtoneSelect();
 void handleWiFiSetupMenu();
 void handleWiFiNetworkList();
@@ -1368,6 +1395,12 @@ void loop() {
     case APP_SETTINGS_MENU:
       handleSettingsMenu();
       break;
+    case APP_CHANGE_DISPLAY_NAME:
+      handleChangeDisplayName();
+      break;
+    case APP_CONVERSATION_TYPE_SELECT:
+      handleConversationTypeSelect();
+      break;
     case APP_RINGTONE_SELECT:
       handleRingtoneSelect();
       break;
@@ -1496,12 +1529,12 @@ void handleMainMenu() {
       ui.updateClean();
       Serial.println("[MainMenu] Opening conversation list");
     } else if (selection == 1) {
-      // Selected "New Village" - ask for village name first
+      // Selected "New Village" - go to conversation type selection
       isCreatingVillage = true;
       keyboard.clearInput();
-      appState = APP_CONVERSATION_CREATE;
-      ui.setState(STATE_CREATE_CONVERSATION);
-      ui.setInputText("");
+      appState = APP_CONVERSATION_TYPE_SELECT;
+      ui.setState(STATE_CONVERSATION_TYPE_SELECT);
+      ui.resetMenuSelection();
       ui.updateClean();  // Clean transition
     } else if (selection == 2) {
       // Selected "Join Conversation"
@@ -1594,6 +1627,7 @@ void handleConversationList() {
       if (village.loadFromSlot(entry.slot)) {
         currentVillageSlot = entry.slot;
         ui.setExistingConversationName(village.getVillageName());
+        ui.setIsIndividualConversation(village.isIndividualConversation());  // Set conversation type
         encryption.setKey(village.getEncryptionKey());
         
         // Set as active village for sending
@@ -1640,7 +1674,14 @@ void handleVillageMenu() {
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     int selection = ui.getMenuSelection();
     
-    if (selection == 0) {
+    // Adjust selection for individual conversations (skip invite option)
+    bool isIndividual = village.isIndividualConversation();
+    int adjustedSelection = selection;
+    if (isIndividual && selection >= 1) {
+      adjustedSelection = selection + 1;  // Skip invite option
+    }
+    
+    if (adjustedSelection == 0) {
       // Messages
       Serial.println("[App] Entering messaging. Messages in history: " + String(ui.getMessageCount()));
       keyboard.clearInput();  // Clear buffer to prevent typing detection freeze
@@ -1688,19 +1729,19 @@ void handleVillageMenu() {
       markVisibleMessagesAsRead();
       
       ui.update();  // Always refresh to show any messages received
-    } else if (selection == 1) {
-      // Invite a Friend - go to invite flow
+    } else if (adjustedSelection == 1) {
+      // Invite a Friend - go to invite flow (only for groups)
       appState = APP_INVITE_EXPLAIN;
       ui.setState(STATE_INVITE_EXPLAIN);
       ui.resetMenuSelection();
       ui.updateClean();  // Clean transition
-    } else if (selection == 2) {
+    } else if (adjustedSelection == 2) {
       // View Members
       appState = APP_VIEW_MEMBERS;
       ui.setState(STATE_VIEW_MEMBERS);
       ui.setMemberList(village.getMemberList());
       ui.updateClean();  // Clean transition
-    } else if (selection == 3) {
+    } else if (adjustedSelection == 3) {
       // Leave Village
       ui.showMessage("Leave Village?", "Press ENTER to confirm\nor LEFT to cancel", 0);
       
@@ -2012,13 +2053,17 @@ void handleUsernameInput() {
   if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
     String currentName = ui.getInputText();
     if (currentName.length() > 0) {
+      // Save username globally for future use
+      setGlobalUsername(currentName);
+      
       if (isCreatingVillage) {
         // Create new village with random UUID and encryption key
         Serial.println("[Create] Custom village name: " + tempVillageName);
+        Serial.println("[Create] Conversation type: " + String(tempConversationType));
         
-        // Clear memory and create the new village with custom name
+        // Clear memory and create the new village with custom name and type
         village.clearVillage();
-        village.createVillage(tempVillageName);
+        village.createVillage(tempVillageName, tempConversationType);
         ui.setExistingConversationName(tempVillageName);
         
         village.setUsername(currentName);
@@ -3019,13 +3064,27 @@ void handleSettingsMenu() {
     int selection = ui.getMenuSelection();
     
     if (selection == 0) {
+      // Change Display Name
+      keyboard.clearInput();
+      appState = APP_CHANGE_DISPLAY_NAME;
+      ui.setState(STATE_CHANGE_DISPLAY_NAME);
+      
+      // Load current global username if it exists
+      if (hasGlobalUsername()) {
+        ui.setInputText(getGlobalUsername());
+      } else {
+        ui.setInputText("");
+      }
+      
+      ui.updateClean();
+    } else if (selection == 1) {
       // Open Ringtone selection menu
       keyboard.clearInput();
       appState = APP_RINGTONE_SELECT;
       ui.setState(STATE_RINGTONE_SELECT);
       ui.resetMenuSelection();
       ui.updateClean();
-    } else if (selection == 1) {
+    } else if (selection == 2) {
       // Open WiFi menu
       keyboard.clearInput();
       
@@ -3041,7 +3100,7 @@ void handleSettingsMenu() {
       ui.setState(STATE_WIFI_SETUP_MENU);
       ui.resetMenuSelection();
       ui.updateClean();
-    } else if (selection == 2) {
+    } else if (selection == 3) {
       // Check for Updates
       keyboard.clearInput();
       appState = APP_OTA_CHECKING;
@@ -3061,6 +3120,122 @@ void handleSettingsMenu() {
         ui.setInputText(updateInfo);
       }
       ui.update();
+    }
+    
+    smartDelay(300);
+  }
+}
+
+void handleChangeDisplayName() {
+  keyboard.update();
+  
+  // Left arrow to cancel and go back
+  if (keyboard.isLeftPressed()) {
+    appState = APP_SETTINGS_MENU;
+    ui.setState(STATE_SETTINGS_MENU);
+    ui.resetMenuSelection();
+    ui.updateClean();
+    smartDelay(300);
+    return;
+  }
+  
+  // Handle backspace
+  if (keyboard.isBackspacePressed()) {
+    if (ui.getInputText().length() > 0) {
+      ui.removeInputChar();
+      ui.updatePartial();
+    }
+    smartDelay(150);
+    return;
+  }
+  
+  // Handle enter - save new display name
+  if (keyboard.isEnterPressed() || keyboard.isRightPressed()) {
+    String newName = ui.getInputText();
+    if (newName.length() > 0) {
+      setGlobalUsername(newName);
+      
+      // Show confirmation
+      ui.setInputText("Display name updated!");
+      ui.updatePartial();
+      smartDelay(1000);
+      
+      // Go back to settings menu
+      appState = APP_SETTINGS_MENU;
+      ui.setState(STATE_SETTINGS_MENU);
+      ui.resetMenuSelection();
+      ui.updateClean();
+    }
+    smartDelay(300);
+    return;
+  }
+  
+  // Check for regular input
+  if (keyboard.hasInput()) {
+    String input = keyboard.getInput();
+    
+    for (char c : input) {
+      if (c >= 32 && c < 127 && ui.getInputText().length() < 20) {
+        ui.addInputChar(c);
+      }
+    }
+    
+    keyboard.clearInput();
+    ui.updatePartial();
+  }
+}
+
+void handleConversationTypeSelect() {
+  if (keyboard.isUpPressed()) {
+    ui.menuUp();
+    ui.updatePartial();
+    smartDelay(200);
+  } else if (keyboard.isDownPressed()) {
+    ui.menuDown();
+    ui.updatePartial();
+    smartDelay(200);
+  }
+  
+  // Left arrow to go back
+  if (keyboard.isLeftPressed()) {
+    keyboard.clearInput();
+    appState = APP_MAIN_MENU;
+    ui.setState(STATE_MAIN_HUB);
+    ui.resetMenuSelection();
+    ui.updateClean();
+    smartDelay(300);
+    return;
+  }
+  
+  // Right arrow to select type
+  if (keyboard.isRightPressed()) {
+    int selection = ui.getMenuSelection();
+    
+    if (selection == 0) {
+      // Individual conversation
+      tempConversationType = CONVERSATION_INDIVIDUAL;
+      
+      // Skip to username input (no group name needed)
+      appState = APP_USERNAME_INPUT;
+      ui.setState(STATE_INPUT_USERNAME);
+      
+      // Auto-populate if global username exists
+      if (hasGlobalUsername()) {
+        ui.setInputText(getGlobalUsername());
+      } else {
+        ui.setInputText("");
+      }
+      
+      ui.updateClean();
+    } else if (selection == 1) {
+      // Group conversation
+      tempConversationType = CONVERSATION_GROUP;
+      
+      // Go to group name input
+      appState = APP_CONVERSATION_CREATE;
+      ui.setState(STATE_CREATE_CONVERSATION);
+      ui.setInputText("");
+      ui.updateClean();
     }
     
     smartDelay(300);

@@ -21,6 +21,7 @@ enum UIState {
     STATE_MAIN_HUB,              // Main menu - hub for all navigation
     STATE_CONVERSATION_LIST,     // List of all conversations
     STATE_SETTINGS_MENU,
+    STATE_CHANGE_DISPLAY_NAME,   // Change global display name in settings
     STATE_RINGTONE_SELECT,
     STATE_WIFI_SETUP_MENU,
     STATE_WIFI_NETWORK_LIST,
@@ -32,6 +33,7 @@ enum UIState {
     STATE_WIFI_STATUS,
     STATE_OTA_CHECK,
     STATE_OTA_UPDATE,
+    STATE_CONVERSATION_TYPE_SELECT,  // Choose individual or group
     STATE_CREATE_CONVERSATION,
     STATE_CONVERSATION_CREATED,  // Show invite code or return to hub
     STATE_INVITE_EXPLAIN,
@@ -75,6 +77,7 @@ private:
     std::vector<String> memberList;  // Store member list for display
     String existingConversationName;  // Store village name if one exists
     String currentUsername;  // Current user's username for message display
+    bool isIndividualConversation;  // Track if current conversation is individual (1-on-1)
     String buildNumber;  // Build version to display
     float batteryVoltage;  // Current battery voltage
     int batteryPercent;    // Current battery percentage
@@ -119,6 +122,7 @@ private:
     void drawWiFiStatus();
     void drawOTACheck();
     void drawOTAUpdate();
+    void drawConversationTypeSelect();    // New: Choose individual or group
     void drawCreateVillage();
     void drawConversationCreated();       // New: Invite/Back menu
     void drawInviteExplain();        // New: Pre-generate explanation
@@ -178,6 +182,7 @@ public:
     void setMemberList(const std::vector<String>& members);
     void setExistingConversationName(const String& name);
     void setCurrentUsername(const String& username) { currentUsername = username; }
+    void setIsIndividualConversation(bool isIndividual) { isIndividualConversation = isIndividual; }
     
     // Build version
     void setBuildNumber(const String& build) { buildNumber = build; }

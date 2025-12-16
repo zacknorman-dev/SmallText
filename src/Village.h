@@ -14,6 +14,12 @@
 #define MAX_MEMBERS 20
 #define KEY_SIZE 32  // 256-bit key for ChaCha20
 
+// Conversation types
+enum ConversationType {
+    CONVERSATION_GROUP = 0,      // Anyone can invite (default)
+    CONVERSATION_INDIVIDUAL = 1  // Locked at 2 people, no invite option
+};
+
 struct Member {
     char username[MAX_USERNAME];
     char passwordHash[65];  // SHA256 hash as hex string
@@ -30,6 +36,7 @@ private:
     std::vector<Member> members;
     bool isOwner;
     bool initialized;
+    ConversationType conversationType;  // Individual (1-on-1) or Group
     
     String hashPassword(const String& password);
     void generateRandomEncryptionKey();
@@ -39,10 +46,15 @@ public:
     Village();
     
     // Village management
-    bool createVillage(const String& name);
+    bool createVillage(const String& name, ConversationType type = CONVERSATION_GROUP);
     bool joinVillage(const String& username, const String& password);
     bool isInitialized() { return initialized; }
     bool amOwner() { return isOwner; }
+    
+    // Conversation type
+    ConversationType getConversationType() { return conversationType; }
+    void setConversationType(ConversationType type) { conversationType = type; }
+    bool isIndividualConversation() { return conversationType == CONVERSATION_INDIVIDUAL; }
     
     // User identity
     void setUsername(const String& username);

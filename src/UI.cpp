@@ -23,6 +23,7 @@ UI::UI() {
     ringtoneName = "Rising Tone";  // Default ringtone name
     savedNetworkCount = 0;  // No saved networks initially
     isWiFiConnected = false;
+    isIndividualConversation = false;  // Default to group
 }
 
 bool UI::begin(int8_t sck, int8_t miso, int8_t mosi, int8_t cs, int8_t dc, int8_t rst, int8_t busy) {
@@ -159,6 +160,12 @@ void UI::updatePartial() {
         case STATE_SETTINGS_MENU:
             drawSettingsMenu();
             break;
+        case STATE_CHANGE_DISPLAY_NAME:
+            drawInputPrompt("Display name:");
+            break;
+        case STATE_CONVERSATION_TYPE_SELECT:
+            drawConversationTypeSelect();
+            break;
         case STATE_RINGTONE_SELECT:
             drawRingtoneSelect();
             break;
@@ -247,6 +254,8 @@ void UI::updateClean() {
         case STATE_MAIN_HUB:        drawMainHub(); break;
         case STATE_CONVERSATION_LIST: drawConversationList(); break;
         case STATE_SETTINGS_MENU:   drawSettingsMenu(); break;
+        case STATE_CHANGE_DISPLAY_NAME: drawInputPrompt("Display name:"); break;
+        case STATE_CONVERSATION_TYPE_SELECT: drawConversationTypeSelect(); break;
         case STATE_RINGTONE_SELECT: drawRingtoneSelect(); break;
         case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
         case STATE_WIFI_NETWORK_LIST: drawWiFiNetworkList(); break;
@@ -289,6 +298,8 @@ void UI::updateFull() {
         case STATE_MAIN_HUB:        drawMainHub(); break;
         case STATE_CONVERSATION_LIST: drawConversationList(); break;
         case STATE_SETTINGS_MENU:   drawSettingsMenu(); break;
+        case STATE_CHANGE_DISPLAY_NAME: drawInputPrompt("Display name:"); break;
+        case STATE_CONVERSATION_TYPE_SELECT: drawConversationTypeSelect(); break;
         case STATE_RINGTONE_SELECT: drawRingtoneSelect(); break;
         case STATE_WIFI_SETUP_MENU: drawWiFiSetupMenu(); break;
         case STATE_WIFI_NETWORK_LIST: drawWiFiNetworkList(); break;
@@ -434,14 +445,30 @@ void UI::drawConversationList() {
 void UI::drawConversationMenu() {
     drawMenuHeader(existingConversationName);
     
-    String items[] = {"View Messages", "Invite a Friend", "View Members", "Delete Group"};
     int y = 38;
     int lineHeight = 20;
+    int itemIndex = 0;
     
-    for (int i = 0; i < 4; i++) {
-        drawMenuItem(items[i], y, i == menuSelection, lineHeight);
+    // View Messages - always shown
+    drawMenuItem("View Messages", y, itemIndex == menuSelection, lineHeight);
+    y += lineHeight;
+    itemIndex++;
+    
+    // Invite a Friend - only for group conversations
+    if (!isIndividualConversation) {
+        drawMenuItem("Invite a Friend", y, itemIndex == menuSelection, lineHeight);
         y += lineHeight;
+        itemIndex++;
     }
+    
+    // View Members - always shown
+    drawMenuItem("View Members", y, itemIndex == menuSelection, lineHeight);
+    y += lineHeight;
+    itemIndex++;
+    
+    // Delete - text varies by type
+    String deleteText = isIndividualConversation ? "Delete Chat" : "Delete Group";
+    drawMenuItem(deleteText, y, itemIndex == menuSelection, lineHeight);
 }
 
 void UI::drawSettingsMenu() {
@@ -452,13 +479,20 @@ void UI::drawSettingsMenu() {
     int item = 0;
     int scrollOffset = 0;
     
-    const int totalItems = 3;
+    const int totalItems = 4;  // Changed from 3 to 4
     const int maxVisibleItems = 5;
     
     // Calculate scroll offset
     if (menuSelection >= maxVisibleItems) {
         scrollOffset = menuSelection - maxVisibleItems + 1;
     }
+    
+    // Display Name
+    if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
+        drawMenuItem("Change Display Name", y, menuSelection == item, lineHeight);
+        y += lineHeight;
+    }
+    item++;
     
     // Ringtone
     if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
@@ -477,6 +511,45 @@ void UI::drawSettingsMenu() {
     // Updates
     if (item >= scrollOffset && y <= SCREEN_HEIGHT - 5) {
         drawMenuItem("Updates", y, menuSelection == item, lineHeight);
+    }
+}
+
+void UI::drawConversationTypeSelect() {
+    drawMenuHeader("Choose Type");
+    
+    int y = 50;
+    int lineHeight = 35;
+    
+    // Option 1: 1 on 1
+    if (menuSelection == 0) {
+        display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+        display->setTextColor(GxEPD_WHITE);
+    }
+    display->setFont(&FreeSansBold9pt7b);
+    display->setCursor(10, y);
+    display->print("1 on 1");
+    display->setFont(&FreeSans9pt7b);
+    display->setCursor(15, y + 15);
+    display->print("Just you and your friend");
+    if (menuSelection == 0) {
+        display->setTextColor(GxEPD_BLACK);
+    }
+    
+    y += lineHeight;
+    
+    // Option 2: Group
+    if (menuSelection == 1) {
+        display->fillRect(5, y - 13, SCREEN_WIDTH - 10, lineHeight, GxEPD_BLACK);
+        display->setTextColor(GxEPD_WHITE);
+    }
+    display->setFont(&FreeSansBold9pt7b);
+    display->setCursor(10, y);
+    display->print("Group");
+    display->setFont(&FreeSans9pt7b);
+    display->setCursor(15, y + 15);
+    display->print("As many friends as you want!");
+    if (menuSelection == 1) {
+        display->setTextColor(GxEPD_BLACK);
     }
 }
 

@@ -13,6 +13,7 @@ Village::Village() {
     memset(myUsername, 0, MAX_USERNAME);
     memset(encryptionKey, 0, KEY_SIZE);
     members.clear();
+    conversationType = CONVERSATION_GROUP;  // Default to group
 }
 
 String Village::hashPassword(const String& password) {
@@ -64,7 +65,7 @@ void Village::generateRandomEncryptionKey() {
 
 
 
-bool Village::createVillage(const String& name) {
+bool Village::createVillage(const String& name, ConversationType type) {
     if (name.length() == 0 || name.length() >= MAX_VILLAGE_NAME) {
         logger.error("Village create failed: invalid name length");
         return false;
@@ -83,6 +84,10 @@ bool Village::createVillage(const String& name) {
     
     // No password needed anymore
     memset(villagePassword, 0, MAX_PASSWORD);
+    
+    // Set conversation type
+    conversationType = type;
+    Serial.println("[Village] Type: " + String(type == CONVERSATION_INDIVIDUAL ? "Individual" : "Group"));
     
     // Generate random encryption key
     generateRandomEncryptionKey();
@@ -209,6 +214,7 @@ bool Village::saveToSlot(int slot) {
     doc["username"] = myUsername;
     doc["isOwner"] = isOwner;
     doc["initialized"] = initialized;
+    doc["conversationType"] = (int)conversationType;  // Save conversation type
     
     // Save encryption key as hex
     String keyHex = "";
@@ -277,6 +283,9 @@ bool Village::loadFromSlot(int slot) {
     myUsername[MAX_USERNAME - 1] = '\0';
     isOwner = doc["isOwner"];
     initialized = doc["initialized"];
+    
+    // Load conversation type (default to GROUP for backwards compatibility)
+    conversationType = (ConversationType)(doc["conversationType"] | CONVERSATION_GROUP);
     
     // Load encryption key from hex
     String keyHex = doc["key"].as<String>();
