@@ -934,7 +934,11 @@ void onVillageNameReceived(const String& villageId, const String& villageName) {
 }
 
 void onUsernameReceived(const String& villageId, const String& username) {
-  Serial.println("[Individual] Received username announcement for " + villageId + ": " + username);
+  Serial.println("[Individual] ========================================");
+  Serial.println("[Individual] Received username announcement!");
+  Serial.println("[Individual] Village ID: " + villageId);
+  Serial.println("[Individual] Username: " + username);
+  Serial.println("[Individual] ========================================");
   
   // Find which slot has this village ID
   int slot = Village::findVillageSlotById(villageId);
@@ -942,6 +946,7 @@ void onUsernameReceived(const String& villageId, const String& username) {
     Serial.println("[Individual] WARNING: No slot found for village ID " + villageId);
     return;
   }
+  Serial.println("[Individual] Found village in slot: " + String(slot));
   
   // Load the village to check if it's individual conversation
   Village tempVillage;
@@ -949,6 +954,10 @@ void onUsernameReceived(const String& villageId, const String& username) {
     Serial.println("[Individual] WARNING: Failed to load village from slot " + String(slot));
     return;
   }
+  
+  Serial.println("[Individual] Village type: " + String(tempVillage.isIndividualConversation() ? "Individual" : "Group"));
+  Serial.println("[Individual] Current name: '" + String(tempVillage.getVillageName()) + "'");
+  Serial.println("[Individual] My username: '" + String(tempVillage.getUsername()) + "'");
   
   // Only update name for individual conversations, and only if it's not our own name
   if (!tempVillage.isIndividualConversation()) {
@@ -963,6 +972,7 @@ void onUsernameReceived(const String& villageId, const String& username) {
   
   String currentName = tempVillage.getVillageName();
   if (currentName == "Chat" || currentName.isEmpty() || currentName == tempVillage.getUsername()) {
+    Serial.println("[Individual] Updating conversation name from '" + currentName + "' to '" + username + "'");
     tempVillage.setVillageName(username);
     if (tempVillage.saveToSlot(slot)) {
       Serial.println("[Individual] ✓ Updated conversation name in slot " + String(slot) + " to: " + username);
@@ -972,8 +982,13 @@ void onUsernameReceived(const String& villageId, const String& username) {
         village.setVillageName(username);
         ui.setExistingConversationName(username);
         ui.update();  // Force full update to show new name
+        Serial.println("[Individual] ✓ UI updated with new name");
       }
+    } else {
+      Serial.println("[Individual] ERROR: Failed to save to slot " + String(slot));
     }
+  } else {
+    Serial.println("[Individual] Not updating - current name '" + currentName + "' is acceptable");
   }
 }
 
@@ -2228,6 +2243,12 @@ void handleUsernameInput() {
       );
       mqttMessenger.setActiveVillage(village.getVillageId());
       Serial.println("[Username] Village added to MQTT subscriptions: " + village.getVillageName());
+      
+      // Wait briefly for MQTT subscription to complete and receive retained messages
+      if (mqttMessenger.isConnected()) {
+        smartDelay(500);  // Allow time for retained messages
+        mqttMessenger.loop();  // Process any incoming retained messages
+      }
       
       if (isCreatingVillage) {
         // Creator: Announce village name immediately after creating
