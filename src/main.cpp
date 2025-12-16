@@ -2596,7 +2596,7 @@ void handleInviteExplain() {
       
       appState = APP_INVITE_CODE_DISPLAY;
       ui.setState(STATE_INVITE_CODE_DISPLAY);
-      ui.updateClean();
+      ui.updateFull();  // Full refresh to clear previous screen artifacts
     } else if (selection == 1) {  // Cancel - return to main hub
       appState = APP_MAIN_MENU;
       ui.setState(STATE_MAIN_HUB);

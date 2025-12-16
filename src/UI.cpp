@@ -1590,8 +1590,13 @@ int UI::getMessageCount() const {
 void UI::updateMessageStatus(const String& messageId, MessageStatus newStatus) {
     for (Message& msg : messageHistory) {
         if (msg.messageId == messageId) {
-            msg.status = newStatus;
-            Serial.println("[UI] Updated message " + messageId + " to status " + String((int)newStatus));
+            // Only upgrade status, never downgrade (e.g., don't change READ back to RECEIVED)
+            if (newStatus > msg.status) {
+                msg.status = newStatus;
+                Serial.println("[UI] Updated message " + messageId + " to status " + String((int)newStatus));
+            } else {
+                Serial.println("[UI] Skipping status update for " + messageId + " - current status " + String((int)msg.status) + " >= new status " + String((int)newStatus));
+            }
             return;
         }
     }

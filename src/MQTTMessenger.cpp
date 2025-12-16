@@ -346,6 +346,8 @@ void MQTTMessenger::mqttEventHandler(void *handler_args, esp_event_base_t base,
         case MQTT_EVENT_DATA: {
             // Handle incoming message
             String topic(event->topic, event->topic_len);
+            Serial.printf("[MQTT] EVENT_DATA: topic=%.*s len=%d session_present=%d\n", 
+                event->topic_len, event->topic, event->data_len, event->session_present);
             self->handleIncomingMessage(topic, (const uint8_t*)event->data, event->data_len);
             break;
         }
@@ -382,7 +384,8 @@ void MQTTMessenger::mqttEventHandler(void *handler_args, esp_event_base_t base,
 // void MQTTMessenger::onMqttMessage(char* topic, char* payload, ...) { ... }
 
 void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* payload, unsigned int length) {
-    Serial.println("[MQTT] Received on topic: " + topic);
+    Serial.println("[MQTT] Received on topic: " + topic + " (uptime: " + String(millis()) + "ms)");
+    Serial.println("[MQTT] seenMessageIds size: " + String(seenMessageIds.size()));
     
     // Check if this is a command message
     char macStr[13];
@@ -552,9 +555,10 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
     
     // Check if we've seen this message before
     if (seenMessageIds.find(msg.messageId) != seenMessageIds.end()) {
-        Serial.println("[MQTT] Duplicate message, ignoring: " + msg.messageId);
+        Serial.println("[MQTT] Duplicate message, ignoring: " + msg.messageId + " (in seenMessageIds cache)");
         return;
     }
+    Serial.println("[MQTT] NEW message: " + msg.messageId + " - adding to seenMessageIds (size: " + String(seenMessageIds.size()) + ")");
     seenMessageIds.insert(msg.messageId);
     
     // Normalize our MAC for comparison
@@ -608,8 +612,9 @@ void MQTTMessenger::handleIncomingMessage(const String& topic, const uint8_t* pa
         }
         
         // Send ACK
-        Serial.println("[MQTT] Sending ACK for message: " + msg.messageId + " to " + msg.senderMAC);
-        sendAck(msg.messageId, msg.senderMAC, msg.villageId);
+        Serial.println("[MQTT] *** SENDING ACK *** for message: " + msg.messageId + " to " + msg.senderMAC + " (uptime: " + String(millis()) + "ms)");
+        bool ackSent = sendAck(msg.messageId, msg.senderMAC, msg.villageId);
+        Serial.println("[MQTT] ACK send result: " + String(ackSent ? "SUCCESS" : "FAILED"));
         
         // Deliver message to app
         if (onMessageReceived) {
