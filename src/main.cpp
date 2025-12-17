@@ -1054,6 +1054,13 @@ void setup() {
   Serial.println("Boot starting...");
   smartDelay(500);  // Give time to see messages
   
+  // Load ringtone setting from Preferences
+  preferences.begin("smoltxt", true);  // Read-only
+  selectedRingtone = (RingtoneType)preferences.getInt("ringtone", RINGTONE_RISING);
+  ringtoneEnabled = (selectedRingtone != RINGTONE_OFF);
+  preferences.end();
+  Serial.println("[Settings] Loaded ringtone: " + String(ringtoneNames[selectedRingtone]));
+  
   // Initialize logger FIRST to capture all subsequent boot events
   Serial.println("[Logger] Initializing event logger...");
   if (!logger.begin()) {
@@ -1281,14 +1288,23 @@ void setup() {
     }
     
     // Check if there are any unread messages (max 5 alerts)
+    Serial.println("[Power] Ringtone setting: " + String(ringtoneNames[selectedRingtone]));
+    Serial.println("[Power] Ringtone enabled: " + String(ringtoneEnabled ? "YES" : "NO"));
     int unreadCount = 0;
     if (village.isInitialized()) {
       std::vector<Message> messages = village.loadMessages();
+      Serial.println("[Power] Total messages in storage: " + String(messages.size()));
       for (const Message& msg : messages) {
+        Serial.println("[Power]   Message ID=" + msg.messageId + " status=" + String((int)msg.status) + " (" + 
+                       (msg.status == MSG_SENT ? "SENT" : msg.status == MSG_RECEIVED ? "RECEIVED" : msg.status == MSG_READ ? "READ" : "UNKNOWN") + 
+                       ") from=" + msg.sender);
         if (msg.status != MSG_READ && msg.status != MSG_SEEN) {
           unreadCount++;
         }
       }
+      Serial.println("[Power] Unread message count: " + String(unreadCount));
+    } else {
+      Serial.println("[Power] No village initialized");
     }
     
     if (unreadCount > 0) {
@@ -3591,8 +3607,15 @@ void handleRingtoneSelect() {
     ringtoneEnabled = (selectedRingtone != RINGTONE_OFF);
     ui.setRingtoneEnabled(ringtoneEnabled);
     ui.setRingtoneName(ringtoneNames[selectedRingtone]);
+    
+    // Save to Preferences for persistence across deep sleep
+    preferences.begin("smoltxt", false);  // Read-write
+    preferences.putInt("ringtone", (int)selectedRingtone);
+    preferences.end();
+    
     Serial.print("[Settings] Ringtone set to: ");
     Serial.println(ringtoneNames[selectedRingtone]);
+    Serial.println("[Settings] Ringtone saved to Preferences");
     
     keyboard.clearInput();
     appState = APP_SETTINGS_MENU;
