@@ -366,7 +366,7 @@ bool Village::hasVillageInSlot(int slot) {
     }
     
     // Verify critical fields exist
-    if (!doc.containsKey("villageId") || !doc.containsKey("villageName")) {
+    if (!doc["villageId"].is<String>() || !doc["villageName"].is<String>()) {
         Serial.println("[Village] WARNING: File missing critical fields: " + filename);
         return false;
     }
@@ -492,9 +492,9 @@ bool Village::saveMessage(const Message& msg) {
     
     // Double-check by scanning file (slower but catches cache misses)
     // This prevents duplicates from race conditions or cache rebuilds
-    // IMPORTANT: Check both villageId AND messageId to avoid false duplicates across villages
     if (!msg.messageId.isEmpty()) {
-        File checkFile = LittleFS.open("/messages.dat", "r");
+        String filename = "/messages_" + String(villageId) + ".dat";
+        File checkFile = LittleFS.open(filename, "r");
         if (checkFile) {
             while (checkFile.available()) {
                 String line = checkFile.readStringUntil('\n');
@@ -506,9 +506,8 @@ bool Village::saveMessage(const Message& msg) {
                 if (err) continue;
                 
                 String existingId = checkDoc["messageId"] | "";
-                String existingVillageId = checkDoc["villageId"] | "";
-                // Only consider it a duplicate if BOTH village AND message ID match
-                if (existingId == msg.messageId && existingVillageId == villageId) {
+                // Since we're in a per-village file, only check messageId
+                if (existingId == msg.messageId) {
                     checkFile.close();
                     logger.info("Duplicate message skipped (file scan): id=" + msg.messageId);
                     // Add to cache to prevent future file scans
@@ -520,10 +519,11 @@ bool Village::saveMessage(const Message& msg) {
         }
     }
     
-    File file = LittleFS.open("/messages.dat", "a");
+    String filename = "/messages_" + String(villageId) + ".dat";
+    File file = LittleFS.open(filename, "a");
     if (!file) {
-        logger.critical("Failed to open messages.dat for writing");
-        Serial.println("[Village] Failed to open messages file");
+        logger.critical("Failed to open " + filename + " for writing");
+        Serial.println("[Village] Failed to open messages file: " + filename);
         return false;
     }
     
@@ -594,20 +594,20 @@ std::vector<Message> Village::loadMessages() {
         return messages;
     }
     
-    File file = LittleFS.open("/messages.dat", "r");
+    String currentVillageId = String(villageId);
+    String filename = "/messages_" + currentVillageId + ".dat";
+    
+    File file = LittleFS.open(filename, "r");
     if (!file) {
-        logger.info("No messages.dat file found (new village)");
+        logger.info("No message file found (new village): " + filename);
         return messages;
     }
     
-    String currentVillageId = String(villageId);  // Use UUID for stable filtering
     logger.info("Loading messages for village: " + currentVillageId);
     
     int totalLines = 0;
     int emptyLines = 0;
     int parseErrors = 0;
-    int wrongVillage = 0;
-    int matched = 0;
     
     while (file.available()) {
         String line = file.readStringUntil('\n');
@@ -623,21 +623,11 @@ std::vector<Message> Village::loadMessages() {
         DeserializationError error = deserializeJson(doc, line);
         
         if (error) {
-            logger.error("JSON parse error in messages.dat line " + String(totalLines));
+            logger.error("JSON parse error in " + filename + " line " + String(totalLines));
             parseErrors++;
             continue;
         }
         
-        String msgVillage = doc["village"] | "";
-        
-        // SECURITY: Discard messages without villageId (malformed/corrupted data)
-        // Never assume which village they belong to - could mix private/group messages
-        if (msgVillage.isEmpty() || msgVillage != currentVillageId) {
-            wrongVillage++;
-            continue;  // Filter by UUID
-        }
-        
-        matched++;
         Message msg;
         msg.sender = doc["sender"] | "";
         msg.senderMAC = doc["senderMAC"] | "";
@@ -646,7 +636,7 @@ std::vector<Message> Village::loadMessages() {
         msg.received = doc["received"] | false;
         msg.status = (MessageStatus)(doc["status"] | MSG_SENT);
         msg.messageId = doc["messageId"] | "";
-        msg.villageId = msgVillage;  // Populate villageId from loaded data
+        msg.villageId = currentVillageId;  // All messages in this file belong to this village
         
         messages.push_back(msg);
     }
@@ -654,8 +644,7 @@ std::vector<Message> Village::loadMessages() {
     file.close();
     
     logger.info("File stats: total=" + String(totalLines) + " empty=" + String(emptyLines) + 
-                " parseErr=" + String(parseErrors) + " wrongUUID=" + String(wrongVillage) + 
-                " matched=" + String(matched));
+                " parseErr=" + String(parseErrors) + " matched=" + String(totalLines - emptyLines - parseErrors));
     logger.info("Loaded " + String(messages.size()) + " messages for village " + currentVillageId);
     
     // Sort messages by timestamp to ensure chronological order
@@ -670,11 +659,12 @@ std::vector<Message> Village::loadMessages() {
 bool Village::clearMessages() {
     if (!initialized) return false;
     
-    if (LittleFS.remove("/messages.dat")) {
-        Serial.println("[Village] Messages cleared");
+    String filename = "/messages_" + String(villageId) + ".dat";
+    if (LittleFS.remove(filename)) {
+        Serial.println("[Village] Messages cleared: " + filename);
         return true;
     }
-    Serial.println("[Village] Failed to clear messages");
+    Serial.println("[Village] Failed to clear messages: " + filename);
     return false;
 }
 
@@ -689,19 +679,17 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
     
     // OPTIMIZATION: Only scan last 20 messages for status updates
     // Recent messages are most likely to need status updates (acks, read receipts)
-    // This prevents scanning 100+ messages during sync, avoiding watchdog timeouts
     const int MAX_MESSAGES_TO_SCAN = 20;
     
-    // CRITICAL FIX: Load ALL messages from file (not filtered by village)
-    // to prevent deleting messages from other villages
+    String currentVillageId = String(villageId);
+    String filename = "/messages_" + currentVillageId + ".dat";
+    
     std::vector<String> allLines;
-    File readFile = LittleFS.open("/messages.dat", "r");
+    File readFile = LittleFS.open(filename, "r");
     if (!readFile) {
-        logger.error("Failed to open messages.dat for status update");
+        logger.error("Failed to open " + filename + " for status update");
         return false;
     }
-    
-    String currentVillageId = String(villageId);
     
     // Read all lines into memory first
     while (readFile.available()) {
@@ -729,30 +717,26 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
             continue;  // Skip unparseable lines
         }
         
-        String msgVillage = doc["village"] | "";
         String msgId = doc["messageId"] | "";
         
-        // Count messages from our village first (for scan limit)
-        if (msgVillage == currentVillageId) {
-            messagesScanned++;
+        messagesScanned++;
+        
+        // Stop scanning after MAX_MESSAGES_TO_SCAN
+        if (messagesScanned > MAX_MESSAGES_TO_SCAN) {
+            break;
+        }
+        
+        // Check if this is our target message
+        if (msgId == messageId) {
+            doc["status"] = newStatus;
+            found = true;
             
-            // Stop scanning after MAX_MESSAGES_TO_SCAN from our village
-            if (messagesScanned > MAX_MESSAGES_TO_SCAN) {
-                break;
-            }
+            // Re-serialize the updated message
+            String updatedLine;
+            serializeJson(doc, updatedLine);
+            allLines[i] = updatedLine;
             
-            // Check if this is our target message
-            if (msgId == messageId) {
-                doc["status"] = newStatus;
-                found = true;
-                
-                // Re-serialize the updated message
-                String updatedLine;
-                serializeJson(doc, updatedLine);
-                allLines[i] = updatedLine;
-                
-                logger.info("Updated message " + messageId + " to status " + String(newStatus));
-            }
+            logger.info("Updated message " + messageId + " to status " + String(newStatus));
         }
     }
     
@@ -761,10 +745,10 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
         return false;
     }
     
-    // Rewrite the entire file with ALL messages preserved
-    File writeFile = LittleFS.open("/messages.dat", "w");
+    // Rewrite the entire file
+    File writeFile = LittleFS.open(filename, "w");
     if (!writeFile) {
-        logger.critical("Failed to reopen messages.dat for writing");
+        logger.critical("Failed to reopen " + filename + " for writing");
         return false;
     }
     
@@ -774,7 +758,7 @@ bool Village::updateMessageStatus(const String& messageId, int newStatus) {
     
     writeFile.flush();  // CRITICAL: Ensure data is written to disk before closing
     writeFile.close();
-    logger.info("Saved " + String(allLines.size()) + " total lines (all villages preserved)");
+    logger.info("Saved " + String(allLines.size()) + " total lines");
     return true;
 }
 
@@ -873,11 +857,12 @@ bool Village::batchUpdateMessageStatus(const std::vector<String>& messageIds, in
     // Create a set for fast lookup
     std::set<String> targetIds(messageIds.begin(), messageIds.end());
     
-    // Load ALL messages from file
+    // Load messages from per-village file
+    String filename = "/messages_" + String(villageId) + ".dat";
     std::vector<String> allLines;
-    File readFile = LittleFS.open("/messages.dat", "r");
+    File readFile = LittleFS.open(filename, "r");
     if (!readFile) {
-        logger.error("Failed to open messages.dat for batch status update");
+        logger.error("Failed to open " + filename + " for batch status update");
         return false;
     }
     
@@ -890,7 +875,6 @@ bool Village::batchUpdateMessageStatus(const std::vector<String>& messageIds, in
     
     // Update all matching messages in memory
     int updatedCount = 0;
-    String currentVillageId = String(villageId);
     
     for (int i = 0; i < allLines.size(); i++) {
         String& line = allLines[i];
@@ -902,11 +886,10 @@ bool Village::batchUpdateMessageStatus(const std::vector<String>& messageIds, in
         
         if (error) continue;
         
-        String msgVillage = doc["village"] | "";
         String msgId = doc["messageId"] | "";
         
-        // Check if this message is in our batch and from our village
-        if (msgVillage == currentVillageId && targetIds.find(msgId) != targetIds.end()) {
+        // Check if this message is in our batch (no village check needed - we're in a per-village file)
+        if (targetIds.find(msgId) != targetIds.end()) {
             doc["status"] = newStatus;
             
             // Re-serialize the updated message
@@ -924,9 +907,9 @@ bool Village::batchUpdateMessageStatus(const std::vector<String>& messageIds, in
     logger.info("Batch updated " + String(updatedCount) + " messages to status " + String(newStatus));
     
     // Write once at the end
-    File writeFile = LittleFS.open("/messages.dat", "w");
+    File writeFile = LittleFS.open(filename, "w");
     if (!writeFile) {
-        logger.critical("Failed to reopen messages.dat for writing");
+        logger.critical("Failed to reopen " + filename + " for writing");
         return false;
     }
     
@@ -936,7 +919,7 @@ bool Village::batchUpdateMessageStatus(const std::vector<String>& messageIds, in
     
     writeFile.flush();
     writeFile.close();
-    logger.info("Saved " + String(allLines.size()) + " total lines (all villages preserved)");
+    logger.info("Saved " + String(allLines.size()) + " total lines");
     return true;
 }
 
@@ -950,10 +933,9 @@ void Village::rebuildMessageIdCache() {
     
     if (!initialized) return;
     
-    File file = LittleFS.open("/messages.dat", "r");
+    String filename = "/messages_" + String(villageId) + ".dat";
+    File file = LittleFS.open(filename, "r");
     if (!file) return;
-    
-    String currentVillageId = String(villageId);
     
     while (file.available()) {
         String line = file.readStringUntil('\n');
@@ -965,9 +947,6 @@ void Village::rebuildMessageIdCache() {
         DeserializationError error = deserializeJson(doc, line);
         
         if (error) continue;
-        
-        String msgVillage = doc["village"] | "";
-        if (msgVillage != currentVillageId) continue;
         
         String messageId = doc["messageId"] | "";
         if (!messageId.isEmpty()) {
@@ -983,16 +962,18 @@ int Village::deduplicateMessages() {
     // Remove duplicate message IDs from storage
     // Keep the message with highest status (READ > RECEIVED > SENT)
     
-    File file = LittleFS.open("/messages.dat", "r");
+    if (!initialized) return 0;
+    
+    String filename = "/messages_" + String(villageId) + ".dat";
+    File file = LittleFS.open(filename, "r");
     if (!file) {
-        Serial.println("[Village] Failed to open messages.dat for deduplication");
+        Serial.println("[Village] Failed to open " + filename + " for deduplication");
         return 0;
     }
     
-    // Load all messages, track best version of each message ID PER VILLAGE
-    std::map<String, String> bestMessages;  // "villageId:messageId" -> best line
-    std::map<String, int> bestStatus;  // "villageId:messageId" -> highest status
-    std::vector<String> otherLines;  // Non-message lines or different villages
+    // Load all messages, track best version of each message ID
+    std::map<String, String> bestMessages;  // messageId -> best line
+    std::map<String, int> bestStatus;  // messageId -> highest status
     int duplicatesRemoved = 0;
     
     while (file.available()) {
@@ -1004,38 +985,32 @@ int Village::deduplicateMessages() {
         JsonDocument doc;
         DeserializationError err = deserializeJson(doc, line);
         if (err) {
-            otherLines.push_back(line);  // Keep malformed lines
-            continue;
+            continue;  // Skip malformed lines
         }
         
         String messageId = doc["messageId"] | "";
-        String villageId = doc["villageId"] | "";
-        if (messageId.isEmpty() || villageId.isEmpty()) {
-            otherLines.push_back(line);  // Keep lines without message ID or village ID
-            continue;
+        if (messageId.isEmpty()) {
+            continue;  // Skip lines without message ID
         }
         
         int status = doc["status"] | 0;
         
-        // Create unique key combining village and message ID
-        String uniqueKey = villageId + ":" + messageId;
-        
-        // Check if we've seen this exact message in this village before
-        if (bestMessages.find(uniqueKey) != bestMessages.end()) {
+        // Check if we've seen this message ID before (no village check needed - per-village file)
+        if (bestMessages.find(messageId) != bestMessages.end()) {
             // Duplicate found!
             duplicatesRemoved++;
-            Serial.println("[Village] Duplicate found: " + messageId + " in village " + villageId.substring(0, 8) + " (keeping highest status)");
+            Serial.println("[Village] Duplicate found: " + messageId + " (keeping highest status)");
             
             // Keep the one with higher status
-            if (status > bestStatus[uniqueKey]) {
-                bestMessages[uniqueKey] = line;
-                bestStatus[uniqueKey] = status;
+            if (status > bestStatus[messageId]) {
+                bestMessages[messageId] = line;
+                bestStatus[messageId] = status;
             }
             // else: current stored message has higher status, discard this one
         } else {
-            // First occurrence of this message in this village
-            bestMessages[uniqueKey] = line;
-            bestStatus[uniqueKey] = status;
+            // First occurrence of this message
+            bestMessages[messageId] = line;
+            bestStatus[messageId] = status;
         }
     }
     
@@ -1049,20 +1024,15 @@ int Village::deduplicateMessages() {
     Serial.println("[Village] Removed " + String(duplicatesRemoved) + " duplicate messages");
     
     // Write back deduplicated messages
-    File writeFile = LittleFS.open("/messages.dat", "w");
+    File writeFile = LittleFS.open(filename, "w");
     if (!writeFile) {
-        Serial.println("[Village] Failed to reopen messages.dat for writing");
+        Serial.println("[Village] Failed to reopen " + filename + " for writing");
         return duplicatesRemoved;  // Still return count even if write fails
     }
     
     // Write all best messages
     for (const auto& pair : bestMessages) {
         writeFile.println(pair.second);
-    }
-    
-    // Write other lines (non-messages or malformed)
-    for (const String& line : otherLines) {
-        writeFile.println(line);
     }
     
     writeFile.flush();

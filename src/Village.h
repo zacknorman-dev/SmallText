@@ -109,7 +109,7 @@ public:
     bool batchUpdateMessageStatus(const std::vector<String>& messageIds, int newStatus);  // Batch update multiple messages
     bool messageIdExists(const String& messageId);  // Check if message already saved
     void rebuildMessageIdCache();  // Rebuild in-memory cache of message IDs
-    static int deduplicateMessages();  // Remove duplicate message IDs from storage, return count removed
+    int deduplicateMessages();  // Remove duplicate message IDs from storage, return count removed
     
     int getMemberCount() { return members.size(); }
     
