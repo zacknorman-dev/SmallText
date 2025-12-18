@@ -122,11 +122,48 @@ Write-Host ""
 Write-Host "Streaming output from monitors (Ctrl+C to stop viewing)..." -ForegroundColor Yellow
 Write-Host ""
 
-# Stream output from both jobs
+# Stream output and dynamically detect new ports
+$monitoredPorts = @{}
+foreach ($port in $ports) {
+    $monitoredPorts[$port] = $true
+}
+
+Write-Host "Dynamic port detection enabled - will auto-detect devices waking from sleep..." -ForegroundColor Magenta
+Write-Host ""
+
 try {
+    $lastPortScan = Get-Date
     while ($true) {
         Start-Sleep -Milliseconds 200
-        foreach ($port in $ports) {
+        
+        # Check for new ports every 5 seconds
+        if (((Get-Date) - $lastPortScan).TotalSeconds -ge 5) {
+            $currentPorts = & $PIO device list 2>$null | Select-String "^COM\d+" | ForEach-Object { $_.ToString().Trim() }
+            
+            foreach ($port in $currentPorts) {
+                if (-not $monitoredPorts.ContainsKey($port)) {
+                    # New port detected - start monitoring it
+                    Write-Host ""
+                    Write-Host "*** NEW PORT DETECTED: $port ***" -ForegroundColor Green -BackgroundColor Black
+                    Write-Host "    Starting monitor automatically..." -ForegroundColor Yellow
+                    
+                    $jobName = "Monitor_$port"
+                    Start-Job -Name $jobName -ScriptBlock {
+                        param($PIO, $port)
+                        & $PIO device monitor --port $port
+                    } -ArgumentList $PIO, $port | Out-Null
+                    
+                    $monitoredPorts[$port] = $true
+                    Write-Host "    Monitor started for $port" -ForegroundColor Green
+                    Write-Host ""
+                }
+            }
+            
+            $lastPortScan = Get-Date
+        }
+        
+        # Stream output from all active monitors
+        foreach ($port in $monitoredPorts.Keys) {
             $jobName = "Monitor_$port"
             $output = Receive-Job -Name $jobName -ErrorAction SilentlyContinue
             if ($output) {

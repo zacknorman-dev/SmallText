@@ -4,6 +4,7 @@
 #include <SHA256.h>
 #include <RNG.h>
 #include <algorithm>  // For std::sort
+#include <map>  // For deduplication tracking
 
 Village::Village() {
     initialized = false;
@@ -483,10 +484,40 @@ bool Village::saveMessage(const Message& msg) {
         return false;
     }
     
-    // Check for duplicate message ID (skip empty IDs from old messages)
+    // Check cache first (fast check)
     if (!msg.messageId.isEmpty() && messageIdExists(msg.messageId)) {
-        logger.info("Duplicate message skipped: id=" + msg.messageId);
+        logger.info("Duplicate message skipped (cache): id=" + msg.messageId);
         return true;  // Return true as it's not an error, message already exists
+    }
+    
+    // Double-check by scanning file (slower but catches cache misses)
+    // This prevents duplicates from race conditions or cache rebuilds
+    // IMPORTANT: Check both villageId AND messageId to avoid false duplicates across villages
+    if (!msg.messageId.isEmpty()) {
+        File checkFile = LittleFS.open("/messages.dat", "r");
+        if (checkFile) {
+            while (checkFile.available()) {
+                String line = checkFile.readStringUntil('\n');
+                line.trim();
+                if (line.isEmpty()) continue;
+                
+                JsonDocument checkDoc;
+                DeserializationError err = deserializeJson(checkDoc, line);
+                if (err) continue;
+                
+                String existingId = checkDoc["messageId"] | "";
+                String existingVillageId = checkDoc["villageId"] | "";
+                // Only consider it a duplicate if BOTH village AND message ID match
+                if (existingId == msg.messageId && existingVillageId == villageId) {
+                    checkFile.close();
+                    logger.info("Duplicate message skipped (file scan): id=" + msg.messageId);
+                    // Add to cache to prevent future file scans
+                    messageIdCache.insert(msg.messageId);
+                    return true;
+                }
+            }
+            checkFile.close();
+        }
     }
     
     File file = LittleFS.open("/messages.dat", "a");
@@ -946,4 +977,97 @@ void Village::rebuildMessageIdCache() {
     
     file.close();
     logger.info("Rebuilt message ID cache: " + String(messageIdCache.size()) + " messages");
+}
+
+int Village::deduplicateMessages() {
+    // Remove duplicate message IDs from storage
+    // Keep the message with highest status (READ > RECEIVED > SENT)
+    
+    File file = LittleFS.open("/messages.dat", "r");
+    if (!file) {
+        Serial.println("[Village] Failed to open messages.dat for deduplication");
+        return 0;
+    }
+    
+    // Load all messages, track best version of each message ID PER VILLAGE
+    std::map<String, String> bestMessages;  // "villageId:messageId" -> best line
+    std::map<String, int> bestStatus;  // "villageId:messageId" -> highest status
+    std::vector<String> otherLines;  // Non-message lines or different villages
+    int duplicatesRemoved = 0;
+    
+    while (file.available()) {
+        String line = file.readStringUntil('\n');
+        line.trim();
+        
+        if (line.isEmpty()) continue;
+        
+        JsonDocument doc;
+        DeserializationError err = deserializeJson(doc, line);
+        if (err) {
+            otherLines.push_back(line);  // Keep malformed lines
+            continue;
+        }
+        
+        String messageId = doc["messageId"] | "";
+        String villageId = doc["villageId"] | "";
+        if (messageId.isEmpty() || villageId.isEmpty()) {
+            otherLines.push_back(line);  // Keep lines without message ID or village ID
+            continue;
+        }
+        
+        int status = doc["status"] | 0;
+        
+        // Create unique key combining village and message ID
+        String uniqueKey = villageId + ":" + messageId;
+        
+        // Check if we've seen this exact message in this village before
+        if (bestMessages.find(uniqueKey) != bestMessages.end()) {
+            // Duplicate found!
+            duplicatesRemoved++;
+            Serial.println("[Village] Duplicate found: " + messageId + " in village " + villageId.substring(0, 8) + " (keeping highest status)");
+            
+            // Keep the one with higher status
+            if (status > bestStatus[uniqueKey]) {
+                bestMessages[uniqueKey] = line;
+                bestStatus[uniqueKey] = status;
+            }
+            // else: current stored message has higher status, discard this one
+        } else {
+            // First occurrence of this message in this village
+            bestMessages[uniqueKey] = line;
+            bestStatus[uniqueKey] = status;
+        }
+    }
+    
+    file.close();
+    
+    if (duplicatesRemoved == 0) {
+        Serial.println("[Village] No duplicates found");
+        return 0;
+    }
+    
+    Serial.println("[Village] Removed " + String(duplicatesRemoved) + " duplicate messages");
+    
+    // Write back deduplicated messages
+    File writeFile = LittleFS.open("/messages.dat", "w");
+    if (!writeFile) {
+        Serial.println("[Village] Failed to reopen messages.dat for writing");
+        return duplicatesRemoved;  // Still return count even if write fails
+    }
+    
+    // Write all best messages
+    for (const auto& pair : bestMessages) {
+        writeFile.println(pair.second);
+    }
+    
+    // Write other lines (non-messages or malformed)
+    for (const String& line : otherLines) {
+        writeFile.println(line);
+    }
+    
+    writeFile.flush();
+    writeFile.close();
+    
+    Serial.println("[Village] Deduplication complete - " + String(bestMessages.size()) + " unique messages retained");
+    return duplicatesRemoved;
 }

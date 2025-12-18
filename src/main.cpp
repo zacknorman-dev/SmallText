@@ -139,6 +139,34 @@ const unsigned long MESSAGING_TIMEOUT = 300000;  // 5 minutes timeout
 int currentVillageSlot = -1;  // Track which village slot is currently active (-1 = none)
 bool isSyncing = false;  // Flag to track if we're currently syncing (skip status updates during sync)
 
+// Check all village slots for unread messages (for wake alerts)
+int checkAllVillagesForUnreadMessages() {
+  int totalUnread = 0;
+  Serial.println("[Power] Checking all villages for unread messages...");
+  
+  for (int slot = 0; slot < 10; slot++) {
+    if (Village::hasVillageInSlot(slot)) {
+      Village tempVillage;
+      if (tempVillage.loadFromSlot(slot)) {
+        std::vector<Message> messages = tempVillage.loadMessages();
+        int unreadInSlot = 0;
+        for (const Message& msg : messages) {
+          if (msg.status != MSG_READ && msg.status != MSG_SEEN) {
+            unreadInSlot++;
+          }
+        }
+        if (unreadInSlot > 0) {
+          Serial.println("[Power]   Slot " + String(slot) + " (" + tempVillage.getVillageName() + "): " + String(unreadInSlot) + " unread");
+          totalUnread += unreadInSlot;
+        }
+      }
+    }
+  }
+  
+  Serial.println("[Power] Total unread across all villages: " + String(totalUnread));
+  return totalUnread;
+}
+
 // Build conversation list from valid villages, sorted by most recent activity
 void buildConversationList() {
   conversationList.clear();
@@ -1054,12 +1082,14 @@ void setup() {
   Serial.println("Boot starting...");
   smartDelay(500);  // Give time to see messages
   
-  // Load ringtone setting from Preferences
+  // Load settings from Preferences
   preferences.begin("smoltxt", true);  // Read-only
   selectedRingtone = (RingtoneType)preferences.getInt("ringtone", RINGTONE_RISING);
   ringtoneEnabled = (selectedRingtone != RINGTONE_OFF);
+  currentVillageSlot = preferences.getInt("currentSlot", -1);
   preferences.end();
   Serial.println("[Settings] Loaded ringtone: " + String(ringtoneNames[selectedRingtone]));
+  Serial.println("[Settings] Loaded village slot: " + String(currentVillageSlot));
   
   // Initialize logger FIRST to capture all subsequent boot events
   Serial.println("[Logger] Initializing event logger...");
@@ -1194,6 +1224,14 @@ void setup() {
   
   // Note: Timestamp baseline no longer needed - using NTP-synced Unix timestamps
   
+  // DISABLED: Deduplication had bug that deleted messages from different villages
+  // Clean up any duplicate messages in storage (keeps highest status)
+  // int duplicatesRemoved = Village::deduplicateMessages();
+  // if (duplicatesRemoved > 0) {
+  //   Serial.println("[System] Cleaned up " + String(duplicatesRemoved) + " duplicate messages");
+  //   logger.info("Deduplication: removed " + String(duplicatesRemoved) + " duplicates");
+  // }
+  
   // Rebuild message ID cache for deduplication
   village.rebuildMessageIdCache();
   
@@ -1287,25 +1325,10 @@ void setup() {
       Serial.println("[Power] Message wait complete");
     }
     
-    // Check if there are any unread messages (max 5 alerts)
+    // Check ALL villages for unread messages (max 5 alerts)
     Serial.println("[Power] Ringtone setting: " + String(ringtoneNames[selectedRingtone]));
     Serial.println("[Power] Ringtone enabled: " + String(ringtoneEnabled ? "YES" : "NO"));
-    int unreadCount = 0;
-    if (village.isInitialized()) {
-      std::vector<Message> messages = village.loadMessages();
-      Serial.println("[Power] Total messages in storage: " + String(messages.size()));
-      for (const Message& msg : messages) {
-        Serial.println("[Power]   Message ID=" + msg.messageId + " status=" + String((int)msg.status) + " (" + 
-                       (msg.status == MSG_SENT ? "SENT" : msg.status == MSG_RECEIVED ? "RECEIVED" : msg.status == MSG_READ ? "READ" : "UNKNOWN") + 
-                       ") from=" + msg.sender);
-        if (msg.status != MSG_READ && msg.status != MSG_SEEN) {
-          unreadCount++;
-        }
-      }
-      Serial.println("[Power] Unread message count: " + String(unreadCount));
-    } else {
-      Serial.println("[Power] No village initialized");
-    }
+    int unreadCount = checkAllVillagesForUnreadMessages();
     
     if (unreadCount > 0) {
       // Show message notification screen
@@ -1737,6 +1760,13 @@ void handleConversationList() {
       
       if (village.loadFromSlot(entry.slot)) {
         currentVillageSlot = entry.slot;
+        
+        // Save current slot to Preferences for persistence across deep sleep
+        preferences.begin("smoltxt", false);  // Read-write
+        preferences.putInt("currentSlot", currentVillageSlot);
+        preferences.end();
+        Serial.println("[Settings] Saved current village slot: " + String(currentVillageSlot));
+        
         ui.setExistingConversationName(village.getVillageName());
         ui.setIsIndividualConversation(village.isIndividualConversation());  // Set conversation type
         encryption.setKey(village.getEncryptionKey());
@@ -2851,6 +2881,12 @@ void handleJoinCodeInput() {
               // Load the village
               if (village.loadFromSlot(slot)) {
                 currentVillageSlot = slot;
+                
+                // Save current slot to Preferences for persistence across deep sleep
+                preferences.begin("smoltxt", false);  // Read-write
+                preferences.putInt("currentSlot", currentVillageSlot);
+                preferences.end();
+                Serial.println("[Settings] Saved current village slot: " + String(currentVillageSlot));
                 
                 // Subscribe to village on MQTT
                 mqttMessenger.addVillageSubscription(village.getVillageId(), village.getVillageName(), 
