@@ -1836,24 +1836,26 @@ void handleVillageMenu() {
       ui.setState(STATE_MESSAGING);
       ui.resetMessageScroll();  // Reset scroll to show latest messages
       
-      // Request message sync when entering messaging screen
-      std::vector<Message> existingMsgs = village.loadMessages();
+      // Load messages from storage
+      ui.clearMessages();  // Clear old UI messages
+      std::vector<Message> messages = village.loadMessages();
+      Serial.println("[Village] Loaded " + String(messages.size()) + " messages from storage");
+      
+      // Request background sync (non-blocking - callbacks will update display if new messages arrive)
       unsigned long lastMsgTime = 0;
-      for (const auto& msg : existingMsgs) {
+      for (const auto& msg : messages) {
         if (msg.timestamp > lastMsgTime) {
           lastMsgTime = msg.timestamp;
         }
       }
       if (mqttMessenger.isConnected()) {
-        Serial.println("[Sync] Requesting sync on entering messages: last timestamp=" + String(lastMsgTime));
+        Serial.println("[Sync] Requesting background sync: last timestamp=" + String(lastMsgTime));
         logger.info("Sync: Request sent, last=" + String(lastMsgTime));
         mqttMessenger.requestSync(lastMsgTime);
-        smartDelay(500);  // Wait for sync responses to arrive
+        // Sync happens in background - no waiting, callbacks will update display
       }
       
       // Load messages with pagination - show last N messages (same window for both devices)
-      ui.clearMessages();  // Clear any old messages from UI
-      std::vector<Message> messages = village.loadMessages();
       Serial.println("[Village] Loaded " + String(messages.size()) + " messages from storage");
       
       // For individual conversations with placeholder name: try to update from message history

@@ -24,6 +24,8 @@ UI::UI() {
     savedNetworkCount = 0;  // No saved networks initially
     isWiFiConnected = false;
     isIndividualConversation = false;  // Default to group
+    isLoading = false;  // Not loading initially
+    loadingMessage = "";
 }
 
 bool UI::begin(int8_t sck, int8_t miso, int8_t mosi, int8_t cs, int8_t dc, int8_t rst, int8_t busy) {
@@ -1101,7 +1103,11 @@ void UI::drawMessaging() {
     
     if (messageHistory.size() == 0) {
         display->setCursor(10, 60);
-        display->print("No messages yet");
+        if (isLoading) {
+            display->print(loadingMessage);
+        } else {
+            display->print("No messages yet");
+        }
     } else {
         int msgCount = (int)messageHistory.size();
         
@@ -1922,5 +1928,11 @@ void UI::drawBatteryIcon(int x, int y, int percent) {
             display->fillRect(x + 2, y + 2, fillWidth, height - 4, GxEPD_BLACK);
         }
     }
+}
+
+void UI::setLoading(bool loading, const String& message) {
+    isLoading = loading;
+    loadingMessage = message.isEmpty() ? "Loading..." : message;
+    Serial.println("[UI] Loading state: " + String(loading ? "ON" : "OFF") + " - " + loadingMessage);
 }
 

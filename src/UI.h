@@ -83,6 +83,8 @@ private:
     int batteryPercent;    // Current battery percentage
     bool ringtoneEnabled;  // Ringtone on/off setting
     String ringtoneName;   // Current ringtone name
+    bool isLoading;        // Loading indicator flag
+    String loadingMessage; // Optional loading message
     
     // WiFi network list storage
     std::vector<String> networkSSIDs;
@@ -149,6 +151,10 @@ public:
     
     // Callback to check if user is typing (for deferring display updates)
     void setTypingCheckCallback(bool (*callback)());
+    
+    // Loading state management
+    void setLoading(bool loading, const String& message = "Loading...");
+    bool getIsLoading() { return isLoading; }
     
     // State management
     void setState(UIState state);
