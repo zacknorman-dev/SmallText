@@ -330,6 +330,7 @@ void UI::updateFull() {
         case STATE_INPUT_MESSAGE:   drawInputPrompt("New message:"); break;
         case STATE_POWERING_DOWN:   drawPoweringDown(); break;
         case STATE_SLEEPING:        drawSleeping(); break;
+        case STATE_CONVERSATION_MENU:    drawConversationMenu(); break;
     }
     display->display(false);  // Full refresh (multi-phase, clears ghosting)
 }
