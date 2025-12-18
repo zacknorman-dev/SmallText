@@ -1174,6 +1174,18 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
             Serial.println("[MQTT] Stored sync target MAC: " + syncTargetMAC + " for background phases");
         }
         
+        // CRITICAL: Check seenMessageIds before processing sync messages
+        // This prevents duplicate storage when same message appears in multiple sync batches
+        if (!msg.messageId.isEmpty()) {
+            if (seenMessageIds.find(msg.messageId) != seenMessageIds.end()) {
+                Serial.println("[MQTT] Sync message already seen, skipping: " + msg.messageId + " (in seenMessageIds cache)");
+                continue;  // Skip this message entirely
+            }
+            // Add to cache immediately to prevent duplicates within same batch
+            seenMessageIds.insert(msg.messageId);
+            Serial.println("[MQTT] Added sync message to cache: " + msg.messageId + " (size: " + String(seenMessageIds.size()) + ")");
+        }
+        
         // CRITICAL: Send ACK for synced messages that are NOT ours
         // This ensures the sender gets delivery confirmation even if recipient was offline
         if (msg.senderMAC != myMacStr && !msg.messageId.isEmpty()) {
