@@ -1212,9 +1212,8 @@ void setup() {
         // Set encryption
         mqttMessenger.setEncryption(&encryption);
         
-        // Subscribe to all saved villages for multi-village support
-        mqttMessenger.subscribeToAllVillages();
-        Serial.println("[MQTT] Subscribed to all saved villages");
+        // NOTE: MQTT subscription moved to AFTER village initialization
+        // This prevents sync responses from arriving before village is ready
       } else {
         Serial.println("[MQTT] Failed to initialize");
       }
@@ -1289,7 +1288,13 @@ void setup() {
       encryption.setKey(village.getEncryptionKey());
       Serial.println("[System] Village auto-loaded: " + village.getVillageName());
       logger.info("Auto-loaded village: " + village.getVillageName());
-      // MQTT subscription will be configured automatically in main loop
+      
+      // NOW subscribe to MQTT after village is initialized
+      if (mqttMessenger.isConnected()) {
+        mqttMessenger.subscribeToAllVillages();
+        Serial.println("[MQTT] Subscribed to all villages after initialization");
+        logger.info("MQTT: Subscribed to " + String(1) + " villages");
+      }
     }
   } else {
     Serial.println("[System] No previous village to auto-load");
@@ -1775,6 +1780,12 @@ void handleConversationList() {
         // Set as active village for sending
         mqttMessenger.setActiveVillage(village.getVillageId());
         Serial.println("[ConversationList] Active village: " + village.getVillageName());
+        
+        // Subscribe to MQTT now that village is initialized
+        if (mqttMessenger.isConnected()) {
+          mqttMessenger.subscribeToAllVillages();
+          Serial.println("[MQTT] Subscribed after village load");
+        }
         
         // Go to village menu
         keyboard.clearInput();
