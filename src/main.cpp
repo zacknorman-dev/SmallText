@@ -138,6 +138,7 @@ unsigned long lastMessagingActivity = 0;  // Timestamp of last activity in messa
 const unsigned long MESSAGING_TIMEOUT = 300000;  // 5 minutes timeout
 int currentVillageSlot = -1;  // Track which village slot is currently active (-1 = none)
 bool isSyncing = false;  // Flag to track if we're currently syncing (skip status updates during sync)
+bool isSendingMessage = false;  // Flag to prevent UI updates during message send (prevents double status text)
 
 // Check all village slots for unread messages (for wake alerts)
 int checkAllVillagesForUnreadMessages() {
@@ -769,8 +770,8 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
     village.updateMessageStatusIfLower(messageId, MSG_RECEIVED);  // Only upgrade, never downgrade
   }
   
-  // Update UI if viewing the messaging screen
-  if (appState == APP_MESSAGING) {
+  // Update UI if viewing the messaging screen (but not during send to prevent double status)
+  if (appState == APP_MESSAGING && !isSendingMessage) {
     ui.updateMessageStatus(messageId, MSG_RECEIVED);
     ui.updatePartial();
   }
@@ -785,8 +786,8 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
     village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage (skip during sync)
   }
   
-  // Update UI if viewing the messaging screen
-  if (appState == APP_MESSAGING) {
+  // Update UI if viewing the messaging screen (but not during send to prevent double status)
+  if (appState == APP_MESSAGING && !isSendingMessage) {
     ui.updateMessageStatus(messageId, MSG_READ);
     ui.updatePartial();
   }
@@ -1801,11 +1802,12 @@ void handleVillageMenu() {
     smartDelay(200);
   }
   
-  // Left arrow to go back to main menu
+  // Left arrow to go back to conversation list
   if (keyboard.isLeftPressed()) {
     keyboard.clearInput();
-    appState = APP_MAIN_MENU;
-    ui.setState(STATE_MAIN_HUB);
+    buildConversationList();  // Rebuild list to show any changes
+    appState = APP_CONVERSATION_LIST;
+    ui.setState(STATE_CONVERSATION_LIST);
     ui.resetMenuSelection();
     ui.updateClean();
     smartDelay(300);
@@ -3213,6 +3215,9 @@ void handleMessaging() {
     String messageText = ui.getInputText();
     Serial.println("[App] Enter pressed. Input text: '" + messageText + "' length: " + String(messageText.length()));
     if (messageText.length() > 0) {
+      // Block partial UI updates during send to prevent double status text
+      isSendingMessage = true;
+      
       // Show "Sending..." feedback immediately
       ui.setInputText("Sending...");
       ui.updatePartial();  // Quick partial update to show sending feedback
@@ -3246,10 +3251,16 @@ void handleMessaging() {
       // Save to storage
       village.saveMessage(localMsg);
       
-      // Clear input and scroll to bottom to show the message we just sent
+      // Clear input BEFORE full redraw to ensure "Sending..." is gone
       ui.setInputText("");
       ui.resetMessageScroll();
-      ui.update();  // Full update to show the sent message
+      
+      // Add small delay to let ACKs/reads arrive before redrawing
+      // This prevents race condition where status gets drawn twice
+      smartDelay(50);
+      
+      ui.updateClean();  // Clean update to prevent status text artifacts
+      isSendingMessage = false;  // Re-enable partial updates
       lastMessagingActivity = millis();  // Update timestamp after sending
     }
     lastKeyPress = millis();
