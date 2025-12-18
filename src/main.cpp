@@ -770,10 +770,14 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
     village.updateMessageStatusIfLower(messageId, MSG_RECEIVED);  // Only upgrade, never downgrade
   }
   
-  // Update UI if viewing the messaging screen (but not during send to prevent double status)
-  if (appState == APP_MESSAGING && !isSendingMessage) {
+  // Update UI if message is currently visible (but not during send to prevent double status)
+  // We update UI even if not in messaging screen so when user returns, they see correct status
+  if (!isSendingMessage) {
     ui.updateMessageStatus(messageId, MSG_RECEIVED);
-    ui.updatePartial();
+    // Only refresh screen if actively viewing messages (avoid disrupting other screens)
+    if (appState == APP_MESSAGING) {
+      ui.updatePartial();
+    }
   }
 }
 
@@ -786,10 +790,14 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
     village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage (skip during sync)
   }
   
-  // Update UI if viewing the messaging screen (but not during send to prevent double status)
-  if (appState == APP_MESSAGING && !isSendingMessage) {
+  // Update UI if message is currently visible (but not during send to prevent double status)
+  // We update UI even if not in messaging screen so when user returns, they see correct status
+  if (!isSendingMessage) {
     ui.updateMessageStatus(messageId, MSG_READ);
-    ui.updatePartial();
+    // Only refresh screen if actively viewing messages (avoid disrupting other screens)
+    if (appState == APP_MESSAGING) {
+      ui.updatePartial();
+    }
   }
 }
 
@@ -1294,6 +1302,20 @@ void setup() {
         mqttMessenger.subscribeToAllVillages();
         Serial.println("[MQTT] Subscribed to all villages after initialization");
         logger.info("MQTT: Subscribed to " + String(1) + " villages");
+        
+        // Immediately sync to get all pending messages (important for battery management)
+        // Get timestamp of most recent message for sync optimization
+        std::vector<Message> messages = village.loadMessages();
+        unsigned long lastMsgTime = 0;
+        for (const auto& msg : messages) {
+          if (msg.timestamp > lastMsgTime) {
+            lastMsgTime = msg.timestamp;
+          }
+        }
+        mqttMessenger.requestSync(lastMsgTime);
+        lastPeriodicSync = millis();  // Reset periodic sync timer
+        Serial.println("[App] Boot sync requested (last message: " + String(lastMsgTime) + ")");
+        logger.info("Boot sync: Immediate sync after village load");
       }
     }
   } else {
