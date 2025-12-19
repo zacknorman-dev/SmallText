@@ -1192,42 +1192,23 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
             Serial.println("[MQTT] Stored sync target MAC: " + syncTargetMAC + " for background phases");
         }
         
-        // CRITICAL: Check seenMessageIds before processing sync messages
-        // This prevents duplicate storage when same message appears in multiple sync batches
-        if (!msg.messageId.isEmpty()) {
-            if (seenMessageIds.find(msg.messageId) != seenMessageIds.end()) {
-                Serial.println("[MQTT] Sync message already seen, skipping: " + msg.messageId + " (in seenMessageIds cache)");
-                continue;  // Skip this message entirely
-            }
-            // NOTE: Do NOT add to seenMessageIds yet - only after successful storage
-        }
+        // NOTE: We do NOT check seenMessageIds for sync messages!
+        // Sync responses represent "messages in the other device's storage"
+        // We WANT to receive our own sent messages back - that confirms they were stored
+        // Deduplication is handled by Village::saveMessage() which checks storage
         
         // CRITICAL: Send ACK for synced messages that are NOT ours
         // This ensures the sender gets delivery confirmation even if recipient was offline
         if (msg.senderMAC != myMacStr && !msg.messageId.isEmpty()) {
             Serial.println("[MQTT] Sending ACK for synced message: " + msg.messageId);
-            Serial.println("[MQTT] DEBUG: senderMAC='" + msg.senderMAC + "' isEmpty=" + String(msg.senderMAC.isEmpty()));
-            Serial.println("[MQTT] DEBUG: villageId='" + msg.villageId + "'");
-            if (msg.senderMAC.isEmpty()) {
-                Serial.println("[MQTT] ERROR: Cannot send ACK - senderMAC is empty!");
-            } else {
-                sendAck(msg.messageId, msg.senderMAC, msg.villageId);
-            }
+            sendAck(msg.messageId, msg.senderMAC, msg.villageId);
         }
         
         // Deliver to app via message callback (deduplication happens in Village::saveMessage)
         if (onMessageReceived) {
-            Serial.println("[MQTT] Synced message: " + msg.messageId + " from " + msg.sender);
-            Serial.println("[SYNC DEBUG] Delivering synced msg to app: id=" + msg.messageId + " content='" + msg.content + "' ts=" + String(msg.timestamp));
+            Serial.println("[MQTT] Synced message: " + msg.messageId + " from " + msg.sender + " content='" + msg.content + "'");
             onMessageReceived(msg);
             msgCount++;
-            
-            // Add to seenMessageIds AFTER successful delivery to app/storage
-            // This ensures we only mark as "seen" if it was actually processed
-            if (!msg.messageId.isEmpty()) {
-                seenMessageIds.insert(msg.messageId);
-                Serial.println("[MQTT] Marked sync message as seen after delivery: " + msg.messageId + " (cache size: " + String(seenMessageIds.size()) + ")");
-            }
         }
     }
     
