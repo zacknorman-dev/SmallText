@@ -484,14 +484,8 @@ bool Village::saveMessage(const Message& msg) {
         return false;
     }
     
-    // Check cache first (fast check)
-    if (!msg.messageId.isEmpty() && messageIdExists(msg.messageId)) {
-        logger.info("Duplicate message skipped (cache): id=" + msg.messageId);
-        return true;  // Return true as it's not an error, message already exists
-    }
-    
-    // Double-check by scanning file (slower but catches cache misses)
-    // This prevents duplicates from race conditions or cache rebuilds
+    // Check if message already exists with matching sender
+    // This prevents true duplicates while allowing sync updates
     if (!msg.messageId.isEmpty()) {
         String filename = "/messages_" + String(villageId) + ".dat";
         File checkFile = LittleFS.open(filename, "r");
@@ -506,11 +500,14 @@ bool Village::saveMessage(const Message& msg) {
                 if (err) continue;
                 
                 String existingId = checkDoc["messageId"] | "";
-                // Since we're in a per-village file, only check messageId
-                if (existingId == msg.messageId) {
+                String existingSender = checkDoc["sender"] | "";
+                
+                // Only skip if BOTH messageId AND sender match
+                // This allows sync to receive messages we sent back (they have our sender)
+                // but blocks true transport-level duplicates
+                if (existingId == msg.messageId && existingSender == msg.sender) {
                     checkFile.close();
-                    logger.info("Duplicate message skipped (file scan): id=" + msg.messageId);
-                    // Add to cache to prevent future file scans
+                    logger.info("Duplicate message skipped (exact match): id=" + msg.messageId + " sender=" + msg.sender);
                     messageIdCache.insert(msg.messageId);
                     return true;
                 }

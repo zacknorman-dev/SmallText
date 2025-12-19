@@ -3289,7 +3289,7 @@ void handleMessaging() {
       }
       Serial.println("[App] Sending message via MQTT");
       
-      // Add to local message history
+      // Create message object FIRST
       Message localMsg;
       localMsg.sender = village.getUsername();
       char myMAC[13];
@@ -3301,10 +3301,13 @@ void handleMessaging() {
       localMsg.status = MSG_SENT;
       localMsg.messageId = sentMessageId;  // Use the actual ID from MQTT
       localMsg.villageId = String(village.getVillageId());  // Set village ID
-      ui.addMessage(localMsg);
       
-      // Save to storage
+      // CRITICAL: Save to storage BEFORE adding to UI
+      // This ensures message exists when ACKs arrive (they can come back in <50ms)
       village.saveMessage(localMsg);
+      
+      // Now add to UI for display
+      ui.addMessage(localMsg);
       
       // Clear input BEFORE full redraw to ensure "Sending..." is gone
       ui.setInputText("");
