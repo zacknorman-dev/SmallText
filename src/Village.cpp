@@ -242,32 +242,46 @@ bool Village::saveToSlot(int slot) {
 }
 
 bool Village::loadFromSlot(int slot) {
-    if (slot < 0 || slot > 9) return false;
+    if (slot < 0 || slot > 9) {
+        Serial.println("[Village] ERROR: Invalid slot " + String(slot));
+        return false;
+    }
     
     if (!LittleFS.begin(true)) {
-        Serial.println("Failed to mount LittleFS");
+        Serial.println("[Village] ERROR: Failed to mount LittleFS for slot " + String(slot));
+        logger.error("Village load failed: LittleFS mount error (slot " + String(slot) + ")");
         return false;
     }
     
     String filename = "/village_" + String(slot) + ".dat";
     if (!LittleFS.exists(filename)) {
+        Serial.println("[Village] File does not exist: " + filename);
         return false;
     }
     
+    Serial.println("[Village] Loading from " + filename + "...");
     File file = LittleFS.open(filename, "r");
     if (!file) {
-        Serial.println("Failed to open file for reading");
+        Serial.println("[Village] ERROR: Failed to open " + filename + " for reading");
+        logger.error("Village load failed: Cannot open " + filename);
         return false;
     }
+    
+    size_t fileSize = file.size();
+    Serial.println("[Village] File size: " + String(fileSize) + " bytes");
     
     JsonDocument doc;
     DeserializationError error = deserializeJson(doc, file);
     file.close();
     
     if (error) {
-        Serial.println("Failed to parse village data");
+        Serial.println("[Village] ERROR: Failed to parse JSON in " + filename);
+        Serial.println("[Village] Parse error: " + String(error.c_str()));
+        logger.error("Village load failed: JSON parse error in slot " + String(slot) + " - " + String(error.c_str()));
         return false;
     }
+    
+    Serial.println("[Village] JSON parsed successfully");
     
     // Load village ID (may not exist in old files, that's OK)
     if (doc["villageId"].is<const char*>()) {

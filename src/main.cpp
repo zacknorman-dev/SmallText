@@ -1681,8 +1681,10 @@ void loop() {
           ui.resetMenuSelection();
           ui.updateClean();
         }
-        // Just wait - sync happens in background via MQTT callbacks
-        smartDelay(100);
+        // Wait WITHOUT keyboard polling - block all user input during sync
+        mqttMessenger.loop();  // Process MQTT only
+        yield();
+        delay(100);
       }
       break;
     case APP_MAIN_MENU:

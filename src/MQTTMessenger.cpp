@@ -1362,20 +1362,34 @@ void MQTTMessenger::subscribeToAllVillages() {
     // Scan all village slots (0-9)
     for (int slot = 0; slot < 10; slot++) {
         if (Village::hasVillageInSlot(slot)) {
+            Serial.println("[MQTT] Found village in slot " + String(slot) + ", loading...");
             Village tempVillage;
             if (tempVillage.loadFromSlot(slot)) {
+                Serial.println("[MQTT] Successfully loaded village from slot " + String(slot));
                 addVillageSubscription(
                     tempVillage.getVillageId(),
                     tempVillage.getVillageName(),
                     tempVillage.getUsername(),
                     tempVillage.getEncryptionKey()
                 );
+            } else {
+                // CRITICAL: If load fails, log detailed error
+                Serial.println("[MQTT] ERROR: Failed to load village from slot " + String(slot));
+                logger.error("MQTT: Village load failed for slot " + String(slot) + " - file may be corrupted");
+                // File exists but corrupted - this is a serious error
+                // TODO: Consider auto-recovery or user notification
             }
         }
     }
     
     Serial.println("[MQTT] Subscribed to " + String(subscribedVillages.size()) + " villages");
     logger.info("MQTT: Subscribed to " + String(subscribedVillages.size()) + " villages");
+    
+    // CRITICAL: Detect mismatch between file existence and successful loads
+    if (subscribedVillages.size() == 0) {
+        Serial.println("[MQTT] WARNING: No villages loaded successfully!");
+        logger.error("MQTT: No villages loaded - check filesystem");
+    }
 }
 
 VillageSubscription* MQTTMessenger::findVillageSubscription(const String& villageId) {
