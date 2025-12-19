@@ -391,25 +391,56 @@ void sendPendingAcks() {
 }
 
 // Helper function: Mark visible messages as read when entering messaging screen
-void markVisibleMessagesAsRead() {
+// OPTIMIZED VERSION: Accepts pre-loaded messages to avoid re-reading file
+void markVisibleMessagesAsRead_Optimized(const std::vector<Message>& messages) {
+  Serial.println("[MarkRead] ===== STARTING markVisibleMessagesAsRead_Optimized() =====");
+  Serial.println("[MarkRead] Village initialized: " + String(village.isInitialized() ? "YES" : "NO"));
+  Serial.println("[MarkRead] Current state - appState: " + String(appState) + ", inMessagingScreen: " + String(inMessagingScreen));
+  Serial.println("[MarkRead] Using pre-loaded messages (count: " + String(messages.size()) + ")");
+  
   // First, send any pending ACKs for messages received while offline
   sendPendingAcks();
   
-  std::vector<Message> messages = village.loadMessages();
   int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+  Serial.println("[MarkRead] Will check messages from index " + String(startIndex) + " to " + String(messages.size()-1));
   
   // Clear queue and prepare batch list
   readReceiptQueue.clear();
   std::vector<String> messagesToMarkRead;
   int unreadCount = 0;
+  int totalChecked = 0;
+  int alreadyRead = 0;
+  int sentByMe = 0;
   
   // Process visible messages
   for (int i = startIndex; i < messages.size(); i++) {
     const Message& msg = messages[i];
-    Serial.println("[DEBUG] Checking message: id=" + msg.messageId + ", status=" + String((int)msg.status) + ", received=" + String(msg.received ? "true" : "false"));
+    totalChecked++;
+    Serial.println("[MarkRead] [" + String(i) + "] id=" + msg.messageId + ", content='" + msg.content.substring(0, 20) + "', received=" + String(msg.received) + ", status=" + String((int)msg.status) + ", senderMAC=" + msg.senderMAC);
+    
+    // Debug: explain why message is being skipped
+    if (!msg.received) {
+      sentByMe++;
+      Serial.println("[MarkRead]   -> SKIP: Sent by me (received=false)");
+      continue;
+    }
+    if (msg.status == MSG_READ) {
+      alreadyRead++;
+      Serial.println("[MarkRead]   -> SKIP: Already read (status=3)");
+      continue;
+    }
+    if (msg.messageId.isEmpty()) {
+      Serial.println("[MarkRead]   -> SKIP: Empty messageId");
+      continue;
+    }
+    if (msg.status != MSG_RECEIVED) {
+      Serial.println("[MarkRead]   -> SKIP: Wrong status (not MSG_RECEIVED/2, got " + String((int)msg.status) + ")");
+      continue;
+    }
+    
     // Only process received messages that aren't already read
     if (msg.received && msg.status == MSG_RECEIVED && !msg.messageId.isEmpty()) {
-      Serial.println("[DEBUG] Marking as read: id=" + msg.messageId);
+      Serial.println("[MarkRead]   -> ✓ MARKING AS READ!");
       // Mark as read in UI
       ui.updateMessageStatus(msg.messageId, MSG_READ);
       
@@ -422,16 +453,45 @@ void markVisibleMessagesAsRead() {
         item.messageId = msg.messageId;
         item.recipientMAC = msg.senderMAC;
         readReceiptQueue.push_back(item);
+        Serial.println("[MarkRead]   -> Queued read receipt to: " + msg.senderMAC);
         unreadCount++;
+      } else {
+        Serial.println("[MarkRead]   -> No read receipt (system message)");
       }
     }
   }
   
+  Serial.println("[MarkRead] ===== SUMMARY =====");
+  Serial.println("[MarkRead] Total checked: " + String(totalChecked));
+  Serial.println("[MarkRead] Sent by me: " + String(sentByMe));
+  Serial.println("[MarkRead] Already read: " + String(alreadyRead));
+  Serial.println("[MarkRead] Marked as read: " + String(unreadCount));
+  Serial.println("[MarkRead] Read receipts queued: " + String(readReceiptQueue.size()));
+  
   // Batch update all messages at once
   if (!messagesToMarkRead.empty()) {
-    village.batchUpdateMessageStatus(messagesToMarkRead, MSG_READ);
-    Serial.println("[App] Marked " + String(unreadCount) + " unread messages as read on screen entry");
+    bool success = village.batchUpdateMessageStatus(messagesToMarkRead, MSG_READ);
+    Serial.println("[MarkRead] Batch storage update: " + String(success ? "SUCCESS" : "FAILED"));
+  } else {
+    Serial.println("[MarkRead] No messages needed marking as read");
   }
+  Serial.println("[MarkRead] ===== DONE =====");
+}
+
+// Helper function: Mark visible messages as read when entering messaging screen (original version)
+void markVisibleMessagesAsRead() {
+  Serial.println("[MarkRead] ===== STARTING markVisibleMessagesAsRead() =====");
+  Serial.println("[MarkRead] Village initialized: " + String(village.isInitialized() ? "YES" : "NO"));
+  Serial.println("[MarkRead] Current state - appState: " + String(appState) + ", inMessagingScreen: " + String(inMessagingScreen));
+  
+  // First, send any pending ACKs for messages received while offline
+  sendPendingAcks();
+  
+  std::vector<Message> messages = village.loadMessages();
+  Serial.println("[MarkRead] Loaded " + String(messages.size()) + " total messages from storage");
+  
+  // Use optimized version with loaded messages
+  markVisibleMessagesAsRead_Optimized(messages);
 }
 
 // Power management - use single key long-press since CardKB can't detect simultaneous keys
@@ -1879,7 +1939,9 @@ void handleVillageMenu() {
     
     if (adjustedSelection == 0) {
       // Messages
-      Serial.println("[App] Entering messaging. Messages in history: " + String(ui.getMessageCount()));
+      Serial.println("[App] ===== ENTERING MESSAGING SCREEN =====");
+      unsigned long enterStart = millis();
+      Serial.println("[App] Messages in history: " + String(ui.getMessageCount()));
       keyboard.clearInput();  // Clear buffer to prevent typing detection freeze
       ui.setInputText("");  // Clear any leftover text from other screens (WiFi details, etc.)
       appState = APP_MESSAGING;
@@ -1889,29 +1951,28 @@ void handleVillageMenu() {
       ui.setState(STATE_MESSAGING);
       ui.resetMessageScroll();  // Reset scroll to show latest messages
       
-      // Load messages from storage
+      // OPTIMIZATION: Load messages ONCE and reuse for all operations
       ui.clearMessages();  // Clear old UI messages
+      unsigned long loadStart = millis();
       std::vector<Message> messages = village.loadMessages();
-      Serial.println("[Village] Loaded " + String(messages.size()) + " messages from storage");
+      unsigned long loadTime = millis() - loadStart;
+      Serial.println("[Perf] Loaded " + String(messages.size()) + " messages in " + String(loadTime) + "ms");
       
-      // Request background sync (non-blocking - callbacks will update display if new messages arrive)
+      // Find last message timestamp for sync (reuse loaded messages)
       unsigned long lastMsgTime = 0;
       for (const auto& msg : messages) {
         if (msg.timestamp > lastMsgTime) {
           lastMsgTime = msg.timestamp;
         }
       }
+      
+      // Request background sync (non-blocking)
       if (mqttMessenger.isConnected()) {
         Serial.println("[Sync] Requesting background sync: last timestamp=" + String(lastMsgTime));
-        logger.info("Sync: Request sent, last=" + String(lastMsgTime));
         mqttMessenger.requestSync(lastMsgTime);
-        // Sync happens in background - no waiting, callbacks will update display
       }
       
-      // Load messages with pagination - show last N messages (same window for both devices)
-      Serial.println("[Village] Loaded " + String(messages.size()) + " messages from storage");
-      
-      // For individual conversations with placeholder name: try to update from message history
+      // For individual conversations with placeholder name: try to update from message history (reuse loaded messages)
       if (village.isIndividualConversation()) {
         String currentName = village.getVillageName();
         String myUsername = village.getUsername();
@@ -1930,19 +1991,24 @@ void handleVillageMenu() {
       }
       
       // Calculate pagination: always show last MAX_MESSAGES_TO_LOAD messages
-      // This ensures both devices see the SAME window of recent conversation
       int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
-      int displayCount = 0;
       
-      // Add paginated messages to UI (same chunk for all devices)
+      // Add paginated messages to UI
+      unsigned long uiStart = millis();
       for (int i = startIndex; i < messages.size(); i++) {
         ui.addMessage(messages[i]);
-        displayCount++;
       }
-      Serial.println("[App] Displaying last " + String(displayCount) + " of " + String(messages.size()) + " messages (paginated, consistent across devices)");
+      unsigned long uiTime = millis() - uiStart;
+      Serial.println("[Perf] Added " + String(messages.size() - startIndex) + " messages to UI in " + String(uiTime) + "ms");
       
-      // Mark unread messages as read
-      markVisibleMessagesAsRead();
+      // Mark unread messages as read (pass loaded messages to avoid re-reading file)
+      unsigned long markStart = millis();
+      markVisibleMessagesAsRead_Optimized(messages);
+      unsigned long markTime = millis() - markStart;
+      Serial.println("[Perf] Marked unread messages in " + String(markTime) + "ms");
+      
+      unsigned long totalTime = millis() - enterStart;
+      Serial.println("[Perf] ===== TOTAL TIME: " + String(totalTime) + "ms =====");
       
       ui.updateClean();  // Full refresh when entering messaging screen for clean display
     } else if (adjustedSelection == 1) {
