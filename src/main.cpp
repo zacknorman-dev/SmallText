@@ -769,7 +769,8 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
   // Update storage FIRST - this is the source of truth and always works
   // IMPORTANT: Only update if current status is SENT (1). Don't downgrade from READ (3) to RECEIVED (2)
   if (!isSyncing) {
-    village.updateMessageStatusIfLower(messageId, MSG_RECEIVED);  // Only upgrade, never downgrade
+    bool updated = village.updateMessageStatusIfLower(messageId, MSG_RECEIVED);  // Only upgrade, never downgrade
+    Serial.println("[DEBUG] ACK storage update result: " + String(updated ? "SUCCESS" : "FAILED"));
   }
   
   // Update UI if actively viewing messages (reload from storage to get updated status)
@@ -777,7 +778,18 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
     Serial.println("[UI] ACK received while viewing messages - reloading from storage");
     ui.clearMessages();
     std::vector<Message> messages = village.loadMessages();
+    Serial.println("[DEBUG] Loaded " + String(messages.size()) + " total messages from storage");
+    
+    // Log the target message's status after reload
+    for (const auto& msg : messages) {
+      if (msg.messageId == messageId) {
+        Serial.println("[DEBUG] Target message status after reload: " + String(msg.status) + " (should be 2)");
+        break;
+      }
+    }
+    
     int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+    Serial.println("[DEBUG] startIndex=" + String(startIndex) + ", will load indices " + String(startIndex) + " to " + String(messages.size()-1));
     for (int i = startIndex; i < messages.size(); i++) {
       ui.addMessage(messages[i]);
     }
@@ -792,7 +804,8 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
   // Update storage FIRST - this is the source of truth and always works
   // Read receipts always upgrade to READ status (this is the highest status)
   if (!isSyncing) {
-    village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage (skip during sync)
+    bool updated = village.updateMessageStatus(messageId, MSG_READ);  // Persist to storage (skip during sync)
+    Serial.println("[DEBUG] Read receipt storage update result: " + String(updated ? "SUCCESS" : "FAILED"));
   }
   
   // Update UI if message is currently visible (but not during send to prevent double status)
@@ -801,7 +814,18 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
     Serial.println("[UI] Read receipt received while viewing messages - reloading from storage");
     ui.clearMessages();
     std::vector<Message> messages = village.loadMessages();
+    Serial.println("[DEBUG] Loaded " + String(messages.size()) + " total messages from storage");
+    
+    // Log the target message's status after reload
+    for (const auto& msg : messages) {
+      if (msg.messageId == messageId) {
+        Serial.println("[DEBUG] Target message status after reload: " + String(msg.status) + " (should be 3)");
+        break;
+      }
+    }
+    
     int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+    Serial.println("[DEBUG] startIndex=" + String(startIndex) + ", will load indices " + String(startIndex) + " to " + String(messages.size()-1));
     for (int i = startIndex; i < messages.size(); i++) {
       ui.addMessage(messages[i]);
     }
@@ -2523,6 +2547,12 @@ void handleUsernameInput() {
       // This ensures both devices see the SAME window of recent conversation
       int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
       int displayCount = 0;
+      
+      // DEBUG: Show which messages will be displayed
+      Serial.println("[DEBUG] Will display messages from index " + String(startIndex) + " to " + String(messages.size()-1));
+      if (messages.size() > 0) {
+        Serial.println("[DEBUG] Newest message in storage: id=" + messages[messages.size()-1].messageId + " content='" + messages[messages.size()-1].content + "'");
+      }
       
       // Add paginated messages to UI (same chunk for all devices)
       for (int i = startIndex; i < messages.size(); i++) {

@@ -1220,6 +1220,7 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
         // Deliver to app via message callback (deduplication happens in Village::saveMessage)
         if (onMessageReceived) {
             Serial.println("[MQTT] Synced message: " + msg.messageId + " from " + msg.sender);
+            Serial.println("[SYNC DEBUG] Delivering synced msg to app: id=" + msg.messageId + " content='" + msg.content + "' ts=" + String(msg.timestamp));
             onMessageReceived(msg);
             msgCount++;
         }
