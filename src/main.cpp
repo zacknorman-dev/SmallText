@@ -1361,15 +1361,16 @@ void setup() {
             if (updatedCount > 0) {
               Serial.println("[Sync] Post-sync cleanup: Updated " + String(updatedCount) + " messages to status 2");
               logger.info("Post-sync: Fixed " + String(updatedCount) + " message statuses");
-              
-              // If user is actively viewing the conversation, mark visible messages as read (status 2 → 3)
-              // This is correct: user IS viewing them with their eyes right now
-              if (appState == APP_MESSAGING && inMessagingScreen) {
-                Serial.println("[Sync] Post-sync cleanup: User viewing conversation, marking visible messages as read");
-                markVisibleMessagesAsRead();
-              }
             } else {
               Serial.println("[Sync] Post-sync cleanup: All message statuses correct");
+            }
+            
+            // CRITICAL: If user is viewing a conversation, mark visible messages as read
+            // This catches messages that arrived during sync and are now at status 2
+            // Must run REGARDLESS of whether cleanup updated anything
+            if (appState == APP_MESSAGING && inMessagingScreen) {
+              Serial.println("[Sync] Post-sync: User viewing conversation, marking visible messages as read");
+              markVisibleMessagesAsRead();
             }
           }
         });
