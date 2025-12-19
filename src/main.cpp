@@ -1303,6 +1303,9 @@ void setup() {
         Serial.println("[MQTT] Subscribed to all villages after initialization");
         logger.info("MQTT: Subscribed to " + String(1) + " villages");
         
+        // Wait briefly for MQTT subscription to be established on broker
+        smartDelay(500);
+        
         // Immediately sync to get all pending messages (important for battery management)
         // Get timestamp of most recent message for sync optimization
         std::vector<Message> messages = village.loadMessages();
@@ -1814,7 +1817,7 @@ void handleConversationList() {
         appState = APP_CONVERSATION_MENU;
         ui.setState(STATE_CONVERSATION_MENU);
         ui.resetMenuSelection();
-        ui.updateClean();
+        ui.updateFull();  // Use full refresh to prevent ghosting
       } else {
         Serial.println("[ConversationList] ERROR: Failed to load village from slot " + String(entry.slot));
       }
