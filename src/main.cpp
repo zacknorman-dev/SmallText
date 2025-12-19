@@ -1339,6 +1339,31 @@ void setup() {
         mqttMessenger.setBootSyncCompleteCallback([]() {
           Serial.println("[Callback] Boot sync complete - setting flag");
           bootSyncComplete = true;
+          
+          // CRITICAL: After sync completes, update status for all received messages stuck at status 1
+          // During sync, status updates are disabled for performance, so we fix them here
+          if (village.isInitialized()) {
+            Serial.println("[Sync] Post-sync cleanup: Checking for messages stuck at status 1");
+            std::vector<Message> messages = village.loadMessages();
+            int updatedCount = 0;
+            
+            for (auto& msg : messages) {
+              // If it's a received message (not ours) and stuck at MSG_SENT (status 1)
+              // update it to MSG_RECEIVED (status 2)
+              if (msg.received && msg.status == MSG_SENT) {
+                Serial.println("[Sync] Updating message " + msg.messageId + " from status 1 to 2");
+                village.updateMessageStatus(msg.messageId, MSG_RECEIVED);
+                updatedCount++;
+              }
+            }
+            
+            if (updatedCount > 0) {
+              Serial.println("[Sync] Post-sync cleanup: Updated " + String(updatedCount) + " messages to status 2");
+              logger.info("Post-sync: Fixed " + String(updatedCount) + " message statuses");
+            } else {
+              Serial.println("[Sync] Post-sync cleanup: All message statuses correct");
+            }
+          }
         });
         mqttMessenger.setCommandCallback(onCommandReceived);
         mqttMessenger.setSyncRequestCallback(onSyncRequest);
