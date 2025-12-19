@@ -776,9 +776,9 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
   // We update UI even if not in messaging screen so when user returns, they see correct status
   if (!isSendingMessage) {
     ui.updateMessageStatus(messageId, MSG_RECEIVED);
-    // Only refresh screen if actively viewing messages (avoid disrupting other screens)
-    if (appState == APP_MESSAGING) {
-      Serial.println("[UI] ACK received - requesting partial update");
+    // Refresh screen if viewing messages, main menu, or conversation list
+    if (appState == APP_MESSAGING || appState == APP_MAIN_MENU || appState == APP_CONVERSATION_LIST) {
+      Serial.println("[UI] ACK received - requesting partial update (appState=" + String(appState) + ")");
       ui.updatePartial();
     }
   }
@@ -797,9 +797,9 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
   // We update UI even if not in messaging screen so when user returns, they see correct status
   if (!isSendingMessage) {
     ui.updateMessageStatus(messageId, MSG_READ);
-    // Only refresh screen if actively viewing messages (avoid disrupting other screens)
-    if (appState == APP_MESSAGING) {
-      Serial.println("[UI] Read receipt - requesting partial update");
+    // Refresh screen if viewing messages, main menu, or conversation list
+    if (appState == APP_MESSAGING || appState == APP_MAIN_MENU || appState == APP_CONVERSATION_LIST) {
+      Serial.println("[UI] Read receipt - requesting partial update (appState=" + String(appState) + ")");
       ui.updatePartial();
     }
   }
