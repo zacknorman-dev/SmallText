@@ -709,23 +709,23 @@ void onMessageReceived(const Message& msg) {
         }
       } else {
         Serial.println("[Message] Silently cached (not added to UI)");
-      // NEW: If this is a new message (even from sync), and we're in the messaging screen, add to UI and reset scroll
-      if (isNewMessage && appState == APP_MESSAGING && inMessagingScreen) {
-        ui.addMessage(msg);
-        Serial.println("[Message] [Sync] Added to UI due to active messaging screen. Total messages in history: " + String(ui.getMessageCount()));
+        // NEW: If this is a new message (even from sync), and we're in the messaging screen, add to UI and reset scroll
+        if (isNewMessage && appState == APP_MESSAGING && inMessagingScreen) {
+          ui.addMessage(msg);
+          Serial.println("[Message] [Sync] Added to UI due to active messaging screen. Total messages in history: " + String(ui.getMessageCount()));
+        }
       }
-    }
-    
-    // For incoming messages (not our own), ensure status is persisted as MSG_RECEIVED (status 2)
-    // This happens for all received messages, regardless of which screen we're on
-    if (!isSyncing && msg.received && msg.status == MSG_RECEIVED) {
-      village.updateMessageStatus(msg.messageId, MSG_RECEIVED);
-      Serial.println("[Message] Marked incoming message as received (status 2)");
+      
+      // For incoming messages (not our own), ensure status is persisted as MSG_RECEIVED (status 2)
+      // This happens for all received messages, regardless of which screen we're on
+      if (!isSyncing && msg.received && msg.status == MSG_RECEIVED) {
+        village.updateMessageStatus(msg.messageId, MSG_RECEIVED);
+        Serial.println("[Message] Marked incoming message as received (status 2)");
+      }
+    } else {
+      Serial.println("[Message] Duplicate message - skipping all processing");
     }
   } else {
-    Serial.println("[Message] Duplicate message - skipping all processing");
-  }
-} else {
     // Message is for a different village - save to messages.dat without updating UI
     Serial.println("[Message] Message for different village (" + msg.villageId + ") - saving to storage only");
     Village::saveMessageToFile(msg);  // Use static method to save without loading village
