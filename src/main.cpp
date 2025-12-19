@@ -1924,7 +1924,7 @@ void handleVillageMenu() {
       // Mark unread messages as read
       markVisibleMessagesAsRead();
       
-      ui.update();  // Always refresh to show any messages received
+      ui.updateClean();  // Full refresh when entering messaging screen for clean display
     } else if (adjustedSelection == 1) {
       // Invite a Friend - go to invite flow (only for groups)
       appState = APP_INVITE_EXPLAIN;
