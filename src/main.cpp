@@ -220,8 +220,9 @@ float sleepBatteryVoltage = 0.0;  // Battery voltage when entering nap mode
 bool isUsbPowered() {
   // ESP32-S3 can detect USB power via battery voltage
   // When USB connected, battery reads higher voltage (charging)
+  // Set threshold low to aggressively prevent napping when plugged in
   float voltage = battery.getVoltage();
-  return (voltage > 4.1);  // USB charging shows ~4.14-4.15V (lowered from 4.3V)
+  return (voltage > 4.08);  // Any voltage above 4.08V = don't nap
 }
 
 // Ringtone types
