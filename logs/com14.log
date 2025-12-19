@@ -1,0 +1,5002 @@
+
+[59741] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[59741] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[59744] INFO: Phase 1 complete: 1 recent msgs
+
+[59754] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[59803] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[59803] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[59804] INFO: Synced 1 messages
+
+[60043] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[60579] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[60595] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[60646] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[60646] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[60650] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[60651] INFO: Sync phase 1: 1 msgs
+
+[60657] INFO: Sync batch 1 sent
+
+[88631] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[88681] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[88682] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[89223] INFO: Sync request sent
+
+[89223] INFO: Periodic sync requested
+
+[89527] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[89527] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[89735] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[89735] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[89750] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[89804] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[89804] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[89808] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[90364] INFO: Sync phase 1: 1 msgs
+
+[90370] INFO: Sync batch 1 sent
+
+[90758] INFO: Sync response received: 256 bytes
+
+[90759] INFO: Sync phase 1 batch 1/1
+
+[90831] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[90847] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[90900] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[90901] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[90903] INFO: Phase 1 complete: 1 recent msgs
+
+[90903] INFO: Synced 1 messages
+
+[119250] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[119252] INFO: Log buffer pruned, removed 125 old entries
+
+[119305] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[119305] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[119311] INFO: Sync request sent
+
+[119582] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[119582] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[119733] INFO: Periodic sync requested
+
+[119740] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[119741] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[119765] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[119825] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[119825] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[119829] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[119830] INFO: Sync phase 1: 1 msgs
+
+[120468] INFO: Sync batch 1 sent
+
+[120863] INFO: Sync response received: 256 bytes
+
+[120864] INFO: Sync phase 1 batch 1/1
+
+[120921] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[120927] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[120976] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[120976] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[120979] INFO: Phase 1 complete: 1 recent msgs
+
+[120979] INFO: Synced 1 messages
+
+[149741] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[150200] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[150201] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[150207] INFO: Sync request sent
+
+[150208] INFO: Periodic sync requested
+
+[150460] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[150460] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[151686] INFO: Sync response received: 256 bytes
+
+[151687] INFO: Sync phase 1 batch 1/1
+
+[151750] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[151759] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[152286] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[152287] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[152289] INFO: Phase 1 complete: 1 recent msgs
+
+[152290] INFO: Synced 1 messages
+
+[152505] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[152506] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[152517] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[152567] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[152568] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[152571] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[153051] INFO: Sync phase 1: 1 msgs
+
+[153058] INFO: Sync batch 1 sent
+
+[180224] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[180275] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[180276] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[180282] INFO: Sync request sent
+
+[180283] INFO: Periodic sync requested
+
+[180460] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[180461] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[181283] INFO: Sync response received: 256 bytes
+
+[181772] INFO: Sync phase 1 batch 1/1
+
+[181844] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[181859] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[181911] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[181912] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[181914] INFO: Phase 1 complete: 1 recent msgs
+
+[181914] INFO: Synced 1 messages
+
+[182303] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[182304] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[182322] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[182859] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[182859] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[182863] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[182863] INFO: Sync phase 1: 1 msgs
+
+[182870] INFO: Sync batch 1 sent
+
+
+========== END LOG DUMP ==========
+
+
+[App] Periodic sync check
+
+[210306] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[210359] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[210360] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[MQTT] Sync request payload: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Publishing sync request to: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010
+
+[MQTT] Sync request sent (QoS 1, will receive all messages, dedup on receive)
+
+[210366] INFO: Sync request sent
+
+[App] Periodic sync requested (last message: 1766183919)
+
+[210367] INFO: Periodic sync requested
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 (uptime: 210528ms)
+
+[MQTT] seenMessageIds size: 6
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from f8c43bba2010 for messages after timestamp 1766183919
+
+[210529] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[Sync] Request from f8c43bba2010 for messages after timestamp: 1766183919
+
+[210530] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[Sync] Ignoring sync request from self
+
+[MQTT] Message published successfully, msg_id=17675
+[MQTT] EVENT_DATA: topic=smoltxt/f8c43bba2010/sync-response len=256 session_present=1
+[MQTT] Received on topic: smoltxt/f8c43bba2010/sync-response (uptime: 210863ms)
+
+[MQTT] seenMessageIds size: 6
+
+[MQTT] ============================================
+
+[MQTT] SYNC RESPONSE RECEIVED - length=256 bytes
+
+[MQTT] ============================================
+
+[MQTT] Decrypting sync response...
+
+[210864] INFO: Sync response received: 256 bytes
+
+[MQTT] Decrypted sync response: {"messages":[{"sender":"Rex","senderMAC":"e4cc3bba2010","content":"666","timestamp":1766183919,"mess...
+
+[MQTT] Sync phase 1 batch 1/1
+
+[210865] INFO: Sync phase 1 batch 1/1
+
+[MQTT] Sync Phase 1 started (recent 20 messages) - disabling status updates
+
+[MQTT] Stored sync target MAC: e4cc3bba2010 for background phases
+
+[MQTT] Sending ACK for synced message: 0003d2440000000b
+
+[MQTT] Synced message: 0003d2440000000b from Rex content='666'
+
+[Message] From Rex: 666 (village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Power] Activity timer reset - message received
+
+[SYNC DEBUG] Receiving msg: ID=0003d2440000000b from=Rex isNew=NO phase=1
+
+[Message] Background sync or duplicate - silent save only (no UI update)
+
+[210946] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[Message] Duplicate message - skipping all processing
+
+[MQTT] Phase 1 complete - processed 1 messages
+
+[210967] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[211020] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[211021] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+========================================
+
+[SYNC DEBUG] Device f8c43bba2010 AFTER Phase 1 complete
+
+[SYNC DEBUG] Total messages in storage NOW: 17
+
+[SYNC DEBUG] Message IDs NOW in store (chronological order):
+
+  [0] ID=000508e00000000e from=Archer time=1765325129 status=1
+
+  [1] ID=0002b40c0000004a from=SmolTxt time=1766168672 status=3
+
+  [2] ID=000343f300000001 from=SmolTxt time=1766168706 status=3
+
+  [3] ID=0003a37500000005 from=Archer time=1766168730 status=3
+
+  [4] ID=0003ce3a0000004f from=Rex time=1766168743 status=3
+
+  [5] ID=00042ed600000050 from=Rex time=1766168768 status=3
+
+  [6] ID=0004775b00000004 from=Archer time=1766182279 status=3
+
+  [7] ID=0004e57400000004 from=Rex time=1766182305 status=3
+
+  [8] ID=000593db00000007 from=Archer time=1766182352 status=3
+
+  [9] ID=0000e6dd00000005 from=Rex time=1766183509 status=3
+
+  [10] ID=000123e800000006 from=Archer time=1766183522 status=3
+
+  [11] ID=00018a4100000008 from=Rex time=1766183551 status=3
+
+  [12] ID=00031c3700000009 from=Rex time=1766183653 status=3
+
+  [13] ID=0002083300000008 from=Rex time=1766183801 status=3
+
+  [14] ID=0002afc400000009 from=Rex time=1766183844 status=3
+
+  [15] ID=0003a8fa0000000a from=Rex time=1766183907 status=3
+
+  [16] ID=0003d2440000000b from=Rex time=1766183919 status=2
+
+[SYNC DEBUG] UI message count: 0
+
+========================================
+
+[MQTT] Phase 1 complete - recent messages synced, re-enabled status updates
+
+[211023] INFO: Phase 1 complete: 1 recent msgs
+
+[MQTT] Sync fully complete - no more history
+
+[MQTT] Processed 1 synced messages in phase 1
+
+[211024] INFO: Synced 1 messages
+
+[MQTT] Message published successfully, msg_id=25495
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 211792ms)
+
+[MQTT] seenMessageIds size: 6
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000337b100000006:0003d2440000000b:0:0
+
+[MQTT] NEW message: 000337b100000006 - adding to seenMessageIds (size: 6)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba2010 (uptime: 212919ms)
+
+[MQTT] seenMessageIds size: 7
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"e4cc3bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from e4cc3bba2010 for messages after timestamp 1766183919
+
+[212920] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[Sync] Request from e4cc3bba2010 for messages after timestamp: 1766183919
+
+[212920] I: Sync from e4cc3bba2010 (after t=1766183919)
+
+[212950] INF: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[213011] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[213012] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[Sync] DEBUG: Filtering 17 messages
+
+[Sync] DEBUG: msg.id=000508e00000000e ts=1765325129 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002b40c0000004a ts=1766168672 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000343f300000001 ts=1766168706 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003a37500000005 ts=1766168730 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003ce3a0000004f ts=1766168743 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00042ed600000050 ts=1766168768 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0004775b00000004 ts=1766182279 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0004e57400000004 ts=1766182305 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000593db00000007 ts=1766182352 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0000e6dd00000005 ts=1766183509 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000123e800000006 ts=1766183522 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00018a4100000008 ts=1766183551 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00031c3700000009 ts=1766183653 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Synvs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002afc400000009 ts=1766183844 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG:id=0003a8fa0000000a ts=1766183907 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003d2440000000b ts=1766183919 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: INCLUDED
+
+========================================
+
+[SYNC] Device f8c43bba2010 sending
+
+[Sage: 17
+
+[SYNC] Messages after t=1766183919: 1
+
+[S
+========================================
+
+[213016] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[MQTTnding 1 messages (0-0 of 1) to e4cc3bba2010
+
+[213016] INFO: Sync phase 1: 1 msgs
+
+[MQTT] Phase 1 batch 1/1 sent
+
+[213023] INFO: Sync batch 1 sent
+
+[MQTT] Message published successfully, msg_id=63893
+[Battery] Voltage: 4.10V, Percent: 89%
+[App] Periodic sync check
+
+[240390] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[240444] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[241100] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[MQTT] Sync request payload: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Publishing sync request to: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010
+
+[MQTT] Sync request sent (QoS 1, will receive all messages, dedup on receive)
+
+[241107] INFO: Sync request sent
+
+[App] Periodic sync requested (last message: 1766183919)
+
+[241107] INFO: Periodic sync requested
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 (uptime: 241301ms)
+
+[MQTT] seenMessageIds size: 7
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from f8c43bba2010 for messages after timestamp 1766183919
+
+[241303] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[Sync] Request from f8c43bba2010 for messages after timestamp: 1766183919
+
+[241303] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[Sync] Ignoring sync request from self
+
+[MQTT] Message published successfully, msg_id=18090
+[MQTT] EVENT_DATA: topic=smoltxt/f8c43bba2010/sync-response len=256 session_present=1
+[MQTT] Received on topic: smoltxt/f8c43bba2010/sync-response (uptime: 242103ms)
+
+[MQTT] seenMessageIds size: 7
+
+[MQTT] ============================================
+
+[MQTT] SYNC RESPONSE RECEIVED - length=256 bytes
+
+[MQTT] ============================================
+
+[MQTT] Decrypting sync response...
+
+[242104] INFO: Sync response received: 256 bytes
+
+[MQTT] Decrypted sync response: {"messages":[{"sender":"Rex","senderMAC":"e4cc3bba2010","content":"666","timestamp":1766183919,"mess...
+
+[MQTT] Sync phase 1 batch 1/1
+
+[242105] INFO: Sync phase 1 batch 1/1
+
+[MQTT] Sync Phase 1 started (recent 20 messages) - disabling status updates
+
+[MQTT] Stored sync target MAC: e4cc3bba2010 for background phases
+
+[MQTT] Sending ACK for synced message: 0003d2440000000b
+
+[MQTT] Synced message: 0003d2440000000b from Rex content='666'
+
+[Message] From Rex: 666 (village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Power] Activity timer reset - message received
+
+[SYNC DEBUG] Receiving msg: ID=0003d2440000000b from=Rex isNew=NO phase=1
+
+[Message] Background sync or duplicate - silent save only (no UI update)
+
+[242166] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[Message] Duplicate message - skipping all processing
+
+[MQTT] Phase 1 complete - processed 1 messages
+
+[242172] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[242221] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[242764] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+========================================
+
+[SYNC DEBUG] Device f8c43bba2010 AFTER Phase 1 complete
+
+[SYNC DEBUG] Toin storage NOW: 17
+
+[SYNC DEBUG] Message IDs NOW in store (chronological order):
+
+  [0] ID=000508e00000000e from=Archer time=1765325129 status=1
+
+  [1] ID=0002b40c0000004a from=SmolTxt time=1766168672 status=3
+
+  [2] ID=000343f300000001 from=SmolTxt time=17661168743 status=3
+
+  [5] ID=00042ed600000050 from=Rex time=1766168768 status=3
+
+  [6] ID=279 status=3
+
+  [7] ID=0004e57400000004 from=Rex time=1766182305 status=3
+
+  [8] ID=000593db00000007 from=Archer time=1766182352 status=3
+
+  [9] ID=0000e6dd00000005 from=Rex time=1766183509 status=3
+
+  [10] ID=000123e800000006 from=Archer time=1766183522 status=3
+
+  [11] ID=00018a4100000008 from=Rexs=3
+
+  [13] ID=0002083300000008 from=Rex time=1766183801 status=3
+
+  [14] ID=0002afc400000009 from=Rex time=1766183844 status=3
+
+  [15] ID=0003a8fa0000000a from=Rex time=1766183907 status=3
+
+  [16] ID=0003d2440000000b from=RYNC DEBUG] UI message count: 0
+
+========================================
+
+abled status updates
+
+[242766] INFO: Phase 1 completey complete - no more history
+
+[MQTT] Processed 1 synced messages in pha: Synced 1 messages
+
+[MQTT] Message published successfully, msg_id=39438
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 243024ms)
+
+[MQTT] seenMessageIds size: 7
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0003b1ba00000007:0003d2440000000b:0:0
+
+[MQTT] NEW message: 0003b1ba00000007 - adding to seenMessageIds (size: 7)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba2010 (uptime: 243030ms)
+
+[MQTT] seenMessageIds size: 8
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"e4cc3bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from e4cc3bba2010 for messages after timestamp 1766183919
+
+[243031] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[Sync] Request from e4cc3bba2010 for messages after timestamp: 1766183919
+
+[243031] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[243040] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[243089] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[243089] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[Sync] DEBUG: Filtering 17 messages
+
+[Sync] DEBUG: msg.id=000508e00000000e ts=1765325129 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002b40c0000004a ts=1766168672 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000343f300000001 ts=1766168706 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003a37500000005 ts=1766168730 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003ce3a0000004f ts=1766168743 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00042ed600000050 ts=1766168768 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0004775b00000004 ts=1766182279 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0004e57400000004 ts=1766182305 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000593db00000007 ts=1766182352 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0000e6dd00000005 ts=1766183509 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000123e800000006 ts=1766183522 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00018a4100000008 ts=1766183551 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00031c3700000009 ts=1766183653 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002083300000008 ts=1766183801 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sted=1766183919 isEmpty=0
+
+[Sync] DEBUG: 
+
+ed=1766183919 isEmpty=0
+
+[Sync] DEBUG: INCLUDED
+
+===[SYNC] Device f8c43bba2010 sending to e4cc3bba2010
+
+[SYNC] Total messages in storage: 17
+
+[SYNC] Messages after t=1766183919: 1
+
+[SYNC] Sending message IDs:
+
+  [0] ID=0003d2440000000b from=Rex time=1766183919 status=2
+
+=================================
+
+[243093] INFO: Sync: Se10
+
+[MQTT] Sync Phase 1: Sending 1 messages (0-0 of 1) to e4cc3bba2010
+
+[243093] INFO: Sync ph[MQTT] Phase 1 batch 1/1 sent
+
+[243656] INFO: Sync batch 1 sent
+
+[MQTT] Message published successfully, msg_id=11407
+[Battery] Voltage: 4.10V, Percent: 89%
+[App] Periodic sync check
+
+[271118] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[271168] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[271168] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[MQTT] Sync request payload: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Publishing sync request to: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010
+
+[MQTT] Sync request sent (QoS 1, will receive all messages, dedup on receive)
+
+[271175] INFO: Sync request sent
+
+[App] Periodic sync requested (last message: 1766183919)
+
+[271175] INFO: Periodic sync requested
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 (uptime: 271389ms)
+
+[MQTT] seenMessageIds size: 8
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from f8c43bba2010 for messages after timestamp 1766183919
+
+[271390] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[Sync] Request from f8c43bba2010 for messages after timestamp: 1766183919
+
+[271390] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[Sync] Ignoring sync request from self
+
+[MQTT] Message published successfully, msg_id=4997
+[MQTT] EVENT_DATA: topic=smoltxt/f8c43bba2010/sync-response len=256 session_present=1
+[MQTT] Received on topic: smoltxt/f8c43bba2010/sync-response (uptime: 272515ms)
+
+[MQTT] seenMessageIds size: 8
+
+[MQTT] ============================================
+
+[MQTT] SYNC RESPONSE RECEIVED - length=256 bytes
+
+[MQTT] ============================================
+
+[MQTT] Decrypting sync response...
+
+[272515] INFO: Sync response received: 256 bytes
+
+[MQTT] Decrypted sync response: {"messages":[{"sender":"Rex","senderMAC":"e4cc3bba2010","content":"666","timestamp":1766183919,"mess...
+
+[MQTT] Sync phase 1 batch 1/1
+
+[272517] INFO: Sync phase 1 batch 1/1
+
+[MQTT] Sync Phase 1 started (recent 20 messages) - disabling status updates
+
+[MQTT] Stored sync target MAC: e4cc3bba2010 for background phases
+
+[MQTT] Sending ACK for synced message: 0003d2440000000b
+
+[MQTT] Synced message: 0003d2440000000b from Rex content='666'
+
+[Message] From Rex: 666 (village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Power] Activity timer reset - message received
+
+[SYNC DEBUG] Receiving msg: ID=0003d2440000000b from=Rex isNew=NO phase=1
+
+[Message] Background sync or duplicate - silent save only (no UI update)
+
+[273135] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[273136] INFO: Log buffer pruned, removed 125 old entries
+
+[Message] Duplicate message - skipping all processing
+
+[MQTT] Phase 1 complete - processed 1 messages
+
+[273152] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[273202] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[273202] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+========================================
+
+[SYNC DEBUG] Device f8c43bba2010 AFTER Phase 1 complete
+
+[SYNC DEBUG] Total messages in storage NOW: 17
+
+[SYNC DEBUG] Message IDs NOW in store (chronological order):
+
+  [0] ID=000508e00000000e from=Archer time=1765325129 status=1
+
+  [1] ID=0002b40c0000004a from=SmolTxt time=1766168672 status=3
+
+  [2] ID=000343f300000001 from=SmolTxt time=1766168706 status=3
+
+  [3] ID=0003a37500000005 from=Archer time=1766168730 status=3
+
+  [4] ID=0003ce3a0000004f from=Rex time=1766168743 status=3
+
+  [5] ID=00042ed600000050 from=Rex time=1766168768 status=3
+
+  [6] ID=0004775b00000004 from=Archer time=1766182279 status=3
+
+  [7] ID=0004e57400000004 from=Rex time=1766182305 status=3
+
+  [8] ID=000593db00000007 from=Archer time=1766182352 status=3
+
+  [9] ID=0000e6dd00000005 from=Rex time=1766183509 status=3
+
+  [10] ID=000123e800000006 from=Archer time=1766183522 status=3
+
+  [11] ID=00018a4100000008 from=Rex time=1766183551 status=3
+
+  [12] ID=00031c3700000009 from=Rex time=1766183653 status=3
+
+  [13] ID=0002083300000008 from=Rex time=1766183801 status=3
+
+  [14] ID=0002afc400000009 from=Rex time=1766183844 status=3
+
+  [15] ID=0003a8fa0000000a from=Rex time=1766183907 status=3
+
+  [16] ID=0003d2440000000b from=Rex time=1766183919 status=2
+
+[SYNC DEBUG] UI message count: 0
+
+========================================
+
+[MQTT] Phase 1 complete - recent messages synced, re-enabled status updates
+
+[273629] INFO: Phase 1 complete: 1 recent msgs
+
+[MQTT] Sync fully complete - no more history
+
+[MQTT] Processed 1 synced messages in phase 1
+
+[273629] INFO: Synced 1 messages
+
+[MQTT] Message published successfully, msg_id=41934
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba201[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba2010 (u8
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request f6-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"e4cc3bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from e4cc3bba2010 for messages after timestamp 1766183919
+
+[273851] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[Sync] Request from e4cc3bba2010 for messages after timestamp: 1766183919
+
+[273852] INFO: Sync from e4cc3bba2010 (aft
+
+[: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[273: File stats: total=17 empty=0 parseErr=0 matched=17INFOc6a8e5d53
+
+[Village] Loaded 17 messages (sorte[Sync] DEBUG: Filtering 17 messages
+
+[Sync] DEBUG: msg.id=000508e00000000e ts=17653251=1766183919 isEmpty=0
+
+[Sync] DEBUG004a ts=1766168672 vs requestedUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000343f300000001 ts=1766168706] DEBUG: msg.id=0003a37500000005 ts=1766168730 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00042ed600000050 ts=1766168768 vs requested=1766183919 isEmptyPED
+
+[Sync] DEBUG: msg.id=0004775b00000004 ested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0004e57400000004 ts=1sEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000593db00000007 ts=1766182352 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0000e6dd00000005 ts=1766183509 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000123e800000006 ts=1766183522 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00018a4100000008 ts=1766183551 vs requested=1766183919 isEmpty=0
+
+
+
+[Sync] DEBUG: msg.id=00031c3700000009 ts=1766183653 vs IPPED
+
+[Sync] DEBUG: msg.id=0002083300000008 ts=1766183801 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002afc400000009 ts=1766183844 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003a8fa0000000a ts=1766183907 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003d2440000000b ts=1766183919 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: INCLUDED
+
+2010 sending to e4cc3bba2010
+
+[SYNC] Total messages in storage: 17
+
+[SYNC] Messe IDs:
+
+  [0] ID=0003d2440000000b from=Rex time=1766183919 stas=2
+
+========================================
+
+[273929] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[MQTT] Sync Phase 1: Sending 1 messages (0-0 of 1) to e4cc3bba2010
+
+[273930]ISync phase 1: 1 msgs
+
+[MQTT] Phase 1 batch 1/1 sent
+
+[273936] INFO: Sync batch 1 sent
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 274466ms)
+
+[MQTT] seenMessageIds size: 8
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00042aad00000008:0003d2440000000b:0:0
+
+[MQTT] NEW message: 00042aad00000008 - adding to seenMessageIds (size: 8)
+
+[MQTT] Message published successfully, msg_id=29651
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba2010 (uptime: 275388ms)
+
+[MQTT] seenMessageIds size: 9
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"e4cc3bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from e4cc3bba2010 for messages after timestamp 1766183919
+
+[275389] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[Sync] Request from e4cc3bba2010 for messages after timestamp: 1766183919
+
+[275389] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[275407] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[275458] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[275459] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[Sync] DEBUG: Filtering 17 messages
+
+[Sync] DEBUG: msg.id=000508e00000000e ts=1765325129 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002b40c0000004a ts=1766168672 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000343f300000001 ts=1766168706 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003a37500000005 ts=1766168730 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003ce3a0000004f ts=1766168743 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00042ed600000050 ts=1766168768 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0004775b00000004 ts=1766182279 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0004e57400000004 ts=1766182305 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000593db00000007 ts=1766182352 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0000e6dd00000005 ts=1766183509 vs requested=1766183919 isEmpt[Sync] DEBUG: msg.id=000123e800000006 ts=1766183522 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00018a4100000008 ts=1766183551 vs request
+
+[Sync] DEBUG: msged=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002083300000008 ts=1766183801 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002afc400000009 ts=1766183844 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003a8fa0000000a ts=1766183907 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003d2440000000b ts=183919 isEmpty=0
+
+[Sync] DEBUG: INCL
+
+========================================
+
+[SYNC] Device f8c43bba2010 sending to e4cc3bba2010
+
+[S messages in storage: 17
+
+[SYNC] Messages after t=1766183919: 1
+
+[SYNC] Sending message IDs:
+
+  time=1766183919 status=2
+
+============================275463] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[MQTT] Sync Phase 1: Sending 1 messages (0-0 of 1) to e4cc3bba2010
+INFO: Sync phase 1: 1 msgs
+
+[MQTT] Phase 1 batch 1/1 sent
+
+[275469] INFO: Sync batch 1 sent
+
+[KB-READ] I2C byte: 0xB7 (183)
+
+[Keyboard] RIGHT pressed
+
+[App] ===== ENTERING MESSAGING SCREEN =====
+
+[App] Messages in history: 0
+
+[275488] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[275541] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+e5d53/ack/f8c43bba2010 len=136 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-43bba2010 (uptime: 275613ms)
+
+[MQTT] seenMessageIds size: 9
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:f8c43bba2010:Rex:e4cc3bba2010:00042dc400000002:0003a37500000005:0:0
+
+[MQTT] NEW message: 00042dc400000002 - adding to seenMessageIds (size: 9)
+
+[MQTT] Received ACK for message: 0003a37500000005
+
+[Message] ACK received for: 0003a37500000005 from e4cc3bba2010
+
+[275705] INFO: Skipping status update for 0003a37500000005 - current status 3 >= new status 2
+
+[DEBUG] ACK storage update result: SUCCESS
+
+[UI] ACK received while viewing messages - reloading from storage
+
+[275728] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[275781] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[275781] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[DEBUG] Loaded 17 total messages from storage
+
+[DEBUG] Target message status after reload: 3 (should be 2)
+
+[DEBUG] startIndex=0, will load indices 0 to 16
+
+[UI] Message added. Total: 1
+
+[UI] Message added. Total: 2
+
+[UI] Message added. Total: 3
+
+[UI] Message added. Total: 4
+
+[UI] Message added. Total: 5
+
+[UI] Message added. Total: 6
+
+[UI] Message added. Total: 7
+
+[UI] Message added. Total: 8
+
+[UI] Message added. Total: 9
+
+[UI] Message added. Total: 10
+
+[UI] Message added. Total: 11
+
+[UI] Message added. Total: 12
+
+[UI] Message added. Total: 13
+
+[UI] Message added. Total: 14
+
+[UI] Message added. Total: 15
+
+[UI] Message added. Total: 16
+
+[UI] Message added. Total: 17
+
+[UI] Reloaded 17 messages with updated status
+
+[UI] Drawing messaging. History size: 17
+
+[276143] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[Perf] Loaded 17 messages in 671ms
+
+[Sync] Requesting background sync: last timestamp=1766183919
+
+[MQTT] Sync request payload: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Publishing sync request to: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010
+
+_Update_Part : 766650
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 len=136 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 (uptime: 276671ms)
+
+[MQTT] seenMessageIds size: 10
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:f8c43bba2010:Rex:e4cc3bba2010:00042dc900000003:0004775b00000004:0:0
+
+[MQTT] NEW message: 00042dc900000003 - adding to seenMessageIds (size: 10)
+
+[MQTT] Received ACK for message: 0004775b00000004
+
+[Message] ACK received for: 0004775b00000004 from e4cc3bba2010
+
+[276740] INFO: Skipping status update for 0004775b00000004 - current status 3 >= new status 2
+
+[DEBUG] ACK storage update result: SUCCESS
+
+[UI] ACK received while viewing messages - reloading from storage
+
+[276759] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[276812] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[276812] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[DEBUG] Loaded 17 total messages from storage
+
+[DEBUG] Target message status after reload: 3 (should be 2)
+
+[DEBUG] startIndex=0, will load indices 0 to 16
+
+[UI] Message added. Total: 1
+
+[UI] Message added. Total: 2
+
+[UI] Message added. Total: 3
+
+[UI] Message added. Total: 4
+
+[UI] Message added. Total: 5
+
+[UI] Message added. Total: 6
+
+[UI] Message added. Total: 7
+
+[UI] Message added. Total: 8
+
+[UI] Message added. Total: 9
+
+[UI] Message added. Total: 10
+
+[UI] Message added. Total: 11
+
+[UI] Message added. Total: 12
+
+[UI] Message added. Total: 13
+
+[UI] Message added. Total: 14
+
+[UI] Message added. Total: 15
+
+[UI] Message added. Total: 16
+
+[UI] Message added. Total: 17
+
+[UI] Reloaded 17 messages with updated status
+
+[UI] Drawing messaging. History size: 17
+
+_Update_Part : 766998
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 len=136 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 (uptime: 277652ms)
+
+[MQTT] seenMessageIds size: 11
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:f8c43bba2010:Rex:e4cc3bba2010:00042dce00000004:000593db00000007:0:0
+
+[MQTT] NEW message: 00042dce00000004 - adding to seenMessageIds (size: 11)
+
+[MQTT] Received ACK for message: 000593db00000007
+
+[Message] ACK received for: 000593db00000007 from e4cc3bba2010
+
+[277720] INFO: Skipping status update for 000593db00000007 - current status 3 >= new status 2
+
+[DEBUG] ACK storage update result: SUCCESS
+
+[UI] ACK received while viewing messages - reloading from storage
+
+[278223] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[278277] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[278278] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[DEBUG] Loaded 17 total messages from storage
+
+[DEBUG] Target message status after reload: 3 (should be 2)
+
+[DEBUG] startIndex=0, will load indices 0 to 16
+
+[UI] Message added. Total: 1
+
+[UI] Message added. Total: 2
+
+[UI] Message added. Total: 3
+
+[UI] Message added. Total: 4
+
+[UI] Message added. Total: 5
+
+[UI] Message added. Total: 6
+
+[UI] Message added. Total: 7
+
+[UI] Message added. Total: 8
+
+[UI] Message added. Total: 9
+
+[UI] Message added. Total: 10
+
+[UI] Message added. Total: 11
+
+[UI] Message added. Total: 12
+
+[UI] Message added. Total: 13
+
+[UI] Message added. Total: 14
+
+[UI] Message added. Total: 15
+
+[UI] Message added. Total: 16
+
+[UI] Message added. Total: 17
+
+[UI] Reloaded 17 messages with updated status
+
+[UI] Drawing messaging. History size: 17
+
+_Update_Part : 766996
+
+[MQTT] Message published successfully, msg_id=41383
+[MQTT] Sync request sent (QoS 1, will receive all messages, dedup on receive)
+
+[279122] INFO: Sync request sent
+
+[UI] Message added. Total: 18
+
+[UI] Message added. Total: 19
+
+[UI] Message added. Total: 20
+
+[UI] Message added. Total: 21
+
+[UI] Message added. Total: 22
+
+[UI] Message added. Total: 23
+
+[UI] Message added. Total: 24
+
+[UI] Message added. Total: 25
+
+[UI] Message added. Total: 26
+
+[UI] Message added. Total: 27
+
+[UI] Message added. Total: 28
+
+[UI] Message added. Total: 29
+
+[UI] Message added. Total: 30
+
+[UI] Message added. Total: 31
+
+[UI] Message added. Total: 32
+
+[UI] Message added. Total: 33
+
+[UI] Message added. Total: 34
+
+[Perf] Added 17 messages to UI in 3ms
+
+[MarkRead] ===== STARTING markVisibleMessagesAsRead_Optimized() =====
+
+[MarkRead] Village initialized: YES
+
+[MarkRead] Current state - appState: 31, inMessagingScreen: 1
+
+[MarkRead] Using pre-loaded messages (count: 17)
+
+[279147] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[279202] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[279202] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[App] Sent 10 pending ACKs for sync'd messages
+
+[MarkRead] Will check messages from index 0 to 16
+
+[MarkRead] [0] id=000508e00000000e, content='666', received=0, status=1, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [1] id=0002b40c0000004a, content='Rex joined the conve', received=1, status=3, senderMAC=system
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [2] id=000343f300000001, content='Archer joined the co', received=1, status=3, senderMAC=system
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [3] id=0003a37500000005, content='word', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [4] id=0003ce3a0000004f, content='dood', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [5] id=00042ed600000050, content='555', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [6] id=0004775b00000004, content='hey man', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [7] id=0004e57400000004, content='what up!!', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [8] id=000593db00000007, content='just chillin'', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [9] id=0000e6dd00000005, content='7777', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [10] id=000123e800000006, content='8888', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [11] id=00018a4100000008, content='9999', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [12] id=00031c3700000009, content='0000', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [13] id=0002083300000008, content='777', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [14] id=0002afc400000009, content='88889', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [15] id=0003a8fa0000000a, content='4444', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [16] id=0003d2440000000b, content='666', received=1, status=2, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> ??? MARKING AS READ!
+
+[UI] Updated message 0003d2440000000b to status 3
+
+[MarkRead]   -> Queued read receipt to: e4cc3bba2010
+
+[MarkRead] ===== SUMMARY =====
+
+[MarkRead] Total checked: 17
+
+[MarkRead] Sent by me: 5
+
+[MarkRead] Already read: 11
+
+[MarkRead] Marked as read: 1
+
+[MarkRead] Read receipts queued: 1
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 len=136 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 (uptime: 279316ms)
+
+[MQTT] seenMessageIds size: 12
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:f8c43bba2010:Rex:e4cc3bba2010:00042dd400000005:000123e800000006:0:0
+
+[MQTT] NEW message: 00042dd400000005 - adding to seenMessageIds (size: 12)
+
+[MQTT] Duplicate ACK for message 000123e800000006, ignoring (already processed ACK 00004dff00000001)
+
+[279339] INFO: Batch updated 1 messages to status 3
+
+[MQTT] Message published successfully, msg_id=20051
+[279594] INFO: Saved 17 total lines
+
+[MarkRead] Batch storage update: SUCCESS
+
+[MarkRead] ===== DONE =====
+
+[Perf] Marked unread messages in 470ms
+
+[Perf] ===== TOTAL TIME: 4123ms =====
+
+[MQTT] Message published successfully, msg_id=8188
+[MQTT] Message published successfully, msg_id=18439
+[MQTT] Message published successfully, msg_id=33257
+[MQTT] Message published successfully, msg_id=1043
+[MQTT] Message published successfully, msg_id=40203
+[MQTT] Message published successfully, msg_id=30871
+[MQTT] Message published successfully, msg_id=59603
+[MQTT] Message published successfully, msg_id=62773
+[MQTT] Message published successfully, msg_id=40043
+[MQTT] Message published successfully, msg_id=34832
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 280111ms)
+
+[MQTT] seenMessageIds size: 13
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000442a200000009:0003ce3a0000004f:0:0
+
+[MQTT] NEW message: 000442a200000009 - adding to seenMessageIds (size: 13)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 280116ms)
+
+[MQTT] seenMessageIds size: 14
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000442a70000000a:00042ed600000050:0:0
+
+[MQTT] NEW message: 000442a70000000a - adding to seenMessageIds (size: 14)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 280120ms)
+
+[MQTT] seenMessageIds size: 15
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000442ac0000000b:0004e57400000004:0:0
+
+[MQTT] NEW message: 000442ac0000000b - adding to seenMessageIds (size: 15)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 (uptime: 280124ms)
+
+[MQTT] seenMessageIds size: 16
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from f8c43bba2010 for messages after timestamp 1766183919
+
+[280125] INFO: Sync from f8c43bba2010 ts=1766183919
+
+_Update_Part : 786915
+
+[Sync] Request from f8c43bba2010 for messages after timestamp: 1766183919
+
+[280601] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[Sync] Ignoring sync request from self
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 280604ms)
+
+[MQTT] seenMessageIds size: 16
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000442b10000000c:0000e6dd00000005:0:0
+
+[MQTT] NEW message: 000442b10000000c - adding to seenMessageIds (size: 16)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 280609ms)
+
+[MQTT] seenMessageIds size: 17
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000442b70000000d:00018a4100000008:0:0
+
+[MQTT] NEW message: 000442b70000000d - adding to seenMessageIds (size: 17)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 280615ms)
+
+[MQTT] seenMessageIds size: 18
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000442bc0000000e:00031c3700000009:0:0
+
+[MQTT] NEW message: 000442bc0000000e - adding to seenMessageIds (size: 18)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 280619ms)
+
+[MQTT] seenMessageIds size: 19
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000442c10000000f:0002083300000008:0:0
+
+[MQTT] NEW message: 000442c10000000f - adding to seenMessageIds (size: 19)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 280623ms)
+
+[MQTT] seenMessageIds size: 20
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000442c600000010:0002afc400000009:0:0
+
+[MQTT] NEW message: 000442c600000010 - adding to seenMessageIds (size: 20)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 280627ms)
+
+[MQTT] seenMessageIds size: 21
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000442cb00000011:0003a8fa0000000a:0:0
+
+[MQTT] NEW message: 000442cb00000011 - adding to seenMessageIds (size: 21)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 280632ms)
+
+[MQTT] seenMessageIds size: 22
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000442d000000012:0003d2440000000b:0:0
+
+[MQTT] NEW message: 000442d000000012 - adding to seenMessageIds (size: 22)
+
+[UI] Drawing messaging. History size: 34
+
+[MQTT] EVENT_DATA: topic=smoltxt/f8c43bba2010/sync-response len=256 session_present=1
+[MQTT] Received on topic: smoltxt/f8c43bba2010/sync-response (uptime: 281015ms)
+
+[MQTT] seenMessageIds size: 23
+
+[MQTT] ============================================
+
+[MQTT] SYNC RESPONSE RECEIVED - length=256 bytes
+
+[MQTT] ============================================
+
+[MQTT] Decrypting sync response...
+
+[281015] INFO: Sync response received: 256 bytes
+
+[MQTT] Decrypted sync response: {"messages":[{"sender":"Rex","senderMAC":"e4cc3bba2010","content":"666","timestamp":1766183919,"mess...
+
+[MQTT] Sync phase 1 batch 1/1
+
+[281016] INFO: Sync phase 1 batch 1/1
+
+[MQTT] Sync Phase 1 started (recent 20 messages) - disabling status updates
+
+[MQTT] Stored sync target MAC: e4cc3bba2010 for background phases
+
+[MQTT] Sending ACK for synced message: 0003d2440000000b
+
+[MQTT] Synced message: 0003d2440000000b from Rex content='666'
+
+[Message] From Rex: 666 (village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Power] Activity timer reset - message received
+
+[SYNC DEBUG] Receiving msg: ID=0003d2440000000b from=Rex isNew=NO phase=1
+
+[Message] Background sync or duplicate - silent save only (no UI update)
+
+[281077] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[Message] Duplicate message - skipping all processing
+
+[MQTT] Phase 1 complete - processed 1 messages
+
+[281085] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[281135] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[281135] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+========================================
+
+[SYNC DEBUG] Device f8c43bba2010 AFTER Phase 1 complete
+
+[SYNC DEBUG] Total messages in storage NOW: 17
+
+[SYNC DEBUG] Message IDs NOW in store (chronological order):
+
+  [0] ID=000508e00000000e from=Archer time=1765325129 status=1
+
+  [1] ID=0002b40c0000004a from=SmolTxt time=1766168672 status=3
+
+  [2] ID=000343f300000001 from=SmolTxt time=1766168706 status=3
+
+  [3] ID=0003a37500000005 from=Archer time=1766168730 status=3
+
+  [4] ID=0003ce3a0000004f from=Rex time=1766168743 status=3
+
+  [5] ID=00042ed600000050 from=Rex time=1766168768 status=3
+
+  [6] ID=0004775b00000004 from=Archer time=1766182279 status=3
+
+  [7] ID=0004e57400000004 from=Rex time=1766182305 status=3
+
+  [8] ID=000593db00000007 from=Archer time=1766182352 status=3
+
+  [9] ID=0000e6dd00000005 from=Rex time=1766183509 status=3
+
+  [10] ID=000123e800000006 from=Archer time=1766183522 status=3
+
+  [11] ID=00018a4100000008 from=Rex time=1766183551 status=3
+
+  [12] ID=00031c3700000009 from=Rex time=1766183653 status=3
+
+  [13] ID=0002083300000008 from=Rex time=1766183801 status=3
+
+  [14] ID=0002afc400000009 from=Rex time=1766183844 status=3
+
+  [15] ID=0003a8fa0000000a from=Rex time=1766183907 status=3
+
+  [16] ID=0003d2440000000b from=Rex time=1766183919 status=3
+
+[SYNC DEBUG] UI message count: 34
+
+========================================
+
+[MQTT] Phase 1 complete - recent messages synced, re-enabled status updates
+
+[281137] INFO: Phase 1 complete: 1 recent msgs
+
+[MQTT] Sync fully complete - no more history
+
+[MQTT] Processed 1 synced messages in phase 1
+
+[281138] INFO: Synced 1 messages
+
+[MQTT] Message published successfully, msg_id=11415
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 281423ms)
+
+[MQTT] seenMessageIds size: 23
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000449b900000013:0003d2440000000b:0:0
+
+[MQTT] NEW message: 000449b900000013 - adding to seenMessageIds (size: 23)
+
+_Update_Part : 766996
+
+[Battery] Voltage: 4.10V, Percent: 90%
+[App] Sending queued read receipt for: 0003d2440000000b
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/read/e4cc3bba2010 len=148 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/read/e4cc3bba2010 (uptime: 282039ms)
+
+[MQTT] seenMessageIds size: 24
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: READ_RECEIPT:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00044ce800000014:0003d2440000000b:0:0
+
+[MQTT] NEW message: 00044ce800000014 - adding to seenMessageIds (size: 24)
+
+[MQTT] Message published successfully, msg_id=13837
+[KB-READ] readKey() called 50000 times
+
+[Battery] Voltage: 4.10V, Percent: 89%
+[KB-READ] readKey() called 60000 times
+
+[Battery] Voltage: 4.10V, Percent: 90%
+[KB-READ] readKey() called 70000 times
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba2010 (uptime: 418949ms)
+
+[MQTT] seenMessageIds size: 25
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"e4cc3bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from e4cc3bba2010 for messages after timestamp 1766183919
+
+[418950] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[KB-READ] I2C byte: 0xB4 (180)
+
+[Keyboard] LEFT pressed
+
+[App] Leaving messaging screen - marking unread messages as received
+
+[Sync] Request from e4cc3bba2010 for messages after timestamp: 1766183919
+
+[419431] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[419440] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[419490] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[419490] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[Sync] DEBUG: Filtering 17 messages
+
+[Sync] DEBUG: msg.id=000508e00000000e ts=1765325129 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002b40c0000004a ts=1766168672 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000343f300000001 ts=1766168706 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003a37500000005 ts=1766168730 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003ce3a0000004f ts=1766168743 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00042ed600000050 ts=1766168768 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0004775b00000004 ts=1766182279 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0004e57400000004 ts=1766182305 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000593db00000007 ts=1766182352 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0000e6dd00000005 ts=1766183509 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000123e800000006 ts=1766183522 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00018a4100000008 ts=1766183551 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00031c3700000009 ts=1766183653 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002083300000008 ts=1766183801 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002afc400000009 ts=1766183844 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003a8fa0000000a ts=1766183907 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003d2440000000b ts=1766183919 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: INCLUDED
+
+========================================
+
+[SYNC] Device f8c43bba2010 sending to e4cc3bba2010
+
+[SYNC] Total messages in storage: 17
+
+[SYNC] Messages after t=1766183919: 1
+
+[SYNC] Sending message IDs:
+
+  [0] ID=0003d2440000000b from=Rex time=1766183919 status=3
+
+========================================
+
+[419495] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[MQTT] Sync Phase 1: Sending 1 messages (0-0 of 1) to e4cc3bba2010
+
+[419495] INFO: Sync phase 1: 1 msgs
+
+[MQTT] Phase 1 batch 1/1 sent
+
+[419503] INFO: Sync batch 1 sent
+
+[419510] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[419559] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[419560] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+_Update_Part : 766999
+
+[App] Periodic sync check
+
+[420911] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[420962] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[420962] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[MQTT] Sync request payload: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Publishing sync request to: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010
+
+[MQTT] Sync request sent (QoS 1, will receive all messages, dedup on receive)
+
+[420969] INFO: Sync request sent
+
+[App] Periodic sync requested (last message: 1766183919)
+
+[420969] INFO: Periodic sync requested
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 (uptime: 421204ms)
+
+[MQTT] seenMessageIds size: 25
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from f8c43bba2010 for messages after timestamp 1766183919
+
+[421206] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[Sync] Request from f8c43bba2010 for messages after timestamp: 1766183919
+
+[421206] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[Sync] Ignoring sync request from self
+
+[MQTT] Message published successfully, msg_id=15393
+[MQTT] EVENT_DATA: topic=smoltxt/f8c43bba2010/sync-response len=256 session_present=1
+[MQTT] Received on topic: smoltxt/f8c43bba2010/sync-response (uptime: 422123ms)
+
+[MQTT] seenMessageIds size: 25
+
+[MQTT] ============================================
+
+[MQTT] SYNC RESPONSE RECEIVED - length=256 bytes
+
+[MQTT] ============================================
+
+[MQTT] Decrypting sync response...
+
+[422124] INFO: Sync response received: 256 bytes
+
+[MQTT] Decrypted sync response: {"messages":[{"sender":"Rex","senderMAC":"e4cc3bba2010","content":"666","timestamp":1766183919,"mess...
+
+[MQTT] Sync phase 1 batch 1/1
+
+[422125] INFO: Sync phase 1 batch 1/1
+
+[MQTT] Sync Phase 1 started (recent 20 messages) - disabling status updates
+
+[MQTT] Stored sync target MAC: e4cc3bba2010 for background phases
+
+[MQTT] Sending ACK for synced message: 0003d2440000000b
+
+[MQTT] Synced message: 0003d2440000000b from Rex content='666'
+
+[Message] From Rex: 666 (village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Power] Activity timer reset - message received
+
+[SYNC DEBUG] Receiving msg: ID=0003d2440000000b from=Rex isNew=NO phase=1
+
+[Message] Background sync or duplicate - silent save only (no UI update)
+
+[422191] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[Message] Duplicate message - skipping all processing
+
+[MQTT] Phase 1 complete - processed 1 messages
+
+[422708] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[422760] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[422760] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+========================================
+
+[SYNC DEBUG] Device f8c43bba2010 AFTER Phase 1 complete
+
+[SYNC DEBUG] Total messages in storage NOW: 17
+
+[SYNC DEBUG] Message IDs NOW in store (chronological order):
+
+  [0] ID=000508e00000000e from=Archer time=1765325129 status=1
+
+  [1] ID=0002b40c0000004a from=SmolTxt time=1766168672 status=3
+
+  [2] ID=000343f300000001 from=SmolTxt time=1766168706 status=3
+
+  [3] ID=0003a37500000005 from=Archer time=1766168730 status=3
+
+  [4] ID=0003ce3a0000004f from=Rex time=1766168743 status=3
+
+  [5] ID=00042ed600000050 from=Rex time=1766168768 status=3
+
+  [6] ID=0004775b00000004 from=Archer time=1766182279 status=3
+
+  [7] ID=0004e57400000004 from=Rex time=1766182305 status=3
+
+  [8] ID=000593db00000007 from=Archer time=1766182352 status=3
+
+  [9] ID=0000e6dd00000005 from=Rex time=1766183509 status=3
+
+  [10] ID=000123e800000006 from=Archer time=1766183522 status=3
+
+  [11] ID=00018a4100000008 from=Rex time=1766183551 status=3
+
+  [12] ID=00031c3700000009 from=Rex time=1766183653 status=3
+
+  [13] ID=0002083300000008 from=Rex time=1766183801 status=3
+
+  [14] ID=0002afc400000009 from=Rex time=1766183844 status=3
+
+  [15] ID=0003a8fa0000000a from=Rex time=1766183907 status=3
+
+  [16] ID=0003d2440000000b from=Rex time=1766183919 status=3
+
+[SYNC DEBUG] UI message count: 34
+
+========================================
+
+[MQTT] Phase 1 complete - recent messages synced, re-enabled status updates
+
+[422763] INFO: Phase 1 complete: 1 recent msgs
+
+[MQTT] Sync fully complete - no more history
+
+[MQTT] Processed 1 synced messages in phase 1
+
+[422763] INFO: Synced 1 messages
+
+[MQTT] Message published successfully, msg_id=5149
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 422942ms)
+
+[MQTT] seenMessageIds size: 25
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000670ed00000015:0003d2440000000b:0:0
+
+[MQTT] NEW message: 000670ed00000015 - adding to seenMessageIds (size: 25)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/e4cc3bba2010 (uptime: 423250ms)
+
+[MQTT] seenMessageIds size: 26
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"e4cc3bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from e4cc3bba2010 for messages after timestamp 1766183919
+
+[423251] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[Sync] Request from e4cc3bba2010 for messages after timestamp: 1766183919
+
+[423251] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[423266] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[423318] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[423319] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[KB-READ] I2C byte: 0xB7 (183)
+
+[Keyboard] RIGHT pressed
+
+[App] ===== ENTERING MESSAGING SCREEN =====
+
+[App] Messages in history: 34
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[Sync] DEBUG: Filtering 17 messages
+
+[Sync] DEBUG: msg.id=000508e00000000e ts=1765325129 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002b40c0000004a ts=1766168672 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000343f300000001 ts=1766168706 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003a37500000005 ts=1766168730 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003ce3a0000004f ts=1766168743 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00042ed600000050 ts=1766168768 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0004775b00000004 ts=1766182279 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0004e57400000004 ts=1766182305 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000593db00000007 ts=1766182352 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0000e6dd00000005 ts=1766183509 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=000123e800000006 ts=1766183522 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00018a4100000008 ts=1766183551 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=00031c3700000009 ts=1766183653 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002083300000008 ts=1766183801 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0002afc400000009 ts=1766183844 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003a8fa0000000a ts=1766183907 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: SKIPPED
+
+[Sync] DEBUG: msg.id=0003d2440000000b ts=1766183919 vs requested=1766183919 isEmpty=0
+
+[Sync] DEBUG: INCLUDED
+
+========================================
+
+[SYNC] Device f8c43bba2010 sending to e4cc3bba2010
+
+[SYNC] Total messages in storage: 17
+
+[SYNC] Messages after t=1766183919: 1
+
+[SYNC] Sending message IDs:
+
+  [0] ID=0003d2440000000b from=Rex time=1766183919 status=3
+
+========================================
+
+[423822] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[MQTT] Sync Phase 1: Sending 1 messages (0-0 of 1) to e4cc3bba2010
+
+[423822] INFO: Sync phase 1: 1 msgs
+
+[MQTT] Phase 1 batch 1/1 sent
+
+[423832] INFO: Sync batch 1 sent
+
+[423845] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[423898] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[423899] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[Perf] Loaded 17 messages in 437ms
+
+[Sync] Requesting background sync: last timestamp=1766183919
+
+[MQTT] Sync request payload: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Publishing sync request to: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010
+
+[MQTT] Sync request sent (QoS 1, will receive all messages, dedup on receive)
+
+[423935] INFO: Sync request sent
+
+[UI] Message added. Total: 1
+
+[UI] Message added. Total: 2
+
+[UI] Message added. Total: 3
+
+[UI] Message added. Total: 4
+
+[UI] Message added. Total: 5
+
+[UI] Message added. Total: 6
+
+[UI] Message added. Total: 7
+
+[UI] Message added. Total: 8
+
+[UI] Message added. Total: 9
+
+[UI] Message added. Total: 10
+
+[UI] Message added. Total: 11
+
+[UI] Message added. Total: 12
+
+[UI] Message added. Total: 13
+
+[UI] Message added. Total: 14
+
+[UI] Message added. Total: 15
+
+[UI] Message added. Total: 16
+
+[UI] Message added. Total: 17
+
+[Perf] Added 17 messages to UI in 1ms
+
+[MarkRead] ===== STARTING markVisibleMessagesAsRead_Optimized() =====
+
+[MarkRead] Village initialized: YES
+
+[MarkRead] Current state - appState: 31, inMessagingScreen: 1
+
+[MarkRead] Using pre-loaded messages (count: 17)
+
+[423955] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[424008] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[424008] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Message published successfully, msg_id=2042
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 len=136 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 (uptime: 424431ms)
+
+[MQTT] seenMessageIds size: 26
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:f8c43bba2010:Rex:e4cc3bba2010:000671e200000006:0003a37500000005:0:0
+
+[MQTT] NEW message: 000671e200000006 - adding to seenMessageIds (size: 26)
+
+[MQTT] Duplicate ACK for message 0003a37500000005, ignoring (already processed ACK 00042dc400000002)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 len=136 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 (uptime: 424436ms)
+
+[MQTT] seenMessageIds size: 27
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:f8c43bba2010:Rex:e4cc3bba2010:000671e700000007:0004775b00000004:0:0
+
+[MQTT] NEW message: 000671e700000007 - adding to seenMessageIds (size: 27)
+
+[MQTT] Duplicate ACK for message 0004775b00000004, ignoring (already processed ACK 00042dc900000003)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 len=136 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 (uptime: 424441ms)
+
+[MQTT] seenMessageIds size: 28
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:f8c43bba2010:Rex:e4cc3bba2010:000671ec00000008:000593db00000007:0:0
+
+[MQTT] NEW message: 000671ec00000008 - adding to seenMessageIds (size: 28)
+
+[MQTT] Duplicate ACK for message 000593db00000007, ignoring (already processed ACK 00042dce00000004)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 len=136 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/f8c43bba2010 (uptime: 424446ms)
+
+[MQTT] seenMessageIds size: 29
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:f8c43bba2010:Rex:e4cc3bba2010:000671f100000009:000123e800000006:0:0
+
+[MQTT] NEW message: 000671f100000009 - adding to seenMessageIds (size: 29)
+
+[MQTT] Duplicate ACK for message 000123e800000006, ignoring (already processed ACK 00004dff00000001)
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[MQTT] Message published successfully, msg_id=20498
+[App] Sent 10 pending ACKs for sync'd messages
+
+[MarkRead] Will check messages from index 0 to 16
+
+[MarkRead] [0] id=000508e00000000e, content='666', received=0, status=1, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [1] id=0002b40c0000004a, content='Rex joined the conve', received=1, status=3, senderMAC=system
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [2] id=000343f300000001, content='Archer joined the co', received=1, status=3, senderMAC=system
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [3] id=0003a37500000005, content='word', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [4] id=0003ce3a0000004f, content='dood', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [5] id=00042ed600000050, content='555', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [6] id=0004775b00000004, content='hey man', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [7] id=0004e57400000004, content='what up!!', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [8] id=000593db00000007, content='just chillin'', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [9] id=0000e6dd00000005, content='7777', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [10] id=000123e800000006, content='8888', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [11] id=00018a4100000008, content='9999', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [12] id=00031c3700000009, content='0000', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [13] id=0002083300000008, content='777', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [14] id=0002afc400000009, content='88889', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [15] id=0003a8fa0000000a, content='4444', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [16] id=0003d2440000000b, content='666', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] ===== SUMMARY =====
+
+[MarkRead] Total checked: 17
+
+[MarkRead] Sent by me: 5
+
+[MarkRead] Already read: 12
+
+[MarkRead] Marked as read: 0
+
+[MarkRead] Read receipts queued: 0
+
+[MarkRead] No messages needed marking as read
+
+[MarkRead] ===== DONE =====
+
+[Perf] Marked unread messages in 709ms
+
+[Perf] ===== TOTAL TIME: 1184ms =====
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 (uptime: 424789ms)
+
+[MQTT] seenMessageIds size: 30
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from f8c43bba2010 for messages after timestamp 1766183919
+
+[424790] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[Sync] Request from f8c43bba2010 for messages after timestamp: 1766183919
+
+[424791] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[Sync] Ignoring sync request from self
+
+[MQTT] Message published successfully, msg_id=15885
+[MQTT] Message published successfully, msg_id=2930
+[MQTT] Message published successfully, msg_id=1851
+[MQTT] Message published successfully, msg_id=15424
+[MQTT] Message published successfully, msg_id=27678
+[MQTT] Message published successfully, msg_id=27063
+[MQTT] Message published successfully, msg_id=35313
+[MQTT] Message published successfully, msg_id=24223
+[MQTT] Message published successfully, msg_id=63020
+[MQTT] Message published successfully, msg_id=6467
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 425299ms)
+
+[MQTT] seenMessageIds size: 30
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00067a8800000016:0003ce3a0000004f:0:0
+
+[MQTT] NEW message: 00067a8800000016 - adding to seenMessageIds (size: 30)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 425304ms)
+
+[MQTT] seenMessageIds size: 31
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00067a8d00000017:00042ed600000050:0:0
+
+[MQTT] NEW message: 00067a8d00000017 - adding to seenMessageIds (size: 31)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 425309ms)
+
+[MQTT] seenMessageIds size: 32
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00067a9200000018:0004e57400000004:0:0
+
+[MQTT] NEW message: 00067a9200000018 - adding to seenMessageIds (size: 32)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 425313ms)
+
+[MQTT] seenMessageIds size: 33
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00067a9700000019:0000e6dd00000005:0:0
+
+[MQTT] NEW message: 00067a9700000019 - adding to seenMessageIds (size: 33)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 425317ms)
+
+[MQTT] seenMessageIds size: 34
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00067a9c0000001a:00018a4100000008:0:0
+
+[MQTT] NEW message: 00067a9c0000001a - adding to seenMessageIds (size: 34)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 425321ms)
+
+[MQTT] seenMessageIds size: 35
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00067aa10000001b:00031c3700000009:0:0
+
+[MQTT] NEW message: 00067aa10000001b - adding to seenMessageIds (size: 35)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 425326ms)
+
+[MQTT] seenMessageIds size: 36
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00067aa70000001c:0002083300000008:0:0
+
+[MQTT] NEW message: 00067aa70000001c - adding to seenMessageIds (size: 36)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 425330ms)
+
+[MQTT] seenMessageIds size: 37
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00067aae0000001d:0002afc400000009:0:0
+
+[MQTT] NEW message: 00067aae0000001d - adding to seenMessageIds (size: 37)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 425334ms)
+
+[MQTT] seenMessageIds size: 38
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00067ab30000001e:0003a8fa0000000a:0:0
+
+[MQTT] NEW message: 00067ab30000001e - adding to seenMessageIds (size: 38)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 425338ms)
+
+[MQTT] seenMessageIds size: 39
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:00067ab80000001f:0003d2440000000b:0:0
+
+[MQTT] NEW message: 00067ab80000001f - adding to seenMessageIds (size: 39)
+
+_Update_Part : 766999
+
+[UI] Drawing messaging. History size: 17
+
+[MQTT] EVENT_DATA: topic=smoltxt/f8c43bba2010/sync-response len=256 session_present=1
+[MQTT] Received on topic: smoltxt/f8c43bba2010/sync-response (uptime: 425809ms)
+
+[MQTT] seenMessageIds size: 40
+
+[MQTT] ============================================
+
+[MQTT] SYNC RESPONSE RECEIVED - length=256 bytes
+
+[MQTT] ============================================
+
+[MQTT] Decrypting sync response...
+
+[425809] INFO: Sync response received: 256 bytes
+
+[MQTT] Decrypted sync response: {"messages":[{"sender":"Rex","senderMAC":"e4cc3bba2010","content":"666","timestamp":1766183919,"mess...
+
+[MQTT] DUPLICATE sync response from e4cc3bba2010 phase 1 batch 1 - ignoring (last seen 3685ms ago)
+
+[425811] INFO: Duplicate sync response ignored
+
+_Update_Part : 766996
+
+[KB-READ] readKey() called 80000 times
+
+E (246) esp_core_dump_flash: No core dump partition found!
+
+[Button] USER button configured on GPIO 21
+
+[Buzzer] Initialized on GPIO 40 using LEDC channel 0
+
+
+
+
+
+
+
+
+=================================
+
+SmolTxt - Safe Texting for Kids
+
+=================================
+
+Boot starting...
+
+ESP-ROM:esp32s3-20210327
+
+Build:Mar 27 2021
+
+rst:0x15 (USB_UART_CHIP_RESET),boot:0x8 (SPI_FAST_FLASH_BOOT)
+
+Saved PC:0x420dbb06
+
+SPIWP:0xee
+
+mode:DIO, clock div:1
+
+load:0x3fce3808,len:0x4bc
+
+load:0x403c9700,len:0xbd8
+
+load:0x403cc700,len:0x2a0c
+
+entry 0x403c98d0
+
+E (246) esp_core_dump_flash: No core dump partition found!
+
+E (246) esp_core_dump_flash: No core dump partition found!
+
+[Button] USER button configured on GPIO 21
+
+[Buzzer] Initialized on GPIO 40 using LEDC channel 0
+
+
+
+
+
+
+
+
+=================================
+
+SmolTxt - Safe Texting for Kids
+
+=================================
+
+Boot starting...
+
+[Settings] Loaded ringtone: Rising Tone
+
+[Settings] Loaded village slot: 0
+
+[Logger] Initializing event logger...
+
+[Logger] Loaded 470 log entries from file
+
+[2253] INFO: ======== SYSTEM BOOT ========
+
+[2254] INFO: Build: Dec 19 2025 14:29:07
+
+[Logger] Initialized
+
+[Logger] Success! Event logging active
+
+[2254] INFO: System boot started
+
+[2254] INFO: Build: v0.57.25
+
+[Display] Initializing e-paper...
+
+[  2457][E][esp32-hal-spi.c:215] spiAttachMISO(): HSPI Does not have default pins on ESP32S3!
+
+[UI] GxEPD2 display initialized
+
+[Display] Success!
+
+[Display] Showing splash...
+
+_Update_Full : 3259997
+
+[I2C] Initializing I2C bus...
+
+[I2C] I2C initialized at 100kHz with 200ms timeout for detection
+
+[Keyboard] Initializing CardKB...
+
+[Keyboard] State cleared: currentKey=0, inputBuffer empty
+
+[Keyboard] CardKB found at 0x5F
+
+[I2C] Timeout reduced to 50ms for normal operations
+
+[Keyboard] Before clear - checking for garbage...
+
+[Keyboard] After clear - currentKey check: no keys
+
+[Keyboard] Buffer cleared and ready
+
+[Power] Device awake - 5 minute activity timer started
+
+[Power] USB power: NOT DETECTED
+
+[Battery] Initializing battery monitor...
+
+[Battery] Initialized
+
+[Battery] Voltage: 4.09V, Percent: 89%
+[Battery] Battery monitor ready
+
+[WiFi] Initializing WiFi manager...
+
+[WiFi] Loading 2 saved networks
+
+[WiFi]   - fomalhaut2.4G
+
+[WiFi]   - Zachary
+
+[WiFi] WiFiManager initialized with 2 saved networks
+
+[WiFi] WiFi manager ready
+
+[OTA] Initializing OTA updater...
+
+[OTA] ====================================
+
+[OTA] Partition Information:
+
+[OTA] Running partition: app1
+
+[OTA] Running partition size: 2048 KB
+
+[OTA] Update partition: app0
+
+[OTA] Update partition size: 2048 KB
+
+[OTA] Firmware version: v0.57.25
+
+[OTA] ====================================
+
+[8024] INFO: OTA Updater initialized, version: v0.57.25
+
+[8024] INFO: OTA source: GitHub zacknorman-dev/SmallText
+
+[OTA] Update source: GitHub zacknorman-dev/SmallText
+
+[OTA] OTA updater ready
+
+[WiFi] Found saved credentials, connecting...
+
+[WiFi] Trying last connected network: fomalhaut2.4G
+
+[WiFi] Connecting to: fomalhaut2.4G
+
+[WiFi] NTP sync successful: 2025-12-19 22:57:38 UTC
+
+[WiFi] Time offset: 1766185046 seconds
+
+[WiFi] Connected: 192.168.8.27
+
+[12536] INFO: WiFi connected: 192.168.8.27
+
+[MQTT] Initializing MQTT messenger...
+
+[MQTT] Initializing ESP-MQTT messenger
+
+[MQTT] Broker: mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+
+[MQTT] Username: smoltxt2
+
+[MQTT] Client ID: smol_esp_f8c43bba2010_245
+
+[12536] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+
+[12536] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_245
+
+[12536] INFO: MQTT: User=smoltxt2
+
+[13106] INFO: MQTT: TLS enabled with R12 certificate
+
+[13107] INFO: MQTT: Config set - clean_session=true keepalive=60
+
+[MQTT] Other event id:7
+[MQTT] Client started (retry attempts: 0)
+[MQTT] MQTT messenger ready
+
+[13108] INFO: MQTT messenger initialized
+
+[OTA] Checking for updates on boot...
+
+[13108] INFO: OTA: Boot update check
+
+[OTA] Checking for updates...
+
+[OTA] Fetching: https://api.github.com/repos/zacknorman-dev/SmallText/releases/latest
+
+[OTA] Download URL: https://github.com/zacknorman-dev/SmallText/releases/download/v0.57.25/firmware-v0.57.25.bin
+
+[OTA] Current: v0.57.25, Latest: v0.57.25
+
+[14459] INFO: OTA: Already on latest version
+
+[OTA] Already on latest version
+
+[System] Going to village select
+
+[System] Keyboard cleared before village select
+
+[System] No previous village to auto-load
+
+[ 14525][E][vfs_api.cpp:105] open(): /littlefs/village_1.dat does not exist, no permits for creation
+
+[ 14537][E][vfs_api.cpp:105] open(): /littlefs/village_2.dat does not exist, no permits for creation
+
+[ 14549][E][vfs_api.cpp:105] open(): /littlefs/village_3.dat does not exist, no permits for creation
+
+[ 14587][E][vfs_api.cpp:105] open(): /littlefs/village_5.dat does not exist, no permits for creation
+
+[MQTT] Found village in slot 0, loading...
+
+[Village] Loading from /village_0.dat...
+
+[Village] File size: 234 bytes
+
+[Village] JSON parsed successfully
+
+[14781] INFO: Rebuilt message ID cache: 17 messages
+
+[MQTT] Successfully loaded village from slot 0
+
+[MQTT] Added village subscription: Rex (a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[MQTT] Subscribed to topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/#
+
+[ 14787][E][vfs_api.cpp:105] open(): /littlefs/village_6.dat does not exist, no permits for creation
+
+[ 14792][E][vfs_api.cpp:105] open(): /littlefs/village_1.dat does not exist, no permits for creation
+
+[ 14810][E][vfs_api.cpp:105] open(): /littlefs/village_2.dat does not exist, no permits for creation
+
+[ 14822][E][vfs_api.cpp:105] open(): /littlefs/village_3.dat does not exist, no permits for creation
+
+[ 14834][E][vfs_api.cpp:105] open(): /littlefs/village_4.dat does not exist, no permits for creation
+
+[ 14846][E][vfs_api.cpp:105] open(): /littlefs/village_5.dat does not exist, no permits for creation
+
+[ 14859][E][vfs_api.cpp:105] open(): /littlefs/village_6.dat does not exist, no permits for creation
+
+[ 14872][E][vfs_api.cpp:105] open(): /littlefs/village_7.dat does not exist, no permits for creation
+
+[ 14885][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+
+[ 14897][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+
+[MQTT] Subscribed to 1 villages
+
+[14906] INFO: MQTT: Subscribed to 1 villages
+
+[MQTT] Subscribed to: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/# (Rex)
+
+[14908] INFO: MQTT: Connected - subscribed to 1 villages
+
+[MQTT] Subscribed to command t
+
+[MQTT] Subscribed to sync response topic: smoltxt/f8c43bba2010/sync-response
+
+[MQTT] Waiting 2s for subscriptions to be established...
+
+[ 14913][E][vfs_api.cpp:105] open(): /littlefs/village_7.dat does not exist, no permits for creation
+
+[ 14926][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+
+[ 14938][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+
+[System] Starting with sync setup screen for 1 villages
+
+[MQTT] Sync request payload: {"mac":"f8c43bba2010","timestamp":0}
+
+[MQTT] Publishing sync request to: smoltxt//sync-request/f8c43bba2010
+
+[MQTT] p on receive)
+
+[16953] INFO: Sync request sent
+
+[MQTT] Boot sync requested for village: Rex
+
+[16954] INFO: MQTT: Boot sync requested for 1 villages
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/shout (uptime: 17726ms)
+
+[MQTT] seenMessageIds size: 0
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: SHOUT:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:*:Rex:e4cc3bba2010:0006c84e0000000a:666999:0:0
+
+[MQTT] NEW message: 0006c84e0000000a - adding to seenMessageIds (size: 0)
+
+[MQT3bba2010 (uptime: 17727ms)
+
+[MQTT] ACK send result: SUCCESS
+
+[MQTT] Received message from Rex
+
+[Messa6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Power] Activity timer reset - message rece
+[Message] Message for different village (a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53) - saving to storage only
+
+[Village] Message saved to file: id=0006c84e0000000a village=a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Ringtone] Playing: Rising Tone
+
+[MQTT] Subscribed to topic, msg_id=7395
+[MQTT] Subscribed to topic, msg_id=64341
+[MQTT] Subscribed to topic, msg_id=1549
+[MQTT] Subscribed to topic, msg_id=52203
+[MQTT] Message published successfully, msg_id=45550
+[MQTT] Message published successfully, msg_id=29805
+_Update_Full : 3260003
+
+[System] Setup complete!
+
+e5d53/username/f8c43bba2010 len=6 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/username/f8c43bba2010 (uptivillage: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received username announcement: Archer for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+: Username received: Archer (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Individual] ========================================
+
+[Individual] Received username announcement!
+
+[Individual] Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Individual] Username: Archer
+
+[Individual] ========================================
+
+[Village] Found existing village with ID 'a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53' in slot 0
+
+[Individual] Found village in slot: 0
+
+[Village] Loading from /village_0.dat...
+
+[Village] File size: 234 bytes
+
+[Village] JSON parsed successfully
+
+[18483] INFO: Rebuilt message ID cache: 17 messages
+
+[Individual] Village type: Individual
+
+[Individual] Current name: 'Rex'
+
+[Individual] My username: 'Archer'
+
+[Individual] Ignoring username - it's our own name
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/username/e4cc3bba2[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/username/e4cc3bba2010 (uptime: 18487ms)
+
+[MQTT] seenMessageIds size: 1
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received -c81b-4636-97a5-63ec6a8e5d53
+
+[18488] INFO: Username received: Rex (Village ID: a8a6bbe4-c81b-4636-97a======
+
+[Individual] Received username announcement!
+
+[Individual] Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Individual] Username: Rex
+
+[Individual] ========================================
+
+[Village] Found existing village with ID 'a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53' in slot 0
+
+[Individual] Found village in slot: 0
+
+[Village] Loading from /village_0.dat...
+
+[Village] File size: 234 bytes
+
+[Village] JSON parse
+
+[18585] INFO: Rebuilt message ID cache: 17 messages
+
+[Individual] Village type: Individual
+
+[Individual] Current name: 'Rex'
+
+[Individual] My username: 'Archer'
+
+[Individual] Not updating - current name 'Rex' is acceptable
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d5time: 18591ms)
+
+[MQTT] seenMessageIds size: 1
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Receive8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[18592] INFO: Village name received: Chat (ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Village] Received village name announcement for a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53: Chat
+
+[Village] Found existing village with ID 'a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53' in slot 0
+
+[Village] Loading from /village_0.dat...
+
+[Village] File size: 234 bytes
+
+[Village] JSON parsed successfully
+
+[18690] INFO: Rebuilt message ID cache: 17 messages
+
+[Village] Ignoring village name for individual conversation (uses username instead)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/username/f8c43bba2010 len=6 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/username/f8c43bba2010 (uptime: 18694ms)
+
+[MQTT] seenMessageIds size: 1
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[18694] INFO: Username received: Archer (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Individual] ========================================
+
+[Individual] Received username announcement!
+
+[Individual] Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Individual] Username: Archer
+
+[Individual] ========================================
+
+[Village] Found existing village with ID 'a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53' in slot 0
+
+[Individual] Found village in slot: 0
+
+[Village] Loading from /village_0.dat...
+
+[Village] File size: 234 bytes
+
+[Village] JSON parsed suc
+
+[18803] INFO: Rebuilt message ID cache: 17 messages
+
+[Individual] Village type: Individual
+
+[Individual] Current name: 'Rex'
+
+[Individual] My username: 'Archer'
+
+[Individual] Ignoring username - it's our own name
+
+
+========== DEBUG LOG DUMP ==========
+
+Total entries: 498
+
+====================================
+
+
+[[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/username/e4cc3bba2010 len=3 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/username/e4cc3bba2010 (uptime: 18807ms)
+
+[MQTT] seenMessageIds size: 1
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received username announcement: Rex for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[18808] INFO: Username received: Rex (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Individual] ========================================
+
+[Individual] Received username announcement!
+
+[Individual] Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Individual] Username: Rex
+
+[Individual] ========================================
+
+[Village] Found existing village with ID 'a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53' in slot 0
+
+[Individual] Found village in slot: 0
+
+34408] INFO: Sync phase 1 batch 2/3
+
+[34409] INFO: Log buffer pruned, removed 125 old entries
+
+[34586] INFO: Message saved: id=0002083300000008 from=Rex village=a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[35410] INFO: Synced 1 messages
+
+[35416] INFO: Sync response received: 258 bytes
+
+[35845] INFO: Sync phase 1 batch 3/3
+
+[36165] INFO: Message saved: id=0002afc400000009 from=Rex village=a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loading from /village_0.dat...
+
+[37002] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[37046] INFO: File stats: total=15 empty=0 parseErr=0 matched=15
+
+[37046] INFO: Loaded 15 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[37049] INFO: Phase 1 complete: 1 recent msgs
+
+[37054] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[37098] INFO: File stats: total=15 empty=0 parseErr=0 matched=15
+
+[37098] INFO: Loaded 15 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[37099] INFO: Synced 1 messages
+
+[37975] INFO: Sync response received: 257 bytes
+
+[37977] INFO: Duplicate sync response ignored
+
+[37984] INFO: Sync response received: 256 bytes
+
+[37985] INFO: Duplicate sync response ignored
+
+[37989] INFO: Sync response received: 258 bytes
+
+[37990] INFO: Duplicate sync response ignored
+
+[48531] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[48573] INFO: File stats: total=15 empty=0 parseErr=0 matched=15
+
+[48573] INFO: Loaded 15 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[50602] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[51058] INFO: File stats: total=15 empty=0 parseErr=0 matched=15
+
+[51058] INFO: Loaded 15 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[51065] INFO: Sync request sent
+
+[51076[Village] File size: 234 bytes
+
+] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[51120] INFO: File stats: total=15 empty=0 parseErr=0 matched=15
+
+[51120] INFO: Loaded 15 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[51215] INFO: Batch updated 2 messages to status 3
+
+[51290] INFO: Saved 15 total lines
+
+[51500] INFO: Sync from f8c43bba2010 ts=1766183844
+
+[51500] INFO: Sync from f8c43bba2010 (after t=1766183844)
+
+[52428] INFO: Sync response received: 258 bytes
+
+[52429] INFO: [Village] JSON parsed successfully
+
+Sync phase 1 batch 1/1
+
+[52489] INFO: Duplicate message skipped (exact match): id=0002afc400000009 sender=Rex
+
+[52500] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[52545] INFO: File stats: total=15 empty=0 parseErr=0 matched=15
+
+[52545] INFO: Loaded 15 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[52548] INFO: Phase 1 complete: 1 recent msgs
+
+[52548] INFO: Synced 1 messages
+
+[69340] INFO: Message saved: id=0003a8fa0000000a from=Rex village=a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[69390] INFO: Updated message 0003a8fa0000000a to status 2
+
+[2221] INFO: ======== SYSTEM BOOT ========
+
+[2221] INFO: Build: Dec 19 2025 14:29:07
+
+[2221] INFO: System boot started
+
+[2221] INFO: Build: v0.57.25
+
+[7989] INFO: OTA Updater initialized, version: v0.57.25
+
+[7989] INFO: OTA source: GitHub zacknorman-dev/SmallText
+
+[13001] INFO: WiFi connected: 192.168.8.27
+
+[13001] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+
+[13001] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_245
+
+[13001] INFO: MQTT: User=smoltxt2
+
+[13649] INFO: MQTT: TLS enabled with R12 certificate
+
+[13649] INFO: MQTT: Config set - clean_session=true keepalive=60
+
+[13650] INFO: MQTT messenger initialized
+
+[13651] INFO: OTA: Boot update check
+
+[15112] INFO: Rebuilt message ID cache: 16 messages
+
+[15216] INFO: MQTT: Subscribed to 1 villages
+
+[18905] INFO: Rebuilt message ID cache: 17 messages
+
+[15218] INFO: MQTT: Connected - subscribed to 1 villages
+
+[15400] INFO: OTA: Already on latest version
+
+[17284] INFO: Sync request sent
+
+[17284] INFO: MQTT: Boot sync requested for 1 villages
+
+[18920] INFO: Username received: Archer (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[19067] INFO: Rebuilt message ID cache: 16 messages
+
+[19072] INFO: Username received: Rex (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[19211] INFO: Rebuilt message ID cache: 16 messages
+
+[19215] INFO: Village name received: Chat (ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[19344] INFO: Rebuilt message ID cache: 16 messages
+
+[19348] INFO: Username received: Archer (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[19499] INFO: Rebuilt message ID cache: 16 messages
+
+[19503] INFO: Username received: Rex (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[19644] INFO: Rebuilt message ID cache: 16 messages
+
+[20147] INFO: Village name received: Chat (ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[20298] INFO: Rebuilt message ID cache: 16 messages
+
+[20535] INFO: Username received: Archer (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[20675] INFO: Rebuilt message ID cache: 16 messages
+
+[20680] INFO: Username received: Rex (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[20828] INFO: Rebuilt message ID cache: 16 messages
+
+[20832] INFO: Village name received: Chat (ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[20982] INFO: Rebuilt message ID cache: 16 messages
+
+[30564] INFO: Rebuilt message ID cache: 16 messages
+
+[34236] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[34761] INFO: File stats: total=16 empty=0 parseErr=0 matched=16
+
+[34762] INFO: Loaded 16 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[34768] INFO: Sync request sent
+
+[34768] INFO: Periodic sync requested
+
+[34785] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[34834] INFO: File stats: total=16 empty=0 parseErr=0 matched=16
+
+[34834] INFO: Loaded 16 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[34840] INFO: Sync request sent
+
+[34858] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[34907] INFO: File stats: total=16 empty=0 parseErr=0 matched=16
+
+[35178] INFO: Sync from f8c43bba2010 ts=1766183907
+
+[35178] INFO: Sync from f8c43bba2010 (after t=1766183907)
+
+[35401] INFO: Loaded 16 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[35640] INFO: Sync from f8c43bba2010 ts=1766183907
+
+[35641] INFO: Sync from f8c43bba2010 (after t=1766183907)
+
+[36077] INFO: Sync response received: 257 bytes
+
+[36078] INFO: Sync phase 1 batch 1/2
+
+[36152] INFO: Duplicate message skipped (exact match): id=0003a8fa0000000a sender=Rex
+
+[36152] INFO: Synced 1 messages
+
+[36251] INFO: Sync response received: 256 bytes
+
+[36805] INFO: Sync phase 1 batch 2/2
+
+[36994] INFO: Message saved: id=0003d2440000000b from=Rex village=a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[37823] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[37874] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[37875] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[37877] INFO: Phase 1 complete: 1 recent msgs
+
+[37889] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[37941] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[37941] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[37942] INFO: Synced 1 messages
+
+[38921] INFO: Sync response received: 257 bytes
+
+[38922] INFO: Duplicate sync response ignored
+
+[38925] INFO: Sync response received: 256 bytes
+
+[38926] INFO: Duplicate sync response ignored
+
+[38930] INFO: Sync response received: 256 bytes
+
+[38931] INFO: Duplicate sync response ignored
+
+[133741] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[133741] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[133748] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[133797] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[134342] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[134343] INFO: Log buffer pruned, removed 125 old entries
+
+[134347] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[134347] INFO: Sync phase 1: 1 msgs
+
+[134354] INFO: Sync batch 1 sent
+
+[135095] INFO: Skipping status update for 0003a37500000005 - current status 3 >= new status 2
+
+[135104] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[135155] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[135156] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[136052] INFO: Skipping status update for 0004775b00000004 - current status 3 >= new status 2
+
+[136062] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[136113] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[136113] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[137010] INFO: Skipping status update for 000593db00000007 - current status 3 >= new status 2
+
+[137020] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[2186] INFO: ======== SYSTEM BOOT ========
+
+[2187] INFO: Build: Dec 19 2025 14:29:07
+
+[2187] INFO: System boot started
+
+[2187] INFO: Build: v0.57.25
+
+[7956] INFO: OTA Updater initialized, version: v0.57.25
+
+[7956] INFO: OTA source: GitHub zacknorman-dev/SmallText
+
+[8968] INFO: WiFi connected: 192.168.8.27
+
+[8968] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+
+[8968] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_245
+
+[8969] INFO: MQTT: User=smoltxt2
+
+[2196] INFO: ======== SYSTEM BOOT ========
+
+[2197] INFO: Build: Dec 19 2025 14:29:07
+
+[2197] INFO: System boot started
+
+[2197] INFO: Build: v0.57.25
+
+[7966] INFO: OTA Updater initialized, version: v0.57.25
+
+[7967] INFO: OTA source: GitHub zacknorman-dev/SmallText
+
+[13979] INFO: WiFi connected: 192.168.8.27
+
+[13979] INFO: MQTT: Broker=mqtts://83f1da02f4574c7f9ffe4d23088c6b5c.s1.eu.hivemq.cloud:8883
+
+[13979] INFO: MQTT: ClientID=smol_esp_f8c43bba2010_245
+
+[13979] INFO: MQTT: User=smoltxt2
+
+[14471] INFO: MQTT: TLS enabled with R12 certificate
+
+[14471] INFO: MQTT: Config set - clean_session=true keepalive=60
+
+[14473] INFO: MQTT messenger initialized
+
+[14473] INFO: OTA: Boot update check
+
+[15706] INFO: OTA: Already on latest version
+
+[16096] INFO: Rebuilt message ID cache: 17 messages
+
+[16207] INFO: MQTT: Subscribed to 1 villages
+
+[16209] INFO: MQTT: Connected - subscribed to 1 villages
+
+[18260] INFO: Sync request sent
+
+[18261] INFO: MQTT: Boot sync requested for 1 villages
+
+[18758] INFO: Username received: Archer (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[18952] INFO: Rebuilt message ID cache: 17 messages
+
+[18959] INFO: Username received: Rex (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[19152] INFO: Rebuilt message ID cache: 17 messages
+
+[19156] INFO: Village name received: Chat (ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[19354] INFO: Rebuilt message ID cache: 17 messages
+
+[19559] INFO: Username received: Archer (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[19762] INFO: Rebuilt message ID cache: 17 messages
+
+[19768] INFO: Username received: Rex (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[19964] INFO: Rebuilt message ID cache: 17 messages
+
+[20468] INFO: Village name received: Chat (ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[20691] INFO: Rebuilt message ID cache: 17 messages
+
+[20695] INFO: Username received: Archer (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[20923] INFO: Rebuilt message ID cache: 17 messages
+
+[20928] INFO: Username received: Rex (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[21157] INFO: Rebuilt message ID cache: 17 messages
+
+[21163] INFO: Village name received: Chat (ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[21387] INFO: Rebuilt message ID cache: 17 messages
+
+[21392] INFO: Username received: Archer (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[21614] INFO: Rebuilt message ID cache: 17 messages
+
+[22309] INFO: Username received: Rex (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[22402] INFO: Rebuilt message ID cache: 17 messages
+
+[22406] INFO: Village name received: Chat (ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[22496] INFO: Rebuilt message ID cache: 17 messages
+
+[22500] INFO: Username received: Archer (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[22589] INFO: Rebuilt message ID cache: 17 messages
+
+[22594] INFO: Username received: Rex (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[22687] INFO: Rebuilt message ID cache: 17 messages
+
+[22691] INFO: Village name received: Chat (ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[22787] INFO: Rebuilt message ID cache: 17 messages
+
+[54898] INFO: Rebuilt message ID cache: 17 messages
+
+[58561] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[58610] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[58610] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[58617] INFO: Sync request sent
+
+[58617] INFO: Periodic sync requested
+
+[58817] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[58817] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[59121] INFO: Sync response received: 256 bytes
+
+[59122] INFO: Sync phase 1 batch 1/1
+
+[59676] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[59690] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[59741] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[59741] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[59744] INFO: Phase 1 complete: 1 recent msgs
+
+[59754] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[59803] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[59803] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[59804] INFO: Synced 1 messages
+
+[60043] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[60579] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[60595] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[60646] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[60646] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[60650] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[60651] INFO: Sync phase 1: 1 msgs
+
+[60657] INFO: Sync batch 1 sent
+
+[88631] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[88681] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[88682] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[89223] INFO: Sync request sent
+
+[89223] INFO: Periodic sync requested
+
+[89527] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[89527] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[89735] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[89735] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[89750] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[89804] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[89804] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[89808] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[90364] INFO: Sync phase 1: 1 msgs
+
+[90370] INFO: Sync batch 1 sent
+
+[90758] INFO: Sync response received: 256 bytes
+
+[90759] INFO: Sync phase 1 batch 1/1
+
+[90831] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[90847] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[90900] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[90901] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[90903] INFO: Phase 1 complete: 1 recent msgs
+
+[90903] INFO: Synced 1 messages
+
+[119250] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[119252] INFO: Log buffer pruned, removed 125 old entries
+
+[119305] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[119305] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[119311] INFO: Sync request sent
+
+[119582] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[119582] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[119733] INFO: Periodic sync requested
+
+[119740] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[119741] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[119765] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[119825] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[119825] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[119829] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[119830] INFO: Sync phase 1: 1 msgs
+
+[120468] INFO: Sync batch 1 sent
+
+[120863] INFO: Sync response received: 256 bytes
+
+[120864] INFO: Sync phase 1 batch 1/1
+
+[120921] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[120927] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[120976] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[120976] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[120979] INFO: Phase 1 complete: 1 recent msgs
+
+[120979] INFO: Synced 1 messages
+
+[149741] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[150200] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[150201] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[150207] INFO: Sync request sent
+
+[150208] INFO: Periodic sync requested
+
+[150460] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[150460] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[151686] INFO: Sync response received: 256 bytes
+
+[151687] INFO: Sync phase 1 batch 1/1
+
+[151750] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[151759] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[152286] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[152287] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[152289] INFO: Phase 1 complete: 1 recent msgs
+
+[152290] INFO: Synced 1 messages
+
+[152505] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[152506] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[152517] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[152567] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[152568] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[152571] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[153051] INFO: Sync phase 1: 1 msgs
+
+[153058] INFO: Sync batch 1 sent
+
+[180224] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[180275] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[180276] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[180282] INFO: Sync request sent
+
+[180283] INFO: Periodic sync requested
+
+[180460] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[180461] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[181283] INFO: Sync response received: 256 bytes
+
+[181772] INFO: Sync phase 1 batch 1/1
+
+[181844] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[181859] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[181911] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[181912] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[181914] INFO: Phase 1 complete: 1 recent msgs
+
+[181914] INFO: Synced 1 messages
+
+[182303] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[182304] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[182322] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[182859] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[182859] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[182863] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[182863] INFO: Sync phase 1: 1 msgs
+
+[182870] INFO: Sync batch 1 sent
+
+[210306] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[210359] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[210360] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[210366] INFO: Sync request sent
+
+[210367] INFO: Periodic sync requested
+
+[210529] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[210530] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[210864] INFO: Sync response received: 256 bytes
+
+[210865] INFO: Sync phase 1 batch 1/1
+
+[210946] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[210967] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[211020] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[211021] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[211023] INFO: Phase 1 complete: 1 recent msgs
+
+[211024] INFO: Synced 1 messages
+
+[212920] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[212920] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[212950] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[213011] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[213012] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[213016] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[213016] INFO: Sync phase 1: 1 msgs
+
+[213023] INFO: Sync batch 1 sent
+
+[240390] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[240444] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[241100] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[241107] INFO: Sync request sent
+
+[241107] INFO: Periodic sync requested
+
+[241303] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[241303] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[242104] INFO: Sync response received: 256 bytes
+
+[242105] INFO: Sync phase 1 batch 1/1
+
+[242166] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[242172] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[242221] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[242764] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[242766] INFO: Phase 1 complete: 1 recent msgs
+
+[242766] INFO: Synced 1 messages
+
+[243031] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[243031] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[243040] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[243089] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[243089] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[243093] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[243093] INFO: Sync phase 1: 1 msgs
+
+[243656] INFO: Sync batch 1 sent
+
+[271118] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[271168] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[271168] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[271175] INFO: Sync request sent
+
+[271175] INFO: Periodic sync requested
+
+[271390] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[271390] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[272515] INFO: Sync response received: 256 bytes
+
+[272517] INFO: Sync phase 1 batch 1/1
+
+[273135] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[273136] INFO: Log buffer pruned, removed 125 old entries
+
+[273152] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[273202] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[273202] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[273629] INFO: Phase 1 complete: 1 recent msgs
+
+[273629] INFO: Synced 1 messages
+
+[273851] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[273852] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[273874] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[273926] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[273926] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[273929] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[273930] INFO: Sync phase 1: 1 msgs
+
+[273936] INFO: Sync batch 1 sent
+
+[275389] INFO: Sync from e4cc3bba2010 ts=1766183919
+
+[275389] INFO: Sync from e4cc3bba2010 (after t=1766183919)
+
+[275407] [Individual] Village type: Individual
+
+[Individual] Current name: 'Rex'
+
+[Individual] My username: 'Archer'
+
+[Individual] Not updating - current name 'Rex' is acceptable
+
+INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[275458] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[275459] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[275463] INFO: Sync: Sending 1 msgs to e4cc3bba2010
+
+[275463] INFO: Sync phase 1: 1 msgs
+
+[275469] INFO: Sync batch 1 sent
+
+[275488] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/villagename len=4 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/villagename (uptime: 19467ms)
+
+[MQTT] seenMessageIds size: 1
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received village name announcement: Chat for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[19467] INFO: Village name received: Chat (ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[19468] INFO: Log buffer pruned, removed 125 old entries
+
+[Village] Received village name announcement for a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53: Chat
+
+
+
+[275541] INFO: 
+
+[275705] INFO: 
+
+[275728] INFO: 
+
+[275781] INFO: 
+
+[275781] INFO: 
+
+[276143] INFO: 
+
+[276740] INFO: 
+
+[276759] INFO: 
+
+[276812] INFO: 
+
+[276812] INFO: 
+
+[277720] INFO: 
+
+[278223] INFO: 
+
+[278277] INFO: 
+
+[278278] INFO: 
+
+[279122] INFO: 
+
+[279147] INFO: 
+
+[279202] INFO: 
+
+[279202] INFO: 
+
+[279339] INFO: 
+
+[279594] INFO: 
+
+[280125] INFO: 
+
+[280601] INFO: 
+
+[281015] INFO: 
+
+[281016] INFO: 
+
+[281077] INFO: 
+
+[281085] INFO: 
+
+[281135] INFO: 
+
+[281135] INFO: 
+
+[281137] INFO: 
+
+[281138] INFO: 
+
+[418950] INFO: 
+
+[419431] INFO: 
+
+[419440] INFO: 
+
+[419490] INFO: 
+
+[419490] INFO: 
+
+[419495] INFO: 
+
+[419495] INFO: 
+
+[419503] INFO: 
+
+[419510] INFO: 
+
+[419559] INFO: 
+
+[419560] INFO: 
+
+[420911] INFO: 
+
+[420962] INFO: 
+
+[420962] INFO: 
+
+[420969] INFO: 
+
+[420969] INFO: 
+
+[421206] INFO: 
+
+[421206] INFO: 
+
+[422124] INFO: 
+
+[422125] INFO: 
+
+[422191] [Village] Found existing village with ID 'a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53' in slot 0
+
+INFO: 
+
+[422708] INFO: 
+
+[422760] INFO: 
+
+[422760] INFO: 
+
+[422763] INFO: 
+
+[422763] INFO: 
+
+[423251] INFO: 
+
+[423251] INFO: 
+
+[423266] INFO: 
+
+[423318] INFO: 
+
+[423319] INFO: 
+
+[423822] INFO: 
+
+[423822] INFO: 
+
+[423832] INFO: 
+
+[423845] INFO: 
+
+[423898] INFO: 
+
+[423899] INFO: 
+
+[423935] INFO[Village] Loading from /village_0.dat...
+
+: 
+
+[423955] INFO: 
+
+[424008] INFO: 
+
+[424008] INFO: 
+
+[2253] INFO: 
+
+[2254] INFO: 
+
+[2254] INFO: 
+
+[2254] INFO: 
+
+[8024] INFO: 
+
+[8024] INFO: 
+
+[12536] INFO: 
+
+[12536] INFO: 
+
+[12536] INFO: 
+
+[12536] INFO: 
+
+[13106] INFO: 
+
+[13107] INFO: 
+
+[13108] INFO: 
+
+[13108] INFO: 
+
+[14459] INFO: 
+
+[14781] INFO: 
+
+[14906] INFO: 
+
+[14908] INFO: 
+
+[16953] INFO: 
+
+[16954] INFO: 
+
+[18387] [Village] File size: 234 bytes
+
+[Village] JSON parsed successfully
+
+INFO: 
+
+[18483] INFO: 
+
+[18488] INFO: 
+
+[18585] INFO: 
+
+[18592] INFO: 
+
+[18690] INFO: 
+
+[18694] INFO: 
+
+[18803] INFO: 
+
+
+========== END LOG DUMP ==========
+
+
+[19589] INFO: Rebuilt message ID cache: 17 messages
+
+[Village] Ignoring village name for individual conversation (uses username instead)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 19593ms)
+
+[MQTT] seenMessageIds size: 1
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000453f00000001:0006c84e0000000a:0:0
+
+[MQTT] NEW message: 0000453f00000001 - adding to seenMessageIds (size: 1)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/username/f8c43bba2010 len=6 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/username/f8c43bba2010 (uptime: 19929ms)
+
+[MQTT] seenMessageIds size: 2
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received username announcement: Archer for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[19930] INFO: Username received: Archer (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Individual] ========================================
+
+[Individual] Received username announcement!
+
+[Individual] Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Individual] Username: Archer
+
+[Individual] ========================================
+
+[Village] Found existing village with ID 'a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53' in slot 0
+
+[Individual] Found village in slot: 0
+
+[Village] Loading from /village_0.dat...
+
+[Village] JSON parsed successfully
+
+[20052] INFO: Rebuilt message ID cache: 17 messages
+
+[Individual] Village type: Individual
+
+[Individual] Current name: 'Rex'
+
+[Individual] My username: 'Archer'
+
+[Individual] Ignoring username - it's our own name
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/username/e4cc3bba2010 len=3 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/username/e4cc3bba2010 (uptime: 20480ms)
+
+[MQTT] seenMessageIds size: 2
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received username announcement: Rex for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[20481] INFO: Username received: Rex (Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Individual] ========================================
+
+[Individual] Received username announcement!
+
+[Individual] Village ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Individual] Username: Rex
+
+[Individual] ========================================
+
+[Village] Found existing village with ID 'a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53' in slot 0
+
+[Individual] Found village in slot: 0
+
+[Village] Loading from /village_0.dat...
+
+[Village] File size: 234 bytes
+
+[Village] JSON parsed successfully
+
+[20624] INFO: Rebuilt message ID cache: 17 messages
+
+[Individual] Village type: Individual
+
+[Individual] Current name: 'Rex'
+
+[Individual] My username: 'Archer'
+
+[Individual] Not updating - current name 'Rex' is acceptable
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/villagename len=4 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/villagename (uptime: 20628ms)
+
+[MQTT] seenMessageIds size: 2
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received village name announcement: Chat for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[20629] INFO: Village name received: Chat (ID: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Village] Received village name announcement for a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53: Chat
+
+[Village] Found existing village with ID 'a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53' in slot 0
+
+[Village] Loading from /village_0.dat...
+
+[Village] File size: 234 bytes
+
+[Village] JSON parsed successfully
+
+[20776] INFO: Rebuilt message ID cache: 17 messages
+
+[Village] Ignoring village name for individual conversation (uses username instead)
+
+[App] MQTT quiet for 2s - sync likely complete, transitioning to main menu
+
+_Update_Part : 766997
+
+_Update_Part : 766997
+
+[Loop] Entering handleMainMenu for first time
+
+_Update_Full : 3259998
+
+[KB-READ] I2C byte: 0xB7 (183)
+
+[Keyboard] RIGHT pressed
+
+[MainMenu] ENTER or RIGHT pressed - advancing to selection
+
+[ 30428][E][vfs_api.cpp:105] open(): /littlefs/village_1.dat does not exist, no permits for creation
+
+[ 30440][E][vfs_api.cpp:105] open(): /littlefs/village_2.dat does not exist, no permits for creation
+
+[ 30451][E][vfs_api.cpp:105] open(): /littlefs/village_3.dat does not exist, no permits for creation
+
+[ 30462][E][vfs_api.cpp:105] open(): /littlefs/village_4.dat does not exist, no permits for creation
+
+[ 30473][E][vfs_api.cpp:105] open(): /littlefs/village_5.dat does not exist, no permits for creation
+
+[ 30484][E][vfs_api.cpp:105] open(): /littlefs/village_6.dat does not exist, no permits for creation
+
+[ 30496][E][vfs_api.cpp:105] open(): /littlefs/village_7.dat does not exist, no permits for creation
+
+[ 30507][E][vfs_api.cpp:105] open(): /littlefs/village_8.dat does not exist, no permits for creation
+
+[ 30518][E][vfs_api.cpp:105] open(): /littlefs/village_9.dat does not exist, no permits for creation
+
+[Conversations] Found 1 valid villages
+
+  Slot 0: Rex
+
+_Update_Part : 766997
+
+_Update_Part : 766997
+
+[MainMenu] Opening conversation list
+
+[KB-READ] I2C byte: 0xB7 (183)
+
+[Keyboard] RIGHT pressed
+
+[ConversationList] Loading village from slot 0: Rex
+
+[Village] Loading from /village_0.dat...
+
+[Village] File size: 234 bytes
+
+[Village] JSON parsed successfully
+
+[32594] INFO: Rebuilt message ID cache: 17 messages
+
+[Settings] Saved current village slot: 0
+
+[MQTT] Active village set to: Rex
+
+[ConversationList] Active village: Rex
+
+[UI] Starting full refresh for conversation menu...
+
+_Update_Full : 3259997
+
+[UI] Full refresh complete for conversation menu
+
+[MQTT] Active village set to: Rex
+
+[Loop] Active village set to: Rex
+
+[App] Periodic sync check
+
+[36264] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[36315] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[36315] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[MQTT] Sync request payload: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Publishing sync request to: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 (uptime: 36661ms)
+
+[MQTT] seenMessageIds size: 2
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from f8c43bba2010 for messages after timestamp 1766183919
+
+[36662] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[Sync] Request from f8c43bba2010 for messages after timestamp: 1766183919
+
+[36662] INFO: Sync from f8c43bba2010 (after t=1766183919)
+
+[Sync] Ignoring sync request from self
+
+[MQTT] Message published successfully, msg_id=20096
+[KB-READ] I2C byte: 0xB7 (183)
+
+[Keyboard] RIGHT pressed
+
+[App] ===== ENTERING MESSAGING SCREEN =====
+
+[App] Messages in history: 0
+
+[36771] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[36822] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[36823] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[Perf] Loaded 17 messages in 64ms
+
+[Sync] Requesting background sync: last timestamp=1766183919
+
+[MQTT] Sync request payload: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Publishing sync request to: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010
+
+[MQTT] Sync request sent (QoS 1, will receive all messages, dedup on receive)
+
+[36829] INFO: Sync request sent
+
+[UI] Message added. Total: 1
+
+[UI] Message added. Total: 2
+
+[UI] Message added. Total: 3
+
+[UI] Message added. Total: 4
+
+[UI] Message added. Total: 5
+
+[UI] Message added. Total: 6
+
+[UI] Message added. Total: 7
+
+[UI] Message added. Total: 8
+
+[UI] Message added. Total: 9
+
+[UI] Message added. Total: 10
+
+[UI] Message added. Total: 11
+
+[UI] Message added. Total: 12
+
+[UI] Message added. Total: 13
+
+[UI] Message added. Total: 14
+
+[UI] Message added. Total: 15
+
+[UI] Message added. Total: 16
+
+[UI] Message added. Total: 17
+
+[Perf] Added 17 messages to UI in 3ms
+
+[MarkRead] ===== STARTING markVisibleMessagesAsRead_Optimized() =====
+
+[MarkRead] Village initialized: YES
+
+[MarkRead] Current state - appState: 31, inMessagingScreen: 1
+
+[MarkRead] Using pre-loaded messages (count: 17)
+
+[36845] INFO: Loading messages for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[36895] INFO: File stats: total=17 empty=0 parseErr=0 matched=17
+
+[36896] INFO: Loaded 17 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[Village] Loaded 17 messages (sorted by timestamp)
+
+[App] Sent 10 pending ACKs for sync'd messages
+
+[MarkRead] Will check messages from index 0 to 16
+
+[MarkRead] [0] id=000508e00000000e, content='666', received=0, status=1, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [1] id=0002b40c0000004a, content='Rex joined the conve', received=1, status=3, senderMAC=system
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [2] id=000343f300000001, content='Archer joined the co', received=1, status=3, senderMAC=system
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [3] id=0003a37500000005, content='word', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [4] id=0003ce3a0000004f, content='dood', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [5] id=00042ed600000050, content='555', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [6] id=0004775b00000004, content='hey man', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [7] id=0004e57400000004, content='what up!!', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [8] id=000593db00000007, content='just chillin'', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [9] id=0000e6dd00000005, content='7777', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [10] id=000123e800000006, content='8888', received=0, status=3, senderMAC=f8c43bba2010
+
+[MarkRead]   -> SKIP: Sent by me (received=false)
+
+[MarkRead] [11] id=00018a4100000008, content='9999', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [12] id=00031c3700000009, content='0000', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [13] id=0002083300000008, content='777', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [14] id=0002afc400000009, content='88889', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [15] id=0003a8fa0000000a, content='4444', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] [16] id=0003d2440000000b, content='666', received=1, status=3, senderMAC=e4cc3bba2010
+
+[MarkRead]   -> SKIP: Already read (status=3)
+
+[MarkRead] ===== SUMMARY =====
+
+[MarkRead] Total checked: 17
+
+[MarkRead] Sent by me: 5
+
+[MarkRead] Already read: 12
+
+[MarkRead] Marked as read: 0
+
+[MarkRead] Read receipts queued: 0
+
+[MarkRead] No messages needed marking as read
+
+[MarkRead] ===== DONE =====
+
+[Perf] Marked unread messages in 122ms
+
+[Perf] ===== TOTAL TIME: 195ms =====
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 37128ms)
+
+[MQTT] seenMessageIds size: 2
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000902000000002:0003ce3a0000004f:0:0
+
+[MQTT] NEW message: 0000902000000002 - adding to seenMessageIds (size: 2)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 37132ms)
+
+[MQTT] seenMessageIds size: 3
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000902500000003:00042ed600000050:0:0
+
+[MQTT] NEW message: 0000902500000003 - adding to seenMessageIds (size: 3)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 len=73 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/sync-request/f8c43bba2010 (uptime: 37136ms)
+
+[MQTT] seenMessageIds size: 4
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Received sync request for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted sync request: {"mac":"f8c43bba2010","timestamp":1766183919}
+
+[MQTT] Sync request from f8c43bba2010 for messages after timestamp 1766183919
+
+[37137] INFO: Sync from f8c43bba2010 ts=1766183919
+
+[Sync766183919
+
+[37624] INFO: Sync from f8c43bba2010 (af
+
+[Sync] Ignoring sync request from self
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 37628ms)
+
+[MQTT] seenMessageIds size: 4
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000902a00000004:0004e57400000004:0:0
+
+[MQTT] NEW message: 0000902a00000004 - adding to seenMessageIds (size: 4)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 37632ms)
+
+[MQTT] seenMessageIds size: 5
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000902f00000005:0000e6dd00000005:0:0
+
+[MQTT] NEW message: 0000902f00000005 - adding to seenMessageIds (size: 5)
+
+[MQTT] Message published successfully, msg_id=36724
+[MQTT] Message published successfully, msg_id=15001
+[MQTT] Message published successfully, msg_id=28792
+[MQTT] Message published successfully, msg_id=46497
+[MQTT] Message published successfully, msg_id=19806
+[MQTT] Message published successfully, msg_id=49459
+[MQTT] Message published successfully, msg_id=49437
+_Update_Part : 766998
+
+[UI] Drawing messaging. History size: 17
+
+[MQTT] Message published successfully, msg_id=9530
+[MQTT] Message published successfully, msg_id=58472
+[MQTT] Message published successfully, msg_id=32654
+[MQTT] Message published successfully, msg_id=33398
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 38464ms)
+
+[MQTT] seenMessageIds size: 6
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000903500000006:00018a4100000008:0:0
+
+[MQTT] NEW message: 0000903500000006 - adding to seenMessageIds (size: 6)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 38468ms)
+
+[MQTT] seenMessageIds size: 7
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000903a00000007:00031c3700000009:0:0
+
+[MQTT] NEW message: 0000903a00000007 - adding to seenMessageIds (size: 7)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 38473ms)
+
+[MQTT] seenMessageIds size: 8
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000903f00000008:0002083300000008:0:0
+
+[MQTT] NEW message: 0000903f00000008 - adding to seenMessageIds (size: 8)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 38477ms)
+
+[MQTT] seenMessageIds size: 9
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000904400000009:0002afc400000009:0:0
+
+[MQTT] NEW message: 0000904400000009 - adding to seenMessageIds (size: 9)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 38481ms)
+
+[MQTT] seenMessageIds size: 10
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000090490000000a:0003a8fa0000000a:0:0
+
+[MQTT] NEW message: 000090490000000a - adding to seenMessageIds (size: 10)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 38485ms)
+
+[MQTT] seenMessageIds size: 11
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000904e0000000b:0003d2440000000b:0:0
+
+[MQTT] NEW message: 0000904e0000000b - adding to seenMessageIds (size: 11)
+
+[MQTT] EVENT_DATA: topic=smoltxt/f8c43bba2010/sync-response len=256 session_present=1
+[MQTT] Received on topic: smoltxt/f8c43bba2010/sync-response (uptime: 38490ms)
+
+[MQTT] seenMessageIds size: 12
+
+[MQTT] ============================================
+
+[MQTT] SYNC RESPONSE RECEIVED - length=256 bytes
+
+[MQTT] ============================================
+
+[MQTT] Decrypting sync response...
+
+[38490] INFO: Sync response received: 256 bytes
+
+[MQTT] Decrypted sync response: {"messages":[{"sender":"Rex","senderMAC":"e4cc3bba2010","content":"666","timestamp":1766183919,"mess...
+
+[MQTT] Sync phase 1 batch 1/2
+
+[38491] INFO: Sync phase 1 batch 1/2
+
+[MQTT] Sync Phase 1 started (recent 20 messages) - disabling status updates
+
+[MQTT] Stored sync target MAC: e4cc3bba2010 for background phases
+
+[MQTT] Sending ACK for synced message: 0003d2440000000b
+
+[MQTT] Synced message: 0003d2440000000b from Rex content='666'
+
+[Message] From Rex: 666 (village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Power] Activity timer reset - message received
+
+[SYNC DEBUG] Receiving msg: ID=0003d2440000000b from=Rex isNew=NO phase=1
+
+[Message] Background sync or duplicate - silent save only (no UI update)
+
+[38563] INFO: Duplicate message skipped (exact match): id=0003d2440000000b sender=Rex
+
+[Message] Duplicate message - skipping all processing
+
+[MQTT] Processed 1 synced messages in phase 1
+
+[38563] INFO: Synced 1 messages
+
+[MQTT] EVENT_DATA: topic=smoltxt/f8c43bba2010/sync-response len=259 session_present=1
+[MQTT] Received on topic: smoltxt/f8c43bba2010/sync-response (uptime: 38567ms)
+
+[MQTT] seenMessageIds size: 12
+
+[MQTT] ============================================
+
+[MQTT] SYNC RESPONSE RECEIVED - length=259 bytes
+
+[MQTT] ============================================
+
+[MQTT] Decrypting sync response...
+
+[38567] INFO: Sync response received: 259 bytes
+
+[MQTT] Decrypted sync response: {"messages":[{"sender":"Rex","senderMAC":"e4cc3bba2010","content":"666999","timestamp":1766185049,"m...
+
+[MQTT] Sync phase 1 batch 2/2
+
+[38568] INFO: Sync phase 1 batch 2/2
+
+[MQTT] Sending ACK for synced message: 0006c84e0000000a
+
+[MQTT] Synced message: 0006c84e0000000a from Rex content='666999'
+
+[Message] From Rex: 666999 (village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53)
+
+[Power] Activity timer reset - message received
+
+[SYNC DEBUG] Receiving msg: ID=0006c84e0000000a from=Rex isNew=YES phase=1
+
+[Message] Phase 1 sync - new message found, updating UI
+
+_Update_Part : 773517
+
+[38739] INFO: Message saved: id=0006c84e0000000a from=Rex village=a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[UI] Message added. Total: 18
+
+[Message]ages in history: 18
+
+[UI] Message received - requesting partial update
+
+[UI] Drawing messaging. History size: 18
+
+[Battery] Voltage: 4.10V, Percent: 89%
+_Update_Part : 767099
+
+[MQTT] Phase 1 complete - processed 1 messages
+
+[3960a5-63ec6a8e5d53
+
+[39657] INFO: File stats: total=18 empty=0 parseErr=0 matched=18
+
+[40136] INFO: Loaded 18 messages for village a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+========================================
+
+[SYNC DEBUG] Device f8c43bba2010EBUG] Total messages in storage NOW: 18
+
+[Sessage IDs NOW in store (chronological order):
+
+  [0] ID=000508e00000000e from=Archer time=1765325129 status=1
+
+  [1] ID=0002b40c0f300000001 from=SmolTxt time=1766168706 status=3
+
+  [3] ID=0003a37500000005 from=Archer time=1766168730 status=3
+
+  [4] ID=0003ce3a0000004f from=Rex time=1766168743 status=3
+
+  [5] ID=00042ed600000050 from=Rex time=1766168768 status=3
+
+  [6] ID=0004775b00000004 from=Archer time=1766182279 status=3
+
+  [7] ID=0004e57400000004 from=Rex time=1766182305 status=3
+
+  [8] ID=000593db00000007 f05 from=Rex time=1766183509 status=3
+
+  [10] ID=000123e800000006 from=Archer time=1766183522 status=3
+
+  [11] ID=00018a4100000008 from=Rex time=1766183551 status=3
+
+  [12] ID=00031c3700000009 from=Rex time=176618om=Rex time=1766183801 status=3
+
+  [14] ID=0002afc400000009 from=Rex time=1766183844 status=3
+
+  [15] ID=0003a8fa0000000a from=Rex time=1766183907 status=3
+
+  [16] ID=0003d2440000000b from=Rex time=1766183919 status=3
+
+  [17] ID=0006c84e0000000a from=Rex time=1766185049 status=2
+
+[SYNC DEBUG] UI message count: 18
+
+====recent messages synced, reINFO: Phase 1 complete: 1 recent msgs
+
+[Callback] Boot sync completeleanup: Checking for messages stuck at status 1
+
+[40150] INFO8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[40204] INFO: File stats: total=18 empty=0 parseErr=0 matched=18
+
+[40205] INc6a8e5d53
+
+[Village] Loaded 18 messages (sorted by timestamp)
+
+[Sync] Post-sync cleanup: All message statuses correct
+
+[MQTT] Boot sync complete callback filete - no more history
+
+[MQTT] Processed 1 synced messages in phase 1INFO: Synced 1 messages
+
+[MQTT] EVENT_DATA: topic=smoltxt/f8c43bba2010/sync-response len=256 session_present=1
+[MQTT] Received on topic: smoltxt/f8c43bba2010/sync-response (uptime: 40212ms)
+
+[MQTT] seenMessageIds size: 12
+
+[MQTT] ========= RESPONSE RECEIVED - length=256 bytes
+
+[MQTT] g sync response...
+
+[40213] INFO: Sync response received: 256 bytes
+
+[MQTT] Decrypted sync response: {"messages":[{"sender":"Rex","senderMAC":"e4cc3bba2010","content":"666","timestamp":1766183919,"mess...
+
+[MQTT] DUPLICATE sync response from e4cc3bba2010 phase 1 batch 1 - ignoring (last seen 1723ms ago)
+4021Duplicate sync response ignored
+
+[MQTT] Message published successfully, msg_id=10046
+[MQTT] Message published successfully, msg_id=2361
+[MQTT] EVENT_DATA: topic=smoltxt/f8c43bba2010/sync-response len=259 session_pres2010/sync-response (uptime: 40710ms)
+
+[MQTT] seenMessageIds size: 12
+
+[M=
+
+[MQTT] SYNC RESPONSE RECEIVED - length=259 byt[MQTT] =================================ypting sync response...
+
+[40710] INFO: Sync response received: 259 bytes
+
+nderMAC":"e4cc3bba2010","content":"666999","timestamp":1766185049,"m...
+
+[MQTT] DUPLICATE sync response from e4cc3bba2010 phase 1 batch 2 - ignoring (last seen 240711] INFO: Duplicate sync respon
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 41202ms)
+
+[MQTT] seenMessageIds size: 12
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+3ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000904400000009:0002afc400000009:0:0
+
+[MQTT] Duplicate message, ignoring: 0000904400000009 (in seenMessageIds cache)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 41207ms)
+
+[MQTT] seenMessageIds size: 12
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000965c0000000c:0003d2440000000b:0:0
+
+[MQTT] NEW message: 0000965c0000000c - adding to seenMessageIds (size: 12)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session[M8e5d53/ack/e4cc3bba2010 (uptime: 41211ms)
+
+[MQTT] seenMessageIds size: 13
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:000096a90000000d:0006c84e0000000a:0:0
+
+[MQTT] NEW message: 000096a90000000d - adding to seenMessageIds (size: 13)
+
+[MQTT] EVENT_DATA: topic=smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 len=139 session_present=1
+[MQTT] Received on topic: smoltxt/a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53/ack/e4cc3bba2010 (uptime: 41630ms)
+
+[MQTT] seenMessageIds size: 14
+
+[MQTT] Message for village: a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53
+
+[MQTT] Decrypted message from Rex: ACK:a8a6bbe4-c81b-4636-97a5-63ec6a8e5d53:e4cc3bba2010:Archer:f8c43bba2010:0000965c0000000c:0003d2440000000b:0:0
+
+[MQTT] Duplicate message, ignoring: 0000965c0000000c (in seenMessageIds cache)
+
+[Battery] Voltage: 4.10V, Percent: 89%
+[KB-READ] readKey() called 10000 times
+
+[Battery] Voltage: 4.10V, Percent: 89%
+[KB-READ] readKey() called 20000 times
+[Battery] Voltage: 4.10V, Percent: 90%
