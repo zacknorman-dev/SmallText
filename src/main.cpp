@@ -772,15 +772,17 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
     village.updateMessageStatusIfLower(messageId, MSG_RECEIVED);  // Only upgrade, never downgrade
   }
   
-  // Update UI if message is currently visible (but not during send to prevent double status)
-  // We update UI even if not in messaging screen so when user returns, they see correct status
-  if (!isSendingMessage) {
-    ui.updateMessageStatus(messageId, MSG_RECEIVED);
-    // Refresh screen if viewing messages, main menu, or conversation list
-    if (appState == APP_MESSAGING || appState == APP_MAIN_MENU || appState == APP_CONVERSATION_LIST) {
-      Serial.println("[UI] ACK received - requesting partial update (appState=" + String(appState) + ")");
-      ui.updatePartial();
+  // Update UI if actively viewing messages (reload from storage to get updated status)
+  if (!isSendingMessage && appState == APP_MESSAGING && inMessagingScreen) {
+    Serial.println("[UI] ACK received while viewing messages - reloading from storage");
+    ui.clearMessages();
+    std::vector<Message> messages = village.loadMessages();
+    int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+    for (int i = startIndex; i < messages.size(); i++) {
+      ui.addMessage(messages[i]);
     }
+    Serial.println("[UI] Reloaded " + String(messages.size() - startIndex) + " messages with updated status");
+    ui.updatePartial();
   }
 }
 
@@ -794,14 +796,17 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
   }
   
   // Update UI if message is currently visible (but not during send to prevent double status)
-  // We update UI even if not in messaging screen so when user returns, they see correct status
-  if (!isSendingMessage) {
-    ui.updateMessageStatus(messageId, MSG_READ);
-    // Refresh screen if viewing messages, main menu, or conversation list
-    if (appState == APP_MESSAGING || appState == APP_MAIN_MENU || appState == APP_CONVERSATION_LIST) {
-      Serial.println("[UI] Read receipt - requesting partial update (appState=" + String(appState) + ")");
-      ui.updatePartial();
+  if (!isSendingMessage && appState == APP_MESSAGING && inMessagingScreen) {
+    // If actively viewing messages, reload from storage to get updated status
+    Serial.println("[UI] Read receipt received while viewing messages - reloading from storage");
+    ui.clearMessages();
+    std::vector<Message> messages = village.loadMessages();
+    int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
+    for (int i = startIndex; i < messages.size(); i++) {
+      ui.addMessage(messages[i]);
     }
+    Serial.println("[UI] Reloaded " + String(messages.size() - startIndex) + " messages with updated status");
+    ui.updatePartial();
   }
 }
 
@@ -2399,6 +2404,7 @@ void handleUsernameInput() {
         lastMessagingActivity = millis();
         ui.setCurrentUsername(currentName);
         ui.resetMessageScroll();
+        ui.clearMessages();  // Clear any stale messages from previous views
         appState = APP_MESSAGING;
         ui.setState(STATE_MESSAGING);
         keyboard.clearInput();  // MOVED: Clear after state transition to prevent residual chars
@@ -2587,6 +2593,7 @@ void handleVillageCreated() {
     
     // Clear old messages and load messages for current conversation
     ui.clearMessages();
+    ui.clearMessages();  // Clear any stale messages from previous views
     std::vector<Message> messages = village.loadMessages();
     int startIndex = messages.size() > MAX_MESSAGES_TO_LOAD ? messages.size() - MAX_MESSAGES_TO_LOAD : 0;
     for (int i = startIndex; i < messages.size(); i++) {
