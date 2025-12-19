@@ -758,6 +758,7 @@ void onMessageReceived(const Message& msg) {
   // Always update display when in messaging screen (even if not marked as read yet)
   // BUT: Only if we're actually viewing messages, not during screen transitions
   if (appState == APP_MESSAGING && inMessagingScreen) {
+    Serial.println("[UI] Message received - requesting partial update");
     ui.updatePartial();  // Partial update for real-time message display
   }
 }
@@ -777,6 +778,7 @@ void onMessageAcked(const String& messageId, const String& fromMAC) {
     ui.updateMessageStatus(messageId, MSG_RECEIVED);
     // Only refresh screen if actively viewing messages (avoid disrupting other screens)
     if (appState == APP_MESSAGING) {
+      Serial.println("[UI] ACK received - requesting partial update");
       ui.updatePartial();
     }
   }
@@ -797,6 +799,7 @@ void onMessageReadReceipt(const String& messageId, const String& fromMAC) {
     ui.updateMessageStatus(messageId, MSG_READ);
     // Only refresh screen if actively viewing messages (avoid disrupting other screens)
     if (appState == APP_MESSAGING) {
+      Serial.println("[UI] Read receipt - requesting partial update");
       ui.updatePartial();
     }
   }
@@ -1304,8 +1307,10 @@ void setup() {
         Serial.println("[MQTT] Subscribed to all villages after initialization");
         logger.info("MQTT: Subscribed to " + String(1) + " villages");
         
-        // Wait briefly for MQTT subscription to be established on broker
-        smartDelay(500);
+        // Wait for MQTT subscription to be fully established on broker
+        Serial.println("[MQTT] Waiting 2s for subscription to be established...");
+        smartDelay(2000);
+        Serial.println("[MQTT] Subscription wait complete, requesting sync...");
         
         // Immediately sync to get all pending messages (important for battery management)
         // Get timestamp of most recent message for sync optimization
@@ -1818,7 +1823,9 @@ void handleConversationList() {
         appState = APP_CONVERSATION_MENU;
         ui.setState(STATE_CONVERSATION_MENU);
         ui.resetMenuSelection();
+        Serial.println("[UI] Starting full refresh for conversation menu...");
         ui.updateFull();  // Use full refresh to prevent ghosting
+        Serial.println("[UI] Full refresh complete for conversation menu");
       } else {
         Serial.println("[ConversationList] ERROR: Failed to load village from slot " + String(entry.slot));
       }

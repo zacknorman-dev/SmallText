@@ -293,6 +293,7 @@ void UI::updateClean() {
 
 void UI::updateFull() {
     // Full refresh: set full window, draw current state, then use full waveform
+    isFullRefreshInProgress = true;  // Block partial updates during full refresh
     display->setFullWindow();
     display->fillScreen(GxEPD_WHITE);
     switch (currentState) {
@@ -333,6 +334,7 @@ void UI::updateFull() {
         case STATE_CONVERSATION_MENU:    drawConversationMenu(); break;
     }
     display->display(false);  // Full refresh (multi-phase, clears ghosting)
+    isFullRefreshInProgress = false;  // Re-enable partial updates
 }
 
 void UI::setTypingCheckCallback(bool (*callback)()) {

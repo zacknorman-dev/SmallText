@@ -63,6 +63,7 @@ private:
     // Refresh policy counters
     unsigned long lastFullRefreshMs = 0;
     int partialRefreshCount = 0;
+    bool isFullRefreshInProgress = false;  // Flag to block partial updates during full refresh
     // Tunables
     static const int MAX_PARTIAL_BEFORE_FULL = 12;   // force full after N partials
     static const unsigned long MAX_PARTIAL_AGE_MS = 15000; // or after 15s
