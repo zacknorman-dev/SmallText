@@ -1081,6 +1081,14 @@ void onVillageNameReceived(const String& villageId, const String& villageName) {
     return;
   }
   
+  // CRITICAL: For individual conversations, ignore village name announcements
+  // Individual conversations use username announcements to set the partner's name
+  // Village name announcements would overwrite with "Chat" or other placeholder
+  if (tempVillage.isIndividualConversation()) {
+    Serial.println("[Village] Ignoring village name for individual conversation (uses username instead)");
+    return;
+  }
+  
   tempVillage.setVillageName(villageName);
   if (tempVillage.saveToSlot(slot)) {
     Serial.println("[Village] Updated name in slot " + String(slot) + " to: " + villageName);
@@ -3372,6 +3380,30 @@ void handleMessaging() {
     if (ui.getInputText().length() > 0) {
       lastKeyPress = millis();
       return;  // Stay in messaging, don't navigate away
+    }
+    
+    Serial.println("[App] Leaving messaging screen - marking unread messages as received");
+    
+    // CRITICAL: Mark any MSG_SENT (status 1) messages as MSG_RECEIVED (status 2)
+    // This handles the case where messages arrived but mark-as-read didn't run yet
+    if (village.isInitialized()) {
+      std::vector<Message> messages = village.loadMessages();
+      bool needsSave = false;
+      
+      for (auto& msg : messages) {
+        // If message is from someone else (received=true) and still at status 1 (SENT)
+        // update it to status 2 (RECEIVED)
+        if (msg.received && msg.status == MSG_SENT) {
+          Serial.println("[App] Marking message as received on exit: " + msg.messageId);
+          msg.status = MSG_RECEIVED;
+          village.updateMessageStatus(msg.messageId, MSG_RECEIVED);
+          needsSave = true;
+        }
+      }
+      
+      if (needsSave) {
+        Serial.println("[App] Saving updated message statuses");
+      }
     }
     
     inMessagingScreen = false;  // Clear flag - leaving messages

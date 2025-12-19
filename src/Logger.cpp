@@ -253,6 +253,76 @@ void Logger::update() {
             delay(200);
             ledcWriteTone(0, 0);  // Stop
             Serial.println("Beep complete!");
+        } else if (cmd == "!LS" || cmd == "ls /littlefs") {
+            // List filesystem contents
+            Serial.println("\n========== FILESYSTEM LISTING ==========");
+            if (!LittleFS.begin(true)) {
+                Serial.println("ERROR: Failed to mount LittleFS!");
+            } else {
+                File root = LittleFS.open("/");
+                if (!root) {
+                    Serial.println("ERROR: Failed to open root directory!");
+                } else {
+                    File file = root.openNextFile();
+                    int fileCount = 0;
+                    size_t totalSize = 0;
+                    
+                    while (file) {
+                        Serial.print(file.name());
+                        Serial.print(" - ");
+                        Serial.print(file.size());
+                        Serial.println(" bytes");
+                        fileCount++;
+                        totalSize += file.size();
+                        file = root.openNextFile();
+                    }
+                    
+                    Serial.println("----------------------------------------");
+                    Serial.println("Total: " + String(fileCount) + " files, " + String(totalSize) + " bytes");
+                    Serial.println("Free space: " + String(LittleFS.totalBytes() - LittleFS.usedBytes()) + " bytes");
+                }
+            }
+            Serial.println("========== END LISTING ==========\n");
+        } else if (cmd.startsWith("!CAT ")) {
+            // Display file contents
+            String filename = cmd.substring(5);
+            filename.trim();
+            
+            Serial.println("\n========== FILE: " + filename + " ==========");
+            if (!LittleFS.begin(true)) {
+                Serial.println("ERROR: Failed to mount LittleFS!");
+            } else {
+                File file = LittleFS.open(filename, "r");
+                if (!file) {
+                    Serial.println("ERROR: File not found or cannot be opened!");
+                } else {
+                    Serial.println("Size: " + String(file.size()) + " bytes");
+                    Serial.println("Content:");
+                    Serial.println("----------------------------------------");
+                    while (file.available()) {
+                        Serial.write(file.read());
+                    }
+                    file.close();
+                    Serial.println("\n----------------------------------------");
+                }
+            }
+            Serial.println("========== END FILE ==========\n");
+        } else if (cmd.startsWith("!RM ")) {
+            // Delete file (use with caution!)
+            String filename = cmd.substring(4);
+            filename.trim();
+            
+            Serial.println("Deleting file: " + filename);
+            if (!LittleFS.begin(true)) {
+                Serial.println("ERROR: Failed to mount LittleFS!");
+            } else {
+                if (LittleFS.remove(filename)) {
+                    Serial.println("SUCCESS: File deleted");
+                    info("File deleted: " + filename);
+                } else {
+                    Serial.println("ERROR: Failed to delete file (may not exist)");
+                }
+            }
         }
     }
 }
