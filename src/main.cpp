@@ -142,7 +142,12 @@ bool isSyncing = false;  // Flag to track if we're currently syncing (skip statu
 bool isSendingMessage = false;  // Flag to prevent UI updates during message send (prevents double status text)
 unsigned long lastSyncRequest = 0;  // Timestamp of last sync request
 const unsigned long SYNC_COOLDOWN = 10000;  // Minimum 10 seconds between sync requests
-bool bootSyncComplete = false;  // Flag to track if initial boot sync is done
+unsigned long syncSetupStartTime = 0;  // Timestamp when sync setup screen shown
+const unsigned long SYNC_SETUP_MIN_WAIT = 3000;  // Minimum 3 seconds on setup screen
+const unsigned long SYNC_SETUP_TIMEOUT = 15000;  // Max 15 seconds wait for sync
+bool bootSyncComplete = false;  // Flag set when Phase 1 sync completes
+unsigned long lastMqttActivity = 0;  // Timestamp of last MQTT message received
+const unsigned long MQTT_QUIET_DURATION = 2000;  // Consider sync done after 2s of quiet
 
 // Check all village slots for unread messages (for wake alerts)
 int checkAllVillagesForUnreadMessages() {
@@ -644,6 +649,9 @@ void dumpMessageStoreDebug(int completedPhase);
 void onMessageReceived(const Message& msg) {
   Serial.println("[Message] From " + msg.sender + ": " + msg.content + " (village: " + msg.villageId + ")");
   
+  // Track MQTT activity for sync setup screen
+  lastMqttActivity = millis();
+  
   // Reset activity timer - new message keeps device awake
   lastActivityTime = millis();
   Serial.println("[Power] Activity timer reset - message received");
@@ -837,6 +845,7 @@ void onMessageReceived(const Message& msg) {
 
 void onMessageAcked(const String& messageId, const String& fromMAC) {
   Serial.println("[Message] ACK received for: " + messageId + " from " + fromMAC);
+  lastMqttActivity = millis();  // Track MQTT activity
   
   // Update storage FIRST - this is the source of truth and always works
   // IMPORTANT: Only update if current status is SENT (1). Don't downgrade from READ (3) to RECEIVED (2)
@@ -976,6 +985,7 @@ void dumpMessageStoreDebug(int completedPhase) {
 // Handle sync request from other device
 void onSyncRequest(const String& requestorMAC, unsigned long requestedTimestamp) {
   Serial.println("[Sync] Request from " + requestorMAC + " for messages after timestamp: " + String(requestedTimestamp));
+  lastMqttActivity = millis();  // Track MQTT activity
   logger.info("Sync from " + requestorMAC + " (after t=" + String(requestedTimestamp) + ")");
   
   // Ignore sync requests from ourselves
@@ -1055,6 +1065,7 @@ void onInviteReceived(const String& villageId, const String& villageName, const 
 
 void onVillageNameReceived(const String& villageId, const String& villageName) {
   Serial.println("[Village] Received village name announcement for " + villageId + ": " + villageName);
+  lastMqttActivity = millis();  // Track MQTT activity
   
   // Find which slot has this village ID
   int slot = Village::findVillageSlotById(villageId);
@@ -1087,6 +1098,7 @@ void onVillageNameReceived(const String& villageId, const String& villageName) {
 }
 
 void onUsernameReceived(const String& villageId, const String& username) {
+  lastMqttActivity = millis();  // Track MQTT activity
   Serial.println("[Individual] ========================================");
   Serial.println("[Individual] Received username announcement!");
   Serial.println("[Individual] Village ID: " + villageId);
@@ -1496,8 +1508,9 @@ void setup() {
     appState = APP_SYNC_SETUP;
     ui.setState(STATE_SYNC_SETUP);
     ui.showSyncSetup(villageCount);
+    syncSetupStartTime = millis();
     // Boot sync will happen automatically in MQTT_EVENT_CONNECTED callback
-    // When complete, bootSyncComplete flag will be set and we'll transition to main menu
+    // After 5 seconds, we'll transition to main menu
   } else {
     Serial.println("[System] No villages - going directly to main menu");
     appState = APP_MAIN_MENU;
@@ -1648,15 +1661,29 @@ void loop() {
   
   switch (appState) {
     case APP_SYNC_SETUP:
-      // Blocking sync setup - wait for boot sync to complete
-      if (bootSyncComplete) {
-        Serial.println("[App] Boot sync complete - transitioning to main menu");
-        appState = APP_MAIN_MENU;
-        ui.setState(STATE_MAIN_HUB);
-        ui.update();
+      {
+        unsigned long elapsed = millis() - syncSetupStartTime;
+        bool minWaitMet = elapsed >= SYNC_SETUP_MIN_WAIT;
+        bool mqttQuiet = (millis() - lastMqttActivity) >= MQTT_QUIET_DURATION;
+        bool timedOut = elapsed >= SYNC_SETUP_TIMEOUT;
+        
+        // Transition when: (min wait + MQTT quiet) OR timeout OR explicit completion
+        if (bootSyncComplete || (minWaitMet && mqttQuiet) || timedOut) {
+          if (bootSyncComplete) {
+            Serial.println("[App] Boot sync complete - transitioning to main menu");
+          } else if (mqttQuiet) {
+            Serial.println("[App] MQTT quiet for 2s - sync likely complete, transitioning to main menu");
+          } else {
+            Serial.println("[App] Sync setup timeout (15s) - transitioning to main menu anyway");
+          }
+          appState = APP_MAIN_MENU;
+          ui.setState(STATE_MAIN_HUB);
+          ui.resetMenuSelection();
+          ui.updateClean();
+        }
+        // Just wait - sync happens in background via MQTT callbacks
+        smartDelay(100);
       }
-      // Just wait - sync happens in background via MQTT callbacks
-      smartDelay(100);
       break;
     case APP_MAIN_MENU:
       static bool loggedMainMenu = false;
