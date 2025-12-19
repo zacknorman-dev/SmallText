@@ -771,17 +771,18 @@ bool Village::updateMessageStatusIfLower(const String& messageId, int newStatus)
         return false;
     }
     
+    // Use per-village message file
+    String filename = "/messages_" + String(villageId) + ".dat";
+    
     // Load the message to check current status
     std::vector<String> allLines;
-    File readFile = LittleFS.open("/messages.dat", "r");
+    File readFile = LittleFS.open(filename, "r");
     if (!readFile) {
-        logger.error("Failed to open messages.dat for status check");
+        logger.error("Failed to open " + filename + " for status check");
         return false;
     }
     
-    String currentVillageId = String(villageId);
-    
-    // Read all lines
+    // Read all lines from this village's file
     while (readFile.available()) {
         String line = readFile.readStringUntil('\n');
         line.trim();
@@ -803,10 +804,9 @@ bool Village::updateMessageStatusIfLower(const String& messageId, int newStatus)
         
         if (error) continue;
         
-        String msgVillage = doc["village"] | "";
         String msgId = doc["messageId"] | "";
         
-        if (msgVillage == currentVillageId && msgId == messageId) {
+        if (msgId == messageId) {
             currentStatus = doc["status"] | MSG_SENT;
             found = true;
             
@@ -832,9 +832,9 @@ bool Village::updateMessageStatusIfLower(const String& messageId, int newStatus)
     
     // Rewrite file only if we made changes
     if (found && newStatus > currentStatus) {
-        File writeFile = LittleFS.open("/messages.dat", "w");
+        File writeFile = LittleFS.open(filename, "w");
         if (!writeFile) {
-            logger.critical("Failed to reopen messages.dat for writing");
+            logger.critical("Failed to reopen " + filename + " for writing");
             return false;
         }
         
@@ -844,7 +844,7 @@ bool Village::updateMessageStatusIfLower(const String& messageId, int newStatus)
         
         writeFile.flush();
         writeFile.close();
-        logger.info("Saved " + String(allLines.size()) + " total lines (all villages preserved)");
+        logger.info("Saved " + String(allLines.size()) + " total lines");
     }
     
     return true;

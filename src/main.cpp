@@ -756,8 +756,9 @@ void onMessageReceived(const Message& msg) {
   }
   
   // Always update display when in messaging screen (even if not marked as read yet)
+  // BUT: Only if we're actually viewing messages, not during screen transitions
   if (appState == APP_MESSAGING && inMessagingScreen) {
-    ui.update();  // Use full update to ensure messages appear
+    ui.updatePartial();  // Partial update for real-time message display
   }
 }
 
