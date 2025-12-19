@@ -654,6 +654,7 @@ void onMessageReceived(const Message& msg) {
   
   // SMART CACHE LAYER: Decide whether to update UI based on sync state and message novelty
   bool shouldUpdateUI = false;
+  bool messageSaved = false;  // Track if message was actually saved (not a duplicate)
   
   if (syncPhase == 0) {
     // Not syncing - this is a real-time message, always show it
@@ -670,7 +671,8 @@ void onMessageReceived(const Message& msg) {
   }
   
   // For individual conversations: Update conversation name to be the other person's name
-  if (isForCurrentVillage && village.isIndividualConversation()) {
+  // BUT: Only during real-time messages, not sync (prevents corruption from receiving our own messages)
+  if (isForCurrentVillage && village.isIndividualConversation() && syncPhase == 0) {
     String currentName = village.getVillageName();
     String myUsername = village.getUsername();
     
@@ -691,20 +693,22 @@ void onMessageReceived(const Message& msg) {
   // Save message - only save to active village if it matches, otherwise skip UI update
   if (isForCurrentVillage) {
     // Message is for current village - save and optionally update UI
-    village.saveMessage(msg);
+    messageSaved = village.saveMessage(msg);
     
-    // Conditionally update UI
-    if (shouldUpdateUI) {
-      ui.addMessage(msg);
-      Serial.println("[Message] Added to UI. Total messages in history: " + String(ui.getMessageCount()));
-      // Play ringtone if: real-time message AND not viewing this conversation AND ringtone enabled
-      bool isRealTime = (syncPhase == 0);
-      bool notViewingConversation = !(appState == APP_MESSAGING && inMessagingScreen);
-      if (isRealTime && notViewingConversation && isNewMessage) {
-        playRingtone();
-      }
-    } else {
-      Serial.println("[Message] Silently cached (not added to UI)");
+    // Only proceed with UI updates if message was actually saved (not a duplicate)
+    if (messageSaved) {
+      // Conditionally update UI
+      if (shouldUpdateUI) {
+        ui.addMessage(msg);
+        Serial.println("[Message] Added to UI. Total messages in history: " + String(ui.getMessageCount()));
+        // Play ringtone if: real-time message AND not viewing this conversation AND ringtone enabled
+        bool isRealTime = (syncPhase == 0);
+        bool notViewingConversation = !(appState == APP_MESSAGING && inMessagingScreen);
+        if (isRealTime && notViewingConversation && isNewMessage) {
+          playRingtone();
+        }
+      } else {
+        Serial.println("[Message] Silently cached (not added to UI)");
       // NEW: If this is a new message (even from sync), and we're in the messaging screen, add to UI and reset scroll
       if (isNewMessage && appState == APP_MESSAGING && inMessagingScreen) {
         ui.addMessage(msg);
@@ -719,6 +723,9 @@ void onMessageReceived(const Message& msg) {
       Serial.println("[Message] Marked incoming message as received (status 2)");
     }
   } else {
+    Serial.println("[Message] Duplicate message - skipping all processing");
+  }
+} else {
     // Message is for a different village - save to messages.dat without updating UI
     Serial.println("[Message] Message for different village (" + msg.villageId + ") - saving to storage only");
     Village::saveMessageToFile(msg);  // Use static method to save without loading village
@@ -757,7 +764,8 @@ void onMessageReceived(const Message& msg) {
   
   // Always update display when in messaging screen (even if not marked as read yet)
   // BUT: Only if we're actually viewing messages, not during screen transitions
-  if (appState == APP_MESSAGING && inMessagingScreen) {
+  // AND: Only if message was for current village and actually saved (not a duplicate)
+  if (isForCurrentVillage && messageSaved && appState == APP_MESSAGING && inMessagingScreen) {
     Serial.println("[UI] Message received - requesting partial update");
     ui.updatePartial();  // Partial update for real-time message display
   }

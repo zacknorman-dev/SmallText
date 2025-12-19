@@ -509,7 +509,7 @@ bool Village::saveMessage(const Message& msg) {
                     checkFile.close();
                     logger.info("Duplicate message skipped (exact match): id=" + msg.messageId + " sender=" + msg.sender);
                     messageIdCache.insert(msg.messageId);
-                    return true;
+                    return false;  // Return false to indicate message was NOT saved (duplicate)
                 }
             }
             checkFile.close();
