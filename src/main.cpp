@@ -1297,43 +1297,19 @@ void setup() {
   keyboard.clearInput();  // Clear any stray keys that might trigger typing detection
   Serial.println("[System] Keyboard cleared before village select");
   
-  // Auto-load the most recently used village so MQTT is subscribed immediately
-  // This allows receiving messages even when sitting at main menu
+  // Auto-load the most recently used village for UI purposes
+  // MQTT subscription and boot sync now happens automatically in MQTT_EVENT_CONNECTED
   if (currentVillageSlot >= 0 && Village::hasVillageInSlot(currentVillageSlot)) {
     Serial.println("[System] Auto-loading last village from slot " + String(currentVillageSlot));
     if (village.loadFromSlot(currentVillageSlot)) {
       encryption.setKey(village.getEncryptionKey());
       Serial.println("[System] Village auto-loaded: " + village.getVillageName());
       logger.info("Auto-loaded village: " + village.getVillageName());
-      
-      // NOW subscribe to MQTT after village is initialized
-      if (mqttMessenger.isConnected()) {
-        mqttMessenger.subscribeToAllVillages();
-        Serial.println("[MQTT] Subscribed to all villages after initialization");
-        logger.info("MQTT: Subscribed to " + String(1) + " villages");
-        
-        // Wait for MQTT subscription to be fully established on broker
-        Serial.println("[MQTT] Waiting 2s for subscription to be established...");
-        smartDelay(2000);
-        Serial.println("[MQTT] Subscription wait complete, requesting sync...");
-        
-        // Immediately sync to get all pending messages (important for battery management)
-        // Get timestamp of most recent message for sync optimization
-        std::vector<Message> messages = village.loadMessages();
-        unsigned long lastMsgTime = 0;
-        for (const auto& msg : messages) {
-          if (msg.timestamp > lastMsgTime) {
-            lastMsgTime = msg.timestamp;
-          }
-        }
-        mqttMessenger.requestSync(lastMsgTime);
-        lastPeriodicSync = millis();  // Reset periodic sync timer
-        Serial.println("[App] Boot sync requested (last message: " + String(lastMsgTime) + ")");
-        logger.info("Boot sync: Immediate sync after village load");
-      }
+      // Note: MQTT subscription and sync handled by MQTT_EVENT_CONNECTED callback
     }
   } else {
     Serial.println("[System] No previous village to auto-load");
+    // Note: Even without auto-load, MQTT will still subscribe to all saved villages at boot
   }
   
   // If woke from nap timer (not key press), check for messages then go back to sleep
@@ -1817,11 +1793,7 @@ void handleConversationList() {
         mqttMessenger.setActiveVillage(village.getVillageId());
         Serial.println("[ConversationList] Active village: " + village.getVillageName());
         
-        // Subscribe to MQTT now that village is initialized
-        if (mqttMessenger.isConnected()) {
-          mqttMessenger.subscribeToAllVillages();
-          Serial.println("[MQTT] Subscribed after village load");
-        }
+        // Note: MQTT subscription already handled by MQTT_EVENT_CONNECTED callback at boot
         
         // Go to village menu
         keyboard.clearInput();

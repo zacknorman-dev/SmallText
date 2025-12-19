@@ -308,6 +308,10 @@ void MQTTMessenger::mqttEventHandler(void *handler_args, esp_event_base_t base,
             Serial.println("[MQTT] Session present: " + String(event->session_present ? "yes" : "no"));
             self->connected = true;
             
+            // Load and subscribe to all saved villages
+            Serial.println("[MQTT] Loading saved villages for subscription...");
+            self->subscribeToAllVillages();
+            
             // Subscribe to all saved villages with QoS 1
             if (self->subscribedVillages.size() > 0) {
                 for (const auto& village : self->subscribedVillages) {
@@ -331,6 +335,20 @@ void MQTTMessenger::mqttEventHandler(void *handler_args, esp_event_base_t base,
             String syncResponseTopic = "smoltxt/" + String(macStr) + "/sync-response";
             esp_mqtt_client_subscribe(client, syncResponseTopic.c_str(), 1);
             Serial.println("[MQTT] Subscribed to sync response topic: " + syncResponseTopic);
+            
+            // Wait for MQTT subscription to be fully established on broker, then request boot sync
+            if (self->subscribedVillages.size() > 0) {
+                Serial.println("[MQTT] Waiting 2s for subscriptions to be established...");
+                vTaskDelay(pdMS_TO_TICKS(2000));  // Use FreeRTOS delay in MQTT event handler
+                Serial.println("[MQTT] Requesting boot sync for all subscribed villages...");
+                
+                // Request sync for each subscribed village
+                for (const auto& village : self->subscribedVillages) {
+                    self->requestSync(0);  // Sync all messages (timestamp 0)
+                    Serial.println("[MQTT] Boot sync requested for village: " + village.villageName);
+                }
+                logger.info("MQTT: Boot sync requested for " + String(self->subscribedVillages.size()) + " villages");
+            }
             break;
         }
             
