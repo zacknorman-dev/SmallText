@@ -1485,13 +1485,13 @@ void setup() {
     // Never returns - device enters deep sleep
   }
   
-  // Normal boot - show sync setup screen if we have villages and MQTT is connected
+  // Normal boot - show sync setup screen if we have villages
   int villageCount = 0;
   for (int i = 0; i < 10; i++) {
     if (Village::hasVillageInSlot(i)) villageCount++;
   }
   
-  if (villageCount > 0 && mqttMessenger.isConnected()) {
+  if (villageCount > 0) {
     Serial.println("[System] Starting with sync setup screen for " + String(villageCount) + " villages");
     appState = APP_SYNC_SETUP;
     ui.setState(STATE_SYNC_SETUP);
@@ -1499,7 +1499,7 @@ void setup() {
     // Boot sync will happen automatically in MQTT_EVENT_CONNECTED callback
     // When complete, bootSyncComplete flag will be set and we'll transition to main menu
   } else {
-    Serial.println("[System] No villages or no MQTT - going directly to main menu");
+    Serial.println("[System] No villages - going directly to main menu");
     appState = APP_MAIN_MENU;
     ui.setState(STATE_MAIN_HUB);
     ui.resetMenuSelection();
