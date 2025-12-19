@@ -1199,9 +1199,7 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
                 Serial.println("[MQTT] Sync message already seen, skipping: " + msg.messageId + " (in seenMessageIds cache)");
                 continue;  // Skip this message entirely
             }
-            // Add to cache immediately to prevent duplicates within same batch
-            seenMessageIds.insert(msg.messageId);
-            Serial.println("[MQTT] Added sync message to cache: " + msg.messageId + " (size: " + String(seenMessageIds.size()) + ")");
+            // NOTE: Do NOT add to seenMessageIds yet - only after successful storage
         }
         
         // CRITICAL: Send ACK for synced messages that are NOT ours
@@ -1223,6 +1221,13 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
             Serial.println("[SYNC DEBUG] Delivering synced msg to app: id=" + msg.messageId + " content='" + msg.content + "' ts=" + String(msg.timestamp));
             onMessageReceived(msg);
             msgCount++;
+            
+            // Add to seenMessageIds AFTER successful delivery to app/storage
+            // This ensures we only mark as "seen" if it was actually processed
+            if (!msg.messageId.isEmpty()) {
+                seenMessageIds.insert(msg.messageId);
+                Serial.println("[MQTT] Marked sync message as seen after delivery: " + msg.messageId + " (cache size: " + String(seenMessageIds.size()) + ")");
+            }
         }
     }
     
