@@ -203,6 +203,10 @@ void MQTTMessenger::setReadCallback(void (*callback)(const String& messageId, co
     onMessageRead = callback;
 }
 
+void MQTTMessenger::setBootSyncCompleteCallback(void (*callback)()) {
+    onBootSyncComplete = callback;
+}
+
 void MQTTMessenger::setCommandCallback(void (*callback)(const String& command)) {
     onCommandReceived = callback;
 }
@@ -1225,6 +1229,14 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
             isSyncing = false;
             Serial.println("[MQTT] Phase 1 complete - recent messages synced, re-enabled status updates");
             logger.info("Phase 1 complete: " + String(msgCount) + " recent msgs");
+            
+            // Notify about boot sync completion (only first time after boot)
+            static bool bootSyncNotified = false;
+            if (!bootSyncNotified && onBootSyncComplete != nullptr) {
+                onBootSyncComplete();
+                bootSyncNotified = true;
+                Serial.println("[MQTT] Boot sync complete callback fired");
+            }
             
             // Store sync state for background phase continuation
             if (morePhases) {

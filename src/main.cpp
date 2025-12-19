@@ -69,6 +69,7 @@ bool hasGlobalUsername() {
 
 // Application state
 enum AppState {
+  APP_SYNC_SETUP,              // Blocking sync setup screen
   APP_MAIN_MENU,
   APP_CONVERSATION_LIST,
   APP_SETTINGS_MENU,
@@ -139,6 +140,9 @@ const unsigned long MESSAGING_TIMEOUT = 300000;  // 5 minutes timeout
 int currentVillageSlot = -1;  // Track which village slot is currently active (-1 = none)
 bool isSyncing = false;  // Flag to track if we're currently syncing (skip status updates during sync)
 bool isSendingMessage = false;  // Flag to prevent UI updates during message send (prevents double status text)
+unsigned long lastSyncRequest = 0;  // Timestamp of last sync request
+const unsigned long SYNC_COOLDOWN = 10000;  // Minimum 10 seconds between sync requests
+bool bootSyncComplete = false;  // Flag to track if initial boot sync is done
 
 // Check all village slots for unread messages (for wake alerts)
 int checkAllVillagesForUnreadMessages() {
@@ -1312,6 +1316,10 @@ void setup() {
         mqttMessenger.setMessageCallback(onMessageReceived);
         mqttMessenger.setAckCallback(onMessageAcked);
         mqttMessenger.setReadCallback(onMessageReadReceipt);
+        mqttMessenger.setBootSyncCompleteCallback([]() {
+          Serial.println("[Callback] Boot sync complete - setting flag");
+          bootSyncComplete = true;
+        });
         mqttMessenger.setCommandCallback(onCommandReceived);
         mqttMessenger.setSyncRequestCallback(onSyncRequest);
         mqttMessenger.setVillageNameCallback(onVillageNameReceived);
@@ -1477,12 +1485,26 @@ void setup() {
     // Never returns - device enters deep sleep
   }
   
-  appState = APP_MAIN_MENU;
-  ui.setState(STATE_MAIN_HUB);
-  ui.resetMenuSelection();
-  Serial.println("[System] About to call ui.update() for village select...");
-  ui.updateClean();  // Clean transition to main menu
-  Serial.println("[System] Village select displayed");
+  // Normal boot - show sync setup screen if we have villages and MQTT is connected
+  int villageCount = 0;
+  for (int i = 0; i < 10; i++) {
+    if (Village::hasVillageInSlot(i)) villageCount++;
+  }
+  
+  if (villageCount > 0 && mqttMessenger.isConnected()) {
+    Serial.println("[System] Starting with sync setup screen for " + String(villageCount) + " villages");
+    appState = APP_SYNC_SETUP;
+    ui.setState(STATE_SYNC_SETUP);
+    ui.showSyncSetup(villageCount);
+    // Boot sync will happen automatically in MQTT_EVENT_CONNECTED callback
+    // When complete, bootSyncComplete flag will be set and we'll transition to main menu
+  } else {
+    Serial.println("[System] No villages or no MQTT - going directly to main menu");
+    appState = APP_MAIN_MENU;
+    ui.setState(STATE_MAIN_HUB);
+    ui.resetMenuSelection();
+    ui.updateClean();
+  }
   
   Serial.println("[System] Setup complete!");
 }
@@ -1625,6 +1647,17 @@ void loop() {
   }
   
   switch (appState) {
+    case APP_SYNC_SETUP:
+      // Blocking sync setup - wait for boot sync to complete
+      if (bootSyncComplete) {
+        Serial.println("[App] Boot sync complete - transitioning to main menu");
+        appState = APP_MAIN_MENU;
+        ui.setState(STATE_MAIN_HUB);
+        ui.update();
+      }
+      // Just wait - sync happens in background via MQTT callbacks
+      smartDelay(100);
+      break;
     case APP_MAIN_MENU:
       static bool loggedMainMenu = false;
       if (!loggedMainMenu) {
@@ -1940,6 +1973,14 @@ void handleVillageMenu() {
     if (adjustedSelection == 0) {
       // Messages
       Serial.println("[App] ===== ENTERING MESSAGING SCREEN =====");
+      
+      // Check if sync is too recent - prevent sync storm
+      unsigned long timeSinceLastSync = millis() - lastSyncRequest;
+      if (timeSinceLastSync < SYNC_COOLDOWN) {
+        Serial.println("[App] WARNING: Blocking sync request - too recent (only " + String(timeSinceLastSync) + "ms since last)");
+        Serial.println("[App] Will skip sync and just load local messages");
+      }
+      
       unsigned long enterStart = millis();
       Serial.println("[App] Messages in history: " + String(ui.getMessageCount()));
       keyboard.clearInput();  // Clear buffer to prevent typing detection freeze
@@ -1966,10 +2007,13 @@ void handleVillageMenu() {
         }
       }
       
-      // Request background sync (non-blocking)
-      if (mqttMessenger.isConnected()) {
+      // Request background sync ONLY if cooldown period has passed
+      if (mqttMessenger.isConnected() && timeSinceLastSync >= SYNC_COOLDOWN) {
         Serial.println("[Sync] Requesting background sync: last timestamp=" + String(lastMsgTime));
         mqttMessenger.requestSync(lastMsgTime);
+        lastSyncRequest = millis();  // Record this sync request
+      } else if (timeSinceLastSync < SYNC_COOLDOWN) {
+        Serial.println("[Sync] SKIPPED - cooldown active (" + String(SYNC_COOLDOWN - timeSinceLastSync) + "ms remaining)");
       }
       
       // For individual conversations with placeholder name: try to update from message history (reuse loaded messages)

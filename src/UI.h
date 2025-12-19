@@ -18,6 +18,7 @@
 
 enum UIState {
     STATE_SPLASH,
+    STATE_SYNC_SETUP,            // Blocking screen during initial sync
     STATE_MAIN_HUB,              // Main menu - hub for all navigation
     STATE_CONVERSATION_LIST,     // List of all conversations
     STATE_SETTINGS_MENU,
@@ -228,6 +229,7 @@ public:
     
     // Display helpers
     void showMessage(const String& title, const String& message, int durationMs = 2000);
+    void showSyncSetup(int villageCount);  // Show blocking "Setting up..." screen
     void showPoweringDown();
     void showSleepScreen();
     void showNappingScreen(float batteryVoltage, bool hasWiFi = true);

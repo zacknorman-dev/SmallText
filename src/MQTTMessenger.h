@@ -44,6 +44,7 @@ private:
     void (*onMessageReceived)(const Message& msg);
     void (*onMessageAcked)(const String& messageId, const String& fromMAC);
     void (*onMessageRead)(const String& messageId, const String& fromMAC);
+    void (*onBootSyncComplete)();  // Called when boot sync finishes
     void (*onCommandReceived)(const String& command);
     void (*onSyncRequest)(const String& requestorMAC, unsigned long timestamp);  // Sync request from peer
     void (*onVillageNameReceived)(const String& villageId, const String& villageName);  // Village name announcement
@@ -103,6 +104,7 @@ public:
     void setMessageCallback(void (*callback)(const Message& msg));
     void setAckCallback(void (*callback)(const String& messageId, const String& fromMAC));
     void setReadCallback(void (*callback)(const String& messageId, const String& fromMAC));
+    void setBootSyncCompleteCallback(void (*callback)());  // Callback when boot sync finishes
     void setCommandCallback(void (*callback)(const String& command));
     void setSyncRequestCallback(void (*callback)(const String& requestorMAC, unsigned long timestamp));
     void setVillageNameCallback(void (*callback)(const String& villageId, const String& villageName));

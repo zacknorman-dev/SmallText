@@ -1670,6 +1670,30 @@ void UI::showMessage(const String& title, const String& message, int durationMs)
     }
 }
 
+void UI::showSyncSetup(int villageCount) {
+    display->setFullWindow();
+    display->firstPage();
+    do {
+        display->fillScreen(GxEPD_WHITE);
+        display->setFont(&FreeSansBold12pt7b);
+        display->setCursor(10, 25);
+        display->print("Setting up...");
+        
+        display->setFont(&FreeSans9pt7b);
+        display->setCursor(10, 60);
+        display->print("SmolTxt is getting your");
+        display->setCursor(10, 85);
+        display->print("conversations ready.");
+        display->setCursor(10, 110);
+        display->print("This will take a moment.");
+        
+        if (villageCount > 0) {
+            display->setCursor(10, 140);
+            display->print("Loading " + String(villageCount) + " conversation" + (villageCount != 1 ? "s" : "") + "...");
+        }
+    } while (display->nextPage());
+}
+
 void UI::clear() {
     display->fillScreen(GxEPD_WHITE);
 }
