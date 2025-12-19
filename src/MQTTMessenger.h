@@ -67,6 +67,10 @@ private:
     String syncTargetMAC;   // MAC we're syncing with
     unsigned long lastSyncPhaseTime;  // Timestamp of last phase completion
     
+    // Sync response deduplication (prevent processing same sync batch multiple times)
+    std::map<String, unsigned long> recentSyncResponses;  // "MAC:phase:batch" -> timestamp
+    unsigned long lastSyncResponseCleanup;
+    
     // Helper methods
     String generateMessageId();
     String generateTopic(const String& messageType, const String& target = "");

@@ -61,6 +61,7 @@ MQTTMessenger::MQTTMessenger() {
     currentSyncPhase = 0;  // Not syncing
     syncTargetMAC = "";
     lastSyncPhaseTime = 0;
+    lastSyncResponseCleanup = 0;  // Initialize sync response dedup cleanup timer
     
     // Generate unique client ID from MAC with timestamp to avoid conflicts
     char macStr[13];
@@ -1160,6 +1161,44 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
     int phase = doc["phase"] | 1;
     bool morePhases = doc["morePhases"] | false;
     
+    // CRITICAL: Deduplicate sync responses
+    // Extract sender MAC from first message to build dedup key
+    JsonArray msgArray = doc["messages"];
+    if (msgArray.size() > 0) {
+        JsonObject firstMsg = msgArray[0];
+        String senderMAC = firstMsg["senderMAC"] | "";
+        
+        // Build deduplication key: "MAC:phase:batch"
+        String dedupKey = senderMAC + ":" + String(phase) + ":" + String(batch);
+        unsigned long now = millis();
+        
+        // Check if we've seen this sync response recently (within 5 seconds)
+        if (recentSyncResponses.count(dedupKey) > 0) {
+            unsigned long lastSeen = recentSyncResponses[dedupKey];
+            if (now - lastSeen < 5000) {
+                Serial.println("[MQTT] DUPLICATE sync response from " + senderMAC + " phase " + String(phase) + " batch " + String(batch) + " - ignoring (last seen " + String(now - lastSeen) + "ms ago)");
+                logger.info("Duplicate sync response ignored");
+                return;
+            }
+        }
+        
+        // Record this sync response
+        recentSyncResponses[dedupKey] = now;
+        
+        // Cleanup old entries every 10 seconds
+        if (now - lastSyncResponseCleanup > 10000) {
+            auto it = recentSyncResponses.begin();
+            while (it != recentSyncResponses.end()) {
+                if (now - it->second > 10000) {
+                    it = recentSyncResponses.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+            lastSyncResponseCleanup = now;
+        }
+    }
+    
     Serial.println("[MQTT] Sync phase " + String(phase) + " batch " + String(batch) + "/" + String(total));
     logger.info("Sync phase " + String(phase) + " batch " + String(batch) + "/" + String(total));
     
@@ -1172,7 +1211,6 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
         Serial.println("[MQTT] Sync Phase 1 started (recent 20 messages) - disabling status updates");
     }
     
-    JsonArray msgArray = doc["messages"];
     int msgCount = 0;
     
     // Normalize our MAC for comparison
