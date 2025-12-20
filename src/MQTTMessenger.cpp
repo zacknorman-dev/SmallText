@@ -868,6 +868,7 @@ String MQTTMessenger::sendWhisper(const String& recipientMAC, const String& mess
 
 bool MQTTMessenger::sendAck(const String& messageId, const String& targetMAC, const String& villageId) {
     if (!isConnected()) {
+        logger.error("ACK send failed: not connected (msgId=" + messageId + ")");
         return false;
     }
     
@@ -875,6 +876,7 @@ bool MQTTMessenger::sendAck(const String& messageId, const String& targetMAC, co
     VillageSubscription* village = findVillageSubscription(villageId);
     if (!village) {
         Serial.println("[MQTT] Cannot send ACK - village not found: " + villageId);
+        logger.error("ACK send failed: village not found (msgId=" + messageId + " village=" + villageId + ")");
         return false;
     }
     
@@ -893,6 +895,7 @@ bool MQTTMessenger::sendAck(const String& messageId, const String& targetMAC, co
     uint8_t encrypted[MAX_CIPHERTEXT];
     size_t encryptedLen;
     if (!tempEncryption.encryptString(formatted, encrypted, MAX_CIPHERTEXT, &encryptedLen)) {
+        logger.error("ACK encryption failed (msgId=" + messageId + ")");
         return false;
     }
     
@@ -900,7 +903,14 @@ bool MQTTMessenger::sendAck(const String& messageId, const String& targetMAC, co
     String topic = "smoltxt/" + villageId + "/ack/" + targetMAC;
     int msg_id = esp_mqtt_client_publish(mqttClient, topic.c_str(), (const char*)encrypted, 
                                         encryptedLen, 1, 0);  // QoS 1, retain=0
-    return msg_id >= 0;
+    
+    if (msg_id >= 0) {
+        logger.info("ACK sent: msgId=" + messageId + " to=" + targetMAC + " ackId=" + ackId);
+        return true;
+    } else {
+        logger.error("ACK publish failed: msgId=" + messageId + " mqtt_msg_id=" + String(msg_id));
+        return false;
+    }
 }
 
 bool MQTTMessenger::sendReadReceipt(const String& messageId, const String& targetMAC) {
@@ -1241,9 +1251,13 @@ void MQTTMessenger::handleSyncResponse(const uint8_t* payload, unsigned int leng
         
         // CRITICAL: Send ACK for synced messages that are NOT ours
         // This ensures the sender gets delivery confirmation even if recipient was offline
+        logger.info("Sync msg: id=" + msg.messageId + " from=" + msg.sender + " senderMAC=" + msg.senderMAC + " myMAC=" + myMacStr);
         if (msg.senderMAC != myMacStr && !msg.messageId.isEmpty()) {
             Serial.println("[MQTT] Sending ACK for synced message: " + msg.messageId);
+            logger.info("Sending ACK for synced msg: " + msg.messageId + " to=" + msg.senderMAC);
             sendAck(msg.messageId, msg.senderMAC, msg.villageId);
+        } else {
+            logger.info("Skipping ACK: senderMAC=" + msg.senderMAC + " myMAC=" + myMacStr + " isEmpty=" + String(msg.messageId.isEmpty()));
         }
         
         // Deliver to app via message callback (deduplication happens in Village::saveMessage)
