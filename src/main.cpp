@@ -582,12 +582,16 @@ void enterDeepSleep() {
     smartDelay(1000);
   }
   
-  // Configure wake sources for napping mode
-  if (powerMode == POWER_NAPPING) {
+  // Configure wake sources for napping and low battery modes
+  // Enable timer wake for BOTH modes so device can check charging status
+  if (powerMode == POWER_NAPPING || powerMode == POWER_ASLEEP) {
     // Wake on timer (15 minutes)
     esp_sleep_enable_timer_wakeup(NAP_WAKE_INTERVAL * 1000ULL);  // Convert ms to microseconds
     Serial.println("[Power] Timer wake enabled: 15 minutes");
-    
+  }
+  
+  // Button wake only for napping mode (not for critical battery sleep)
+  if (powerMode == POWER_NAPPING) {
     // Configure USER button GPIO for RTC wakeup with internal pullup
     // Note: GPIO 39 is NOT RTC-capable on ESP32-S3, so we can only use GPIO 21
     rtc_gpio_init((gpio_num_t)USER_BUTTON_PIN);
@@ -1417,11 +1421,43 @@ void setup() {
   
   // Timer wake logic will be handled after full initialization below
   
+  // Force fresh battery reading to detect if USB was plugged in while asleep
+  battery.update();
+  
+  // Check if woke from critical battery sleep (POWER_ASLEEP) - see if battery recovered
+  if (wokeFromNap && powerMode == POWER_ASLEEP) {
+    float currentVoltage = battery.getVoltage();
+    Serial.println("[Power] Woke from critical battery sleep - voltage: " + String(currentVoltage) + "V");
+    
+    if (currentVoltage > (LOW_BATTERY_THRESHOLD + 0.3)) {
+      // Battery recovered (>3.3V) - resume normal operation
+      Serial.println("[Power] Battery recovered during charging! Resuming normal operation");
+      logger.info("Power: Battery recovered from critical level");
+      powerMode = POWER_NAPPING;  // Resume napping mode
+      lastActivityTime = millis();
+      ui.updateClean();
+    } else {
+      // Still too low - go back to sleep
+      Serial.println("[Power] Battery still low - returning to sleep");
+      enterDeepSleep();
+      // Never returns
+    }
+  }
+  
   // If woke from key press, stay awake and continue normal boot
   if (wokeFromNap && wakeup_reason == ESP_SLEEP_WAKEUP_EXT1) {
     Serial.println("[Power] Woke by key press - staying awake");
     Serial.println("[Display] Forcing full refresh after wake from nap");
     ui.updateClean();  // Force full display refresh to prevent white screen/corruption
+    powerMode = POWER_AWAKE;
+    lastActivityTime = millis();
+  }
+  
+  // If woke from timer and USB is connected, stay awake (device was plugged in while napping)
+  if (wokeFromNap && wakeup_reason == ESP_SLEEP_WAKEUP_TIMER && isUsbPowered()) {
+    Serial.println("[Power] Woke from nap and USB is connected - staying fully awake");
+    Serial.println("[Display] Forcing full refresh after wake from nap");
+    ui.updateClean();  // Force full display refresh
     powerMode = POWER_AWAKE;
     lastActivityTime = millis();
   }
@@ -1689,6 +1725,9 @@ void loop() {
   
   // Check for inactivity timeout - enter napping mode after 5 minutes
   // BUT: Skip sleep if USB powered (for debugging and real-time updates)
+  // Force fresh battery reading to detect USB power with current voltage data
+  battery.update();
+  
   if (powerMode == POWER_AWAKE && !isUsbPowered()) {
     unsigned long inactiveTime = millis() - lastActivityTime;
     if (inactiveTime >= AWAKE_TIMEOUT) {
